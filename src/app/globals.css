@@ -1,26 +1,203 @@
 @import "tailwindcss";
 
+/* ═══ AirWatch Design System ═══ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Dark Theme (default) */
+  --bg: #0A1628;
+  --surface: #0F1D32;
+  --surface-light: #1A2E48;
+  --primary: #7A9ABF;
+  --primary-dark: #4A6B8A;
+  --accent: #D4A574;
+  --text-primary: #D0D8E4;
+  --text-secondary: #8A9BB0;
+  --text-muted: #4A5F78;
+  --success: #4ADE80;
+  --warning: #FBBF24;
+  --error: #F87171;
+  --info: #60A5FA;
+  --glass-bg: rgba(15, 29, 50, 0.8);
+  --glass-border: rgba(122, 154, 191, 0.2);
+  --glass-blur: 14px;
+  --alt-low: #4ADE80;
+  --alt-med: #FBBF24;
+  --alt-high: #E879A8;
+  --ground: #6B7280;
+  --font-heading: 'Orbitron', monospace;
+  --font-body: 'Rajdhani', sans-serif;
+}
+
+.light {
+  --bg: #F0F4F8;
+  --surface: #FFFFFF;
+  --surface-light: #F8FAFC;
+  --primary: #0062A0;
+  --primary-dark: #004A7A;
+  --accent: #B07D4F;
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-muted: #6B7280;
+  --success: #16A34A;
+  --warning: #D97706;
+  --error: #DC2626;
+  --info: #2563EB;
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(0, 0, 0, 0.12);
+  --glass-blur: 10px;
+  --alt-low: #16A34A;
+  --alt-med: #D97706;
+  --alt-high: #DB2777;
+  --ground: #6B7280;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--bg);
+  --color-foreground: var(--text-primary);
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-surface: var(--surface);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-heading);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  height: 100%;
+  height: 100dvh;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ═══ Glass Panel ═══ */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+}
+
+/* ═══ Neon Text Glow ═══ */
+.neon-text {
+  font-family: var(--font-heading);
+  text-shadow:
+    0 0 7px currentColor,
+    0 0 20px rgba(122, 154, 191, 0.4);
+}
+
+.light .neon-text {
+  text-shadow: none;
+  letter-spacing: 1.5px;
+  color: var(--primary) !important;
+}
+
+/* Light mode glass panels — stronger borders and shadow */
+.light .glass-panel {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Light mode bottom nav */
+.light nav.fixed {
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Light mode scrollbar */
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* ═══ Scrollbar ═══ */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 2px;
+}
+
+/* ═══ Animations ═══ */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+.animate-radar {
+  animation: radar-sweep 6s linear infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+@keyframes squawk-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.5); opacity: 0; }
+}
+
+/* ═══ Leaflet Overrides ═══ */
+.leaflet-container {
+  background: var(--bg) !important;
+  font-family: var(--font-body);
+}
+
+/* Map tile dark filter is applied inline via MapView.tsx based on mapStyle */
+
+/* Airport IATA labels — transparent background, no bubble */
+.leaflet-tooltip.airport-label {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.leaflet-tooltip.airport-label::before,
+.leaflet-tooltip.airport-label::after {
+  display: none !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(15, 29, 50, 0.7) !important;
+  color: var(--text-muted) !important;
+  font-size: 9px !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--primary) !important;
+}
+
+.aircraft-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.aircraft-tooltip::before {
+  display: none !important;
 }
