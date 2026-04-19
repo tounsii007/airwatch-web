@@ -46,6 +46,7 @@ export function useCameraStream() {
     if (requestToken === 0) return; // wait until user triggers
 
     if (!isSupported()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState({ stream: null, status: 'unsupported', errorMessage: 'Camera API not available' });
       return;
     }

@@ -1,0 +1,19 @@
+{
+  "name": "AirWatch — Real-time Flight Tracking",
+  "short_name": "AirWatch",
+  "description": "Track flights worldwide in real-time",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#3b82f6",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "utilities"]
+}

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ReactNode } from 'react';
-import { Binoculars, LayoutDashboard } from 'lucide-react';
+import { Binoculars, GitCompareArrows, Globe2, LayoutDashboard } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { t } from '@/lib/i18n/translations';
 import type { AppLanguage } from '@/lib/types';
@@ -18,12 +18,14 @@ function QuickLink({ href, icon, label }: { href: string; icon: ReactNode; label
   );
 }
 
-/** Quick-links row: dashboard + spotting. */
+/** Quick-links row: dashboard + spotting + globe + compare. */
 export function QuickLinks({ language }: { language: AppLanguage }) {
   return (
-    <div className="flex gap-2">
+    <div className="grid grid-cols-2 gap-2">
       <QuickLink href="/dashboard" icon={<LayoutDashboard size={14} className="text-[var(--primary)]" />} label={t('dashboard', language)} />
-      <QuickLink href="/spotting" icon={<Binoculars size={14} className="text-[var(--accent)]" />} label={t('spotting', language)} />
+      <QuickLink href="/spotting"  icon={<Binoculars size={14} className="text-[var(--accent)]" />}      label={t('spotting', language)} />
+      <QuickLink href="/globe"     icon={<Globe2 size={14} className="text-[var(--info)]" />}            label="3D GLOBE" />
+      <QuickLink href="/compare"   icon={<GitCompareArrows size={14} className="text-[var(--success)]" />} label="COMPARE" />
     </div>
   );
 }

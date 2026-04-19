@@ -1,0 +1,175 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { useFlightStore } from '@/lib/stores/flightStore';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
+import { MAP_STYLES } from '@/components/map/mapStyles';
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+
+// CesiumJS must be loaded dynamically — it does not support SSR
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Cesium: any = null;
+
+export function GlobeView() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const viewerRef = useRef<any>(null);
+  const aircraftMap = useFlightStore((s) => s.aircraftMap);
+  const startPolling = useFlightStore((s) => s.startPolling);
+  const selectAircraft = useFlightStore((s) => s.selectAircraft);
+  const selectedAircraft = useFlightStore((s) => s.selectedAircraft);
+  const mapStyle = useSettingsStore((s) => s.mapStyle);
+  const language = useSettingsStore((s) => s.language);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => { if (aircraftMap.size === 0) startPolling(); }, [aircraftMap.size, startPolling]);
+
+  // Initialize Cesium viewer
+  useEffect(() => {
+    if (!containerRef.current || viewerRef.current) return;
+
+    let cancelled = false;
+
+    async function initCesium() {
+      try {
+        Cesium = await import('cesium');
+        // Set base URL for Cesium assets
+        (window as unknown as Record<string, string>).CESIUM_BASE_URL = 'https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/';
+
+        if (cancelled || !containerRef.current) return;
+
+        const viewer = new Cesium.Viewer(containerRef.current, {
+          imageryProvider: new Cesium.UrlTemplateImageryProvider({
+            url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
+            subdomains: ['a', 'b', 'c', 'd'],
+            maximumLevel: 18,
+            credit: new Cesium.Credit('CARTO'),
+          }),
+          baseLayerPicker: false,
+          geocoder: false,
+          homeButton: false,
+          sceneModePicker: false,
+          selectionIndicator: false,
+          timeline: false,
+          animation: false,
+          fullscreenButton: false,
+          navigationHelpButton: false,
+          infoBox: false,
+          creditContainer: document.createElement('div'), // hide credits
+        });
+
+        viewer.scene.globe.enableLighting = false;
+        viewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#0A1628');
+
+        // Set initial camera position (Europe)
+        viewer.camera.setView({
+          destination: Cesium.Cartesian3.fromDegrees(9.0, 48.5, 5_000_000),
+        });
+
+        viewerRef.current = viewer;
+        setLoaded(true);
+      } catch (err) {
+        console.error('[Globe] CesiumJS failed to load:', err);
+        setError('CesiumJS konnte nicht geladen werden');
+      }
+    }
+
+    initCesium();
+    return () => {
+      cancelled = true;
+      if (viewerRef.current && !viewerRef.current.isDestroyed()) {
+        viewerRef.current.destroy();
+      }
+      viewerRef.current = null;
+    };
+  }, []);
+
+  // Update aircraft entities
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || !Cesium || !loaded) return;
+
+    viewer.entities.removeAll();
+    const colors = MAP_STYLES[mapStyle].colors;
+
+    let count = 0;
+    aircraftMap.forEach((ac) => {
+      if (count >= 800) return;
+      if (!ac.latitude || !ac.longitude) return;
+      count++;
+
+      const alt = (ac.baroAltitude ?? 0) * 10; // exaggerate altitude for visibility
+      const feet = (ac.baroAltitude ?? 0) * 3.28084;
+      const colorHex = ac.onGround ? colors.ground
+        : feet < 10000 ? colors.low
+        : feet < 30000 ? colors.med
+        : colors.high;
+
+      viewer.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(ac.longitude, ac.latitude, alt),
+        point: {
+          pixelSize: selectedAircraft?.icao24 === ac.icao24 ? 10 : 5,
+          color: Cesium.Color.fromCssColorString(colorHex),
+          outlineColor: Cesium.Color.WHITE,
+          outlineWidth: selectedAircraft?.icao24 === ac.icao24 ? 2 : 0,
+        },
+        label: ac.callsign && (selectedAircraft?.icao24 === ac.icao24) ? {
+          text: ac.callsign,
+          font: '12px Orbitron',
+          fillColor: Cesium.Color.fromCssColorString('#E0F0FF'),
+          outlineColor: Cesium.Color.BLACK,
+          outlineWidth: 2,
+          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          pixelOffset: new Cesium.Cartesian2(0, -10),
+        } : undefined,
+        properties: new Cesium.PropertyBag({ icao24: ac.icao24 }),
+      });
+    });
+  }, [aircraftMap, mapStyle, selectedAircraft, loaded]);
+
+  // Fly to selected aircraft
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || !Cesium || !selectedAircraft?.latitude || !selectedAircraft?.longitude) return;
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(
+        selectedAircraft.longitude,
+        selectedAircraft.latitude,
+        (selectedAircraft.baroAltitude ?? 10000) * 20 + 50000,
+      ),
+      duration: 1.5,
+    });
+  }, [selectedAircraft?.icao24]);
+
+  return (
+    <div className="relative w-full h-screen bg-[var(--bg)]">
+      {/* Back button */}
+      <div className="absolute top-4 left-4 z-10">
+        <Link href="/" className="glass-panel px-3 py-1.5 flex items-center gap-1.5 text-[var(--primary)] text-sm hover:bg-white/10">
+          <ArrowLeft size={14} /> MAP
+        </Link>
+      </div>
+
+      {/* Stats */}
+      <div className="absolute top-4 right-4 z-10 glass-panel px-3 py-1.5">
+        <span className="text-xs font-[var(--font-heading)] text-[var(--text-secondary)]">
+          {aircraftMap.size.toLocaleString()} FLIGHTS
+        </span>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <p className="text-[var(--error)] font-[var(--font-body)]">{error}</p>
+        </div>
+      )}
+
+      {/* Cesium container */}
+      <div ref={containerRef} className="w-full h-full" />
+    </div>
+  );
+}

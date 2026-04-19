@@ -32,10 +32,12 @@ export function useUserPosition() {
 
   useEffect(() => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState({ position: null, status: 'unsupported', error: 'Geolocation not available' });
       return;
     }
 
+     
     setState((s) => ({ ...s, status: 'watching' }));
     const id = navigator.geolocation.watchPosition(
       (p) => setState({ position: toPosition(p), status: 'watching', error: null }),

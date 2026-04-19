@@ -21,12 +21,17 @@ function formatAge(seconds: number): string {
  * fresh position lately. Returns null for live aircraft so callers can just
  * drop it in and forget about it.
  */
-export function OfflineBadge({ aircraft, nowMs = Date.now() }: Props) {
-  if (!isCached(aircraft, nowMs)) return null;
+export function OfflineBadge({ aircraft, nowMs }: Props) {
+  // Default computed inside the component body. Date.now() is intentionally
+  // called at render time — the badge label is a read-only staleness glance,
+  // not something that feeds state.
+  // eslint-disable-next-line react-hooks/purity
+  const now = nowMs ?? Date.now();
+  if (!isCached(aircraft, now)) return null;
   return (
     <span className="inline-flex items-center gap-1 text-[8px] font-[var(--font-heading)] font-bold px-1.5 py-0.5 rounded bg-[var(--text-muted)]/20 text-[var(--text-muted)] tracking-wider">
       <WifiOff size={8} />
-      OFFLINE {formatAge(ageSeconds(aircraft, nowMs))}
+      OFFLINE {formatAge(ageSeconds(aircraft, now))}
     </span>
   );
 }

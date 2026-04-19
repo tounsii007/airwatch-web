@@ -11,6 +11,7 @@ interface SettingsStoreState {
   showTrails: boolean;
   showRadar: boolean;
   showLabels: boolean;
+  showTurbulence: boolean;
   updateInterval: number; // seconds
   mapStyle: MapStyle;
 }
@@ -23,6 +24,7 @@ interface SettingsStoreActions {
   setShowTrails: (show: boolean) => void;
   setShowRadar: (show: boolean) => void;
   setShowLabels: (show: boolean) => void;
+  setShowTurbulence: (show: boolean) => void;
   setUpdateInterval: (seconds: number) => void;
   setMapStyle: (style: MapStyle) => void;
 }
@@ -39,6 +41,7 @@ export const useSettingsStore = create<SettingsStore>()(
       showTrails: true,
       showRadar: true,
       showLabels: true,
+      showTurbulence: false,
       updateInterval: 300, // 5 minutes default
       mapStyle: 'dark' as MapStyle,
 
@@ -55,6 +58,7 @@ export const useSettingsStore = create<SettingsStore>()(
       setShowTrails: (show: boolean) => set({ showTrails: show }),
       setShowRadar: (show: boolean) => set({ showRadar: show }),
       setShowLabels: (show: boolean) => set({ showLabels: show }),
+      setShowTurbulence: (show: boolean) => set({ showTurbulence: show }),
       setUpdateInterval: (seconds: number) => set({ updateInterval: seconds }),
       setMapStyle: (style: MapStyle) => set({ mapStyle: style }),
     }),

@@ -54,10 +54,13 @@ export function useDeviceOrientation() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!('DeviceOrientationEvent' in window)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState((s) => ({ ...s, status: 'unsupported' }));
       return;
     }
+     
     if (needsIOSPermission()) setState((s) => ({ ...s, status: 'need-permission' }));
+     
     else setState((s) => ({ ...s, status: 'granted' }));
   }, []);
 
