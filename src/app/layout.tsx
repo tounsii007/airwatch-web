@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Orbitron, Rajdhani } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
+import { GlobalEffects } from "@/components/layout/GlobalEffects";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import { DevTools } from "@/components/debug/DevTools";
 
 const orbitron = Orbitron({
   variable: "--font-orbitron",
@@ -31,11 +34,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${orbitron.variable} ${rajdhani.variable} dark`}>
       <body className="h-screen bg-[var(--bg)] text-[var(--text-primary)] overflow-hidden" suppressHydrationWarning>
         <ThemeProvider />
+        <GlobalEffects />
         <BottomNav />
         {/* Desktop: offset for sidebar (lg:pl-20), Mobile: offset for bottom bar (pb-20) */}
         <main className="h-full overflow-auto pb-20 lg:pb-0 lg:pt-12">
-          {children}
+          <ErrorBoundary>{children}</ErrorBoundary>
         </main>
+        <DevTools />
       </body>
     </html>
   );

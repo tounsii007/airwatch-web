@@ -3,6 +3,8 @@
 import { Plane, Building2 } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { ManagedImage } from '@/components/common/ManagedImage';
+import { OfflineBadge } from '@/components/common/OfflineBadge';
+import type { AircraftState } from '@/lib/types';
 
 interface ResultTileProps {
   type: 'flight' | 'airline';
@@ -12,6 +14,8 @@ interface ResultTileProps {
   query: string;
   onClick: () => void;
   logoUrl?: string;
+  /** Optional — when passed, a small "OFFLINE Xm" pill shows for cached flights. */
+  aircraft?: AircraftState;
 }
 
 /**
@@ -41,7 +45,7 @@ function HighlightedText({ text, query }: { text: string; query: string }) {
   );
 }
 
-export function ResultTile({ type, title, subtitle, status, query, onClick, logoUrl }: ResultTileProps) {
+export function ResultTile({ type, title, subtitle, status, query, onClick, logoUrl, aircraft }: ResultTileProps) {
   const Icon = type === 'flight' ? Plane : Building2;
 
   return (
@@ -80,7 +84,10 @@ export function ResultTile({ type, title, subtitle, status, query, onClick, logo
           </p>
         )}
       </div>
-      {status && <StatusBadge status={status} />}
+      <div className="flex items-center gap-1.5 shrink-0">
+        {aircraft && <OfflineBadge aircraft={aircraft} />}
+        {status && <StatusBadge status={status} />}
+      </div>
     </button>
   );
 }

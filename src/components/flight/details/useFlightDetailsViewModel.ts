@@ -5,6 +5,9 @@ import { codeToCountryName, countryToCode, localizeCountry } from '@/lib/data/co
 import { haversineDistance } from '@/lib/utils';
 import type { AircraftMetadata, AppLanguage, FlightRouteInfo, AircraftState } from '@/lib/types';
 
+/** Public shape of {@link useFlightDetailsViewModel} return value. */
+export type FlightDetailsVM = NonNullable<ReturnType<typeof useFlightDetailsViewModel>>;
+
 export function useFlightDetailsViewModel({
   details,
   language,

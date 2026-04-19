@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolvePollingIntervalMs } from './polling';
+import { resolvePollingIntervalMs } from '@/lib/flights/polling';
 
 describe('resolvePollingIntervalMs', () => {
   it('respects configured intervals above the floor', () => {

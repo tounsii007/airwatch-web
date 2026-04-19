@@ -46,6 +46,8 @@ export const CONVERSION = {
   msToKnots: 1.94384,
   msToKmh: 3.6,
   msToMph: 2.23694,
+  /** 1 m/s vertical speed = 196.85 ft/min. */
+  msToFpm: 196.85,
 };
 
 export const CONFIG = {

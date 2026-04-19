@@ -1,3 +1,5 @@
+import type { AppLanguage } from '@/lib/types';
+
 /**
  * Localized country names.
  * Maps English country name -> { locale: localizedName }.
@@ -130,7 +132,7 @@ export const COUNTRY_TRANSLATIONS: Record<string, Record<string, string>> = {
  * Returns the localized country name for the given locale.
  * Falls back to the original English name if no translation exists.
  */
-export function localizeCountry(country: string, locale: string): string {
+export function localizeCountry(country: string, locale: AppLanguage): string {
   if (locale === 'en') return country;
   const translations = COUNTRY_TRANSLATIONS[country];
   if (!translations) return country;

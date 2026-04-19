@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
+import { CONVERSION } from '@/lib/constants';
 import { resolveAirline } from '@/lib/data/airlines';
+import { isFresh } from '@/lib/flights/aircraftFreshness';
 import type { AircraftState, MapStyle } from '@/lib/types';
 import { EMERGENCY_SQUAWKS, squawkColor } from '@/lib/hooks/useSquawkAlerts';
 import { MAP_STYLES, MAX_VISIBLE_MARKERS } from '@/components/map/mapStyles';
@@ -46,8 +48,12 @@ export function useAircraftMarkers({
     const west = bounds.getWest() - margin;
     const east = bounds.getEast() + margin;
 
+    const now = Date.now();
     const visible: AircraftState[] = [];
     aircraftMap.forEach((aircraft) => {
+      // Cached/offline flights stay in the store for search lists, but rendering
+      // them on the live map would show stale positions — skip them here.
+      if (!isFresh(aircraft, now)) return;
       if (aircraft.latitude == null || aircraft.longitude == null) return;
       if (
         aircraft.latitude >= south &&
@@ -74,7 +80,7 @@ export function useAircraftMarkers({
     const styleAltitudeColor = (meters: number | undefined, onGround: boolean): string => {
       if (onGround) return styleColors.ground;
       if (meters == null || meters === 0) return styleColors.med;
-      const feet = meters * 3.28084;
+      const feet = meters * CONVERSION.metersToFeet;
       if (feet < 100) return styleColors.ground;
       if (feet < 10000) return styleColors.low;
       if (feet < 30000) return styleColors.med;

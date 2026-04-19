@@ -1,20 +1,17 @@
-import { AIRPORTS } from './airports';
+import { AIRPORTS, type AirportRecord } from '@/lib/data/airports';
 
-export interface AirportRecord {
-  c: string;
-  la: number;
-  lo: number;
-  n: string;
-}
+export type { AirportRecord };
 
-const airportEntries = Object.entries(AIRPORTS);
-const airportIndex = new Map<string, AirportRecord>(
-  airportEntries.map(([iata, airport]) => [iata.toUpperCase(), airport])
-);
+/**
+ * Lookup helpers for the airports cache. They read from the live `AIRPORTS`
+ * object, which is populated once {@link loadAirports} resolves. Before that
+ * they return `null` / empty strings — same as the pre-lazy-load behaviour
+ * for unknown IATA codes.
+ */
 
 export function getAirportRecord(iata: string | undefined | null): AirportRecord | null {
   if (!iata) return null;
-  return airportIndex.get(iata.toUpperCase()) ?? null;
+  return AIRPORTS[iata.toUpperCase()] ?? null;
 }
 
 export function getAirportCity(iata: string): string {

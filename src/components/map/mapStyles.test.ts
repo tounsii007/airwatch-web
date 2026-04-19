@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAP_STYLES, STYLE_ORDER, TRANSPARENT_TILE, MAX_VISIBLE_MARKERS } from './mapStyles';
+import { MAP_STYLES, STYLE_ORDER, TRANSPARENT_TILE, MAX_VISIBLE_MARKERS } from '@/components/map/mapStyles';
 import type { MapStyle } from '@/lib/types';
 
 // ──────────────────────────────────────────────────

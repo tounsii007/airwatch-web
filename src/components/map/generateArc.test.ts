@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateArc } from './generateArc';
+import { generateArc } from '@/components/map/generateArc';
 
 // Helper: airport coordinates
 const AIRPORTS = {

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import type { MapStyle } from '@/lib/types';
-import { MAP_STYLES } from '@/components/map/mapStyles';
+import { AIRPORTS } from '@/lib/data/airports';
 
 /**
  * Major international hubs — shown at zoom >= 4.
@@ -67,8 +67,6 @@ let _airportCache: AirportEntry[] | null = null;
 
 function getAirportEntries(): AirportEntry[] {
   if (_airportCache) return _airportCache;
-  // Lazy import to avoid circular deps
-  const { AIRPORTS } = require('@/lib/data/airports');
   const entries: AirportEntry[] = [];
   for (const [iata, data] of Object.entries(AIRPORTS) as [string, { la: number; lo: number }][]) {
     let minZoom: number;

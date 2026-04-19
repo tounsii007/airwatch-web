@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildAircraftMap, guessCategory, kmhToMs, parseAirlabsFlight } from './airlabs';
+import { buildAircraftMap, guessCategory, kmhToMs, parseAirlabsFlight } from '@/lib/flights/airlabs';
 
 describe('airlabs helpers', () => {
   it('maps a flight payload into aircraft state', () => {

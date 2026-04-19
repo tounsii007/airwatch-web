@@ -1,3 +1,5 @@
+import type { AppLanguage } from '@/lib/types';
+
 /**
  * Localized city names for major airports.
  * Maps English city name -> { locale: localizedName }.
@@ -73,7 +75,7 @@ export const CITY_TRANSLATIONS: Record<string, Record<string, string>> = {
  * Returns the localized city name for the given locale.
  * Falls back to the original name if no translation exists.
  */
-export function localizeCity(city: string, locale: string): string {
+export function localizeCity(city: string, locale: AppLanguage): string {
   if (locale === 'en') return city;
   const translations = CITY_TRANSLATIONS[city];
   if (!translations) return city;

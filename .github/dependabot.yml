@@ -1,0 +1,35 @@
+version: 2
+updates:
+  # npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    groups:
+      next:
+        patterns: ["next", "eslint-config-next"]
+      react:
+        patterns: ["react", "react-dom", "@types/react*"]
+      testing:
+        patterns: ["vitest*", "@testing-library/*", "@playwright/*", "happy-dom", "vitest-axe"]
+      tooling:
+        patterns: ["eslint*", "husky", "lint-staged", "size-limit*", "@size-limit/*"]
+    ignore:
+      # Coordinate these with backend SpringDoc version — lock-step upgrades.
+      - dependency-name: "openapi-typescript"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"

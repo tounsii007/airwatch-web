@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { MAP_STYLES, STYLE_ORDER, MAX_VISIBLE_MARKERS, TRANSPARENT_TILE } from './mapStyles';
-import type { AircraftState, MapStyle } from '../../lib/types';
-import { CONFIG } from '../../lib/constants';
+import { MAP_STYLES, STYLE_ORDER, MAX_VISIBLE_MARKERS, TRANSPARENT_TILE } from '@/components/map/mapStyles';
+import type { AircraftState, MapStyle } from '@/lib/types';
+import { CONFIG, CONVERSION } from '@/lib/constants';
 
 // ──────────────────────────────────────────────────
 // Helpers — replicates logic from useAircraftMarkers
@@ -14,7 +14,7 @@ function styleAltitudeColor(
   const colors = MAP_STYLES[style].colors;
   if (onGround) return colors.ground;
   if (meters == null || meters === 0) return colors.med;
-  const feet = meters * 3.28084;
+  const feet = meters * CONVERSION.metersToFeet;
   if (feet < 100) return colors.ground;
   if (feet < 10000) return colors.low;
   if (feet < 30000) return colors.med;
@@ -333,7 +333,7 @@ describe('CONFIG zoom bounds', () => {
   });
 
   it('no style has maxNativeZoom > CONFIG.maxZoom', () => {
-    for (const [name, style] of Object.entries(MAP_STYLES)) {
+    for (const [, style] of Object.entries(MAP_STYLES)) {
       if (style.maxNative != null) {
         expect(style.maxNative).toBeLessThanOrEqual(CONFIG.maxZoom);
       }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { ZoomIn, ZoomOut, Locate, CloudRain, Layers, Info } from 'lucide-react';
 import { useFlightStore } from '@/lib/stores/flightStore';
@@ -25,6 +25,7 @@ export function MapView() {
   const stopPolling = useFlightStore((s) => s.stopPolling);
   const isLoading = useFlightStore((s) => s.isLoading);
   const flightError = useFlightStore((s) => s.error);
+  const transport = useFlightStore((s) => s.transport);
 
   const showRadar = useSettingsStore((s) => s.showRadar);
   const showTrails = useSettingsStore((s) => s.showTrails);
@@ -76,12 +77,20 @@ export function MapView() {
     mapRef.current?.setView([CONFIG.defaultLat, CONFIG.defaultLon], 6);
   }, [mapRef]);
 
+  // Auto-center ONLY on the first frame after a new aircraft is picked — not
+  // on every subsequent position or zoom tick, or the user's mouse-wheel /
+  // trackpad pinch fights a re-center on every tick.
+  const centeredOnIcaoRef = useRef<string | null>(null);
   useEffect(() => {
-    if (selectedAircraft?.latitude != null && selectedAircraft?.longitude != null && mapRef.current) {
-      const targetZoom = Math.min(Math.max(zoom, 8), 12);
-      mapRef.current.setView([selectedAircraft.latitude, selectedAircraft.longitude], targetZoom, { animate: true });
-    }
-  }, [mapRef, selectedAircraft?.icao24, selectedAircraft?.latitude, selectedAircraft?.longitude, zoom]);
+    const ac = selectedAircraft;
+    if (!ac) { centeredOnIcaoRef.current = null; return; }
+    if (ac.latitude == null || ac.longitude == null || !mapRef.current) return;
+    if (centeredOnIcaoRef.current === ac.icao24) return;
+    centeredOnIcaoRef.current = ac.icao24;
+    const currentZoom = mapRef.current.getZoom();
+    const targetZoom = Math.min(Math.max(currentZoom, 8), 12);
+    mapRef.current.setView([ac.latitude, ac.longitude], targetZoom, { animate: true });
+  }, [mapRef, selectedAircraft]);
 
   return (
     <div className="relative w-full" style={{ height: '100%', minHeight: '300px' }}>
@@ -89,8 +98,8 @@ export function MapView() {
         <span className="neon-text font-[var(--font-heading)] font-bold tracking-wider text-lg text-[var(--primary)]">
           AIRWATCH
         </span>
-        <span className="text-[var(--success)] text-xs font-[var(--font-heading)] flex items-center gap-1">
-          <span className="animate-pulse-glow">●</span> LIVE
+        <span className="text-[var(--success)] text-xs font-[var(--font-heading)] flex items-center gap-1" title={transport === 'websocket' ? 'WebSocket push' : transport === 'polling' ? 'HTTP polling' : ''}>
+          <span className="animate-pulse-glow">●</span> LIVE{transport === 'websocket' ? ' · WS' : ''}
         </span>
       </div>
 

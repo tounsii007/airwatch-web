@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AltitudeUnit, AppLanguage, AppTheme, MapStyle, SpeedUnit } from '@/lib/types';
+import { loadLocale } from '@/lib/i18n/translations';
 
 interface SettingsStoreState {
   theme: AppTheme;
@@ -42,7 +43,13 @@ export const useSettingsStore = create<SettingsStore>()(
       mapStyle: 'dark' as MapStyle,
 
       setTheme: (theme: AppTheme) => set({ theme }),
-      setLanguage: (language: AppLanguage) => set({ language }),
+      setLanguage: (language: AppLanguage) => {
+        // Fire-and-forget: start loading the locale dictionary as soon as the
+        // user flips the setting. `t()` falls back to EN until the chunk lands,
+        // so the UI never shows raw keys.
+        void loadLocale(language);
+        set({ language });
+      },
       setAltitudeUnit: (unit: AltitudeUnit) => set({ altitudeUnit: unit }),
       setSpeedUnit: (unit: SpeedUnit) => set({ speedUnit: unit }),
       setShowTrails: (show: boolean) => set({ showTrails: show }),
@@ -53,6 +60,12 @@ export const useSettingsStore = create<SettingsStore>()(
     }),
     {
       name: 'airwatch-settings',
-    }
-  )
+      onRehydrateStorage: () => (state) => {
+        // Preload the persisted language on app boot.
+        if (state?.language && state.language !== 'en') {
+          void loadLocale(state.language);
+        }
+      },
+    },
+  ),
 );

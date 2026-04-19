@@ -1,0 +1,22 @@
+'use client';
+
+import { ArrowLeft } from 'lucide-react';
+
+interface Props {
+  onExit: () => void;
+}
+
+/** Minimal top bar with a back button; keeps the camera view uncluttered. */
+export function ArTopBar({ onExit }: Props) {
+  return (
+    <div className="absolute top-4 left-4 z-10">
+      <button
+        onClick={onExit}
+        className="w-9 h-9 rounded-full glass-panel flex items-center justify-center text-[var(--primary)] hover:bg-[var(--primary)]/15 transition-colors cursor-pointer"
+        aria-label="Exit AR"
+      >
+        <ArrowLeft size={16} />
+      </button>
+    </div>
+  );
+}

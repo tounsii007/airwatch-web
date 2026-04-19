@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AirWatch Web
 
-## Getting Started
+Flight-tracking web app — live aircraft map, airport/airline search, planespotting, CO₂ estimates, and more.
 
-First, run the development server:
+> ⚠️ This app is a **pure frontend**. All flight data comes from the sibling repo [`airwatch-api`](../airwatch-api). The API must be running for the app to work.
+
+## Stack
+
+- **Next.js 16** (App Router) + **React 19** + **TypeScript 6**
+- **Leaflet** + `react-leaflet` for the map
+- **Zustand** (with `persist`) for client state
+- **Tailwind CSS 4**
+- **Vitest** for unit tests
+- **i18n** built-in (EN / DE / FR)
+
+## Prerequisites
+
+- Node.js ≥ 20
+- A running `airwatch-api` backend (default: `http://localhost:8080`)
+
+## Quick start
 
 ```bash
-npm run dev
+# 1) install deps
+npm install
+
+# 2) configure env (optional — defaults point at localhost:8080)
+cp .env.example .env.local
+
+# 3) run dev server
+npm run dev          # binds 0.0.0.0 (LAN access, for mobile testing)
 # or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev:local    # localhost only
+npm run dev:https    # self-signed HTTPS (needed for geolocation on mobile)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How the backend connection works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+All API calls use the relative path `/api/proxy/...`. Next.js `rewrites()` ([`next.config.ts`](./next.config.ts)) forwards them to the backend:
 
-## Learn More
+```
+Browser  →  /api/proxy/airlabs/flights
+            │
+            └─ Next.js rewrite
+               │
+               └─ http://localhost:8080/airlabs/flights  (airwatch-api)
+                  │
+                  └─ Airlabs API (with caching + rate-limit protection)
+```
 
-To learn more about Next.js, take a look at the following resources:
+No CORS config on the frontend needed — the rewrite keeps everything same-origin.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Override the backend URL via `NEXT_PUBLIC_PROXY_URL` (see [`.env.example`](./.env.example)).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server on `0.0.0.0:3000` |
+| `npm run dev:local` | Dev server on `localhost:3000` |
+| `npm run dev:https` | Dev server with self-signed HTTPS |
+| `npm run build` | Production build |
+| `npm run start` | Serve the built app |
+| `npm run lint` | ESLint |
+| `npm test` | Vitest (Node env, threads pool) |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── airports/           # Airport list + detail
+│   ├── airlines/[icao]/    # Airline detail
+│   ├── cargo/              # Cargo tracking
+│   ├── dashboard/          # Multi-airport dashboard
+│   ├── saved/              # Favorites (persisted)
+│   ├── search/             # Search airports/airlines/flights
+│   ├── settings/           # Theme, units, language, interval
+│   ├── spotting/           # Planespotting (geolocation)
+│   └── stats/              # Personal flight stats
+├── components/
+│   ├── common/             # FlagImage, LogoImage, ManagedImage
+│   ├── flight/             # FlightDetailsPanel + details view-model
+│   ├── layout/             # BottomNav, ThemeProvider
+│   ├── map/                # MapView + hooks (markers, labels, layers, radar, routes)
+│   ├── search/             # SearchInput, ResultTile
+│   └── ui/                 # GlassPanel, NeonText, StatusBadge
+└── lib/
+    ├── apiFetch.ts         # fetch wrapper with error logging
+    ├── constants.ts        # API URL builder, colors, config
+    ├── data/               # Airports, airlines, i18n maps
+    ├── flights/            # Airlabs types, polling, API calls
+    ├── hooks/              # useSquawkAlerts, useWeatherRadar, useFlightFeed
+    ├── i18n/               # Translations (EN/DE/FR)
+    ├── stores/             # Zustand stores (persisted)
+    ├── types/              # Shared types
+    └── utils/              # Formatting, math, conversion
+```
+
+## Docker
+
+```bash
+# Build the image
+docker build -t airwatch-web .
+
+# Run it (pointing at a backend on the host)
+docker run -p 3000:3000 \
+  -e NEXT_PUBLIC_PROXY_URL=http://host.docker.internal:8080 \
+  airwatch-web
+```
+
+Or use the root-level `docker-compose.yml` to run frontend + backend together.
+
+## Testing
+
+```bash
+npm test                  # run all
+npm test -- --watch       # watch mode
+npm test -- path/to/file  # single file
+```
+
+Current coverage: map styles, arc generation, map interactions, airport index, Airlabs parser, polling interval, Zustand stores.
+
+## Contributing
+
+1. Create a feature branch: `git checkout -b feature/my-feature`
+2. Commit with conventional style: `feat(map): ...`, `fix(api): ...`
+3. Run `npm test` and `npm run lint` before pushing
+4. Open a PR — CI runs tests and lint automatically
