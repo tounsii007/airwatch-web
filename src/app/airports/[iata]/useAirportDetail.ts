@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { API } from '@/lib/constants';
 import { apiFetch } from '@/lib/apiFetch';
 import { mapScheduleFlight } from '@/app/airports/[iata]/mapScheduleFlight';
+import { useRecentAirportsStore } from '@/lib/stores/recentAirportsStore';
 import type { AirportEntry, AirportScheduleFlight, WeatherInfo } from '@/lib/types';
 
 interface State {
@@ -66,6 +67,11 @@ async function fetchWeather(lat: number, lon: number, signal: AbortSignal): Prom
 /** Consolidated loader for the airport detail page. */
 export function useAirportDetail(iata: string): State {
   const [state, setState] = useState<State>(INITIAL);
+  const addRecentVisit = useRecentAirportsStore((s) => s.addVisit);
+
+  useEffect(() => {
+    addRecentVisit(iata);
+  }, [iata, addRecentVisit]);
 
   useEffect(() => {
     const controller = new AbortController();

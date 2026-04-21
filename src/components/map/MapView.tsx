@@ -15,6 +15,8 @@ import { useRadarOverlay } from '@/components/map/hooks/useRadarOverlay';
 import { useRouteOverlay } from '@/components/map/hooks/useRouteOverlay';
 import { useAircraftMarkers } from '@/components/map/hooks/useAircraftMarkers';
 import { useAirportLabels } from '@/components/map/hooks/useAirportLabels';
+import { useTurbulenceOverlay } from '@/components/map/hooks/useTurbulenceOverlay';
+import { VoiceButton } from '@/components/voice/VoiceButton';
 
 export function MapView() {
   const aircraftMap = useFlightStore((s) => s.aircraftMap);
@@ -30,6 +32,7 @@ export function MapView() {
   const showRadar = useSettingsStore((s) => s.showRadar);
   const showTrails = useSettingsStore((s) => s.showTrails);
   const showLabels = useSettingsStore((s) => s.showLabels);
+  const showTurbulence = useSettingsStore((s) => s.showTurbulence);
   const setShowRadar = useSettingsStore((s) => s.setShowRadar);
   const mapStyle = useSettingsStore((s) => s.mapStyle);
   const setMapStyle = useSettingsStore((s) => s.setMapStyle);
@@ -39,6 +42,7 @@ export function MapView() {
 
   const { baseLayerRef, mapContainerRef, mapRef, zoom } = useLeafletMap(clearSelection);
   const routeLayerRef = useRouteOverlay({ selectedAircraft, showTrails });
+  useTurbulenceOverlay({ enabled: showTurbulence, mapRef });
   const markersLayerRef = useAircraftMarkers({
     aircraftMap,
     mapRef,
@@ -174,6 +178,8 @@ export function MapView() {
           </div>
         </div>
       )}
+
+      <VoiceButton />
 
       <div ref={mapContainerRef} className="absolute inset-0" />
     </div>

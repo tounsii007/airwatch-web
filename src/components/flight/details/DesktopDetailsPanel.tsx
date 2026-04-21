@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { AircraftPhoto } from '@/components/flight/details/AircraftPhoto';
 import { Co2Footer } from '@/components/flight/details/Co2Footer';
 import { DesktopHeader } from '@/components/flight/details/DesktopHeader';
@@ -8,6 +8,8 @@ import { DesktopStats } from '@/components/flight/details/DesktopStats';
 import { MetadataSection } from '@/components/flight/details/MetadataSection';
 import { RouteSection } from '@/components/flight/details/RouteSection';
 import { TimesRow } from '@/components/flight/details/primitives';
+import { PhotoGallery } from '@/components/flight/PhotoGallery';
+import { PredictionCard } from '@/components/flight/PredictionCard';
 import type { AircraftState, AltitudeUnit, AppLanguage, SpeedUnit } from '@/lib/types';
 import type { FlightDetailsVM } from '@/components/flight/details/useFlightDetailsViewModel';
 
@@ -25,6 +27,8 @@ interface Props {
 
 /** Desktop right-side layout for the flight details panel. */
 export function DesktopDetailsPanel({ aircraft, viewModel, language, altitudeUnit, speedUnit, altColor, actions, copied, onShare }: Props) {
+  const [galleryOpen, setGalleryOpen] = useState(false);
+
   return (
     <div className="hidden lg:block glass-panel rounded-l-2xl h-full overflow-y-auto">
       <DesktopHeader
@@ -49,11 +53,23 @@ export function DesktopDetailsPanel({ aircraft, viewModel, language, altitudeUni
 
       {viewModel.metadata && <MetadataSection metadata={viewModel.metadata} icao24={aircraft.icao24} language={language} />}
 
+      <PredictionCard aircraft={aircraft} />
+
       <DesktopStats language={language} altitudeUnit={altitudeUnit} speedUnit={speedUnit} aircraft={aircraft} altColor={altColor} />
 
       <Co2Footer language={language} co2Estimate={viewModel.co2Estimate} copied={copied} onShare={onShare} />
 
-      {viewModel.photoUrl && <AircraftPhoto photoUrl={viewModel.photoUrl} registration={viewModel.metadata?.registration} />}
+      {viewModel.photoUrl && (
+        <AircraftPhoto
+          photoUrl={viewModel.photoUrl}
+          registration={viewModel.metadata?.registration}
+          onExpand={() => setGalleryOpen(true)}
+        />
+      )}
+
+      {galleryOpen && (
+        <PhotoGallery icao24={aircraft.icao24} onClose={() => setGalleryOpen(false)} />
+      )}
     </div>
   );
 }

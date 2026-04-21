@@ -23,6 +23,7 @@ export const API = {
   aircraftPhoto: (hex: string) => `${PROXY_BASE_URL}/photo/${hex}`,
   airlineLogo: (iata: string) => `https://pics.avs.io/200/80/${iata.toUpperCase()}.png`,
   imageProxy: (url: string) => `${PROXY_BASE_URL}/img/${encodeURIComponent(url)}`,
+  turbulence: () => `${PROXY_BASE_URL}/turbulence`,
 };
 
 export const COLORS = {
