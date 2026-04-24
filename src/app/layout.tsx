@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Orbitron, Rajdhani } from "next/font/google";
 import "@/app/globals.css";
 import { BottomNav } from "@/components/layout/BottomNav";
@@ -24,7 +24,6 @@ export const metadata: Metadata = {
   title: "AirWatch — Real-time Flight Tracking",
   description: "Track flights worldwide in real-time with AirWatch",
   manifest: "/manifest.json",
-  themeColor: "#0A1628",
   icons: {
     icon: [{ url: "/icons/icon-192.svg", type: "image/svg+xml" }],
     apple: [{ url: "/icons/icon-192.svg" }],
@@ -34,6 +33,16 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "AirWatch",
   },
+};
+
+// Next.js 14+ split themeColor / viewport out of `metadata` into their own
+// `viewport` export. Keeping them here silences the deprecation warning and
+// matches the official Next 16 API.
+// https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+export const viewport: Viewport = {
+  themeColor: "#0A1628",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
