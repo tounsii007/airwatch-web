@@ -6,6 +6,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { t } from '@/lib/i18n/translations';
 import { resolveAirline, getAirlineLogoUrl } from '@/lib/data/airlines';
 import { airportCity } from '@/lib/data/airports';
+import { localizeCity } from '@/lib/data/city-translations';
 import { formatAltitude, formatSpeed } from '@/lib/utils';
 import type { AircraftState, AltitudeUnit, AppLanguage, FavoriteItem, SpeedUnit } from '@/lib/types';
 import { formatDate } from '@/app/saved/formatDate';
@@ -33,8 +34,8 @@ export function SavedFlightCard({
     : item.label;
   const depIata = liveData?.depIata ?? item.depIata;
   const arrIata = liveData?.arrIata ?? item.arrIata;
-  const depCity = depIata ? airportCity(depIata) : '';
-  const arrCity = arrIata ? airportCity(arrIata) : '';
+  const depCity = depIata ? localizeCity(airportCity(depIata), language) : '';
+  const arrCity = arrIata ? localizeCity(airportCity(arrIata), language) : '';
   const country = liveData?.originCountry ?? item.originCountry;
   const isLive = liveData && !liveData.onGround;
 

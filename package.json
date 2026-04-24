@@ -14,6 +14,7 @@
     "test:e2e": "playwright test",
     "size": "size-limit",
     "generate:api-types": "openapi-typescript http://localhost:8080/v3/api-docs --output src/lib/api-types.generated.ts",
+    "build:city-i18n": "node scripts/build-city-i18n.mjs",
     "prepare": "husky"
   },
   "lint-staged": {

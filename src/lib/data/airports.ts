@@ -46,7 +46,7 @@ export function loadAirports(): Promise<void> {
     } catch (err) {
       // Reset so a retry is possible; don't keep an empty-forever cache.
       loadPromise = null;
-      // eslint-disable-next-line no-console
+       
       console.error('[airports] failed to load', err);
     }
   })();
@@ -60,6 +60,22 @@ export function isAirportsLoaded(): boolean {
 
 export function airportCity(iata: string): string {
   return AIRPORTS[iata?.toUpperCase()]?.n ?? '';
+}
+
+/**
+ * Locale-aware variant of {@link airportCity}. Returns the city name translated
+ * to the caller's active app language (see {@code city-translations.ts}). Falls
+ * through to the English value unchanged when no translation is known.
+ *
+ * <p>Imported separately to keep this data-layer file free of the TS types that
+ * live under {@code lib/types}; the locale lookup is resolved at call-site.
+ */
+export function airportCityLocalized(
+  iata: string,
+  localize: (city: string) => string,
+): string {
+  const raw = airportCity(iata);
+  return raw ? localize(raw) : raw;
 }
 
 export function airportCountry(iata: string): string {

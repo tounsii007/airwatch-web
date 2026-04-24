@@ -5,6 +5,7 @@ import { MapPin, Pin, PinOff, X } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { t } from '@/lib/i18n/translations';
 import { airportCity, airportCountry } from '@/lib/data/airports';
+import { localizeCity } from '@/lib/data/city-translations';
 import type { AppLanguage, FavoriteItem } from '@/lib/types';
 import { formatDate } from '@/app/saved/formatDate';
 
@@ -19,7 +20,7 @@ interface Props {
 export function SavedAirportCard({ item, language, onRemove, onPin }: Props) {
   const iata = item.label;
   const country = airportCountry(iata);
-  const city = airportCity(iata);
+  const city = localizeCity(airportCity(iata), language);
 
   return (
     <GlassPanel className="p-3">

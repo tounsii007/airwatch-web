@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { ArrowLeft, Star } from 'lucide-react';
 import { NeonText } from '@/components/ui/NeonText';
 import { t } from '@/lib/i18n/translations';
+import { localizeCity } from '@/lib/data/city-translations';
 import type { AirportEntry, AppLanguage } from '@/lib/types';
 
 interface Props {
@@ -47,7 +48,7 @@ export function AirportHeader({ iata, airport, language, saved, onToggleFavorite
           <div>
             <NeonText text={iata} size="text-2xl" />
             <p className="text-sm text-[var(--text-secondary)] font-[var(--font-body)] mt-0.5">
-              {airport?.name || t('loading', language)}
+              {airport?.name ? localizeCity(airport.name, language) : t('loading', language)}
             </p>
           </div>
         </div>

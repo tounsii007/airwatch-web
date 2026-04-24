@@ -6,6 +6,7 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { API } from '@/lib/constants';
 import { airportCity } from '@/lib/data/airports';
+import { localizeCity } from '@/lib/data/city-translations';
 import { t } from '@/lib/i18n/translations';
 import { formatScheduleTime } from '@/app/airports/[iata]/mapScheduleFlight';
 import type { AirportScheduleFlight, AppLanguage } from '@/lib/types';
@@ -81,9 +82,9 @@ function AirlineLogoLink({ flight }: { flight: AirportScheduleFlight }) {
   );
 }
 
-function FlightInfo({ flight, tab }: { flight: AirportScheduleFlight; tab: TabType }) {
+function FlightInfo({ flight, tab, language }: { flight: AirportScheduleFlight; tab: TabType; language: AppLanguage }) {
   const peer = pickPeerIata(flight, tab);
-  const peerCity = peer ? airportCity(peer) : '';
+  const peerCity = peer ? localizeCity(airportCity(peer), language) : '';
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-2">
@@ -124,7 +125,7 @@ export function ScheduleRow({ flight, tab, language }: Props) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <TimeColumn flight={flight} tab={tab} language={language} />
-          <FlightInfo flight={flight} tab={tab} />
+          <FlightInfo flight={flight} tab={tab} language={language} />
         </div>
         <TerminalGate flight={flight} tab={tab} language={language} />
       </div>

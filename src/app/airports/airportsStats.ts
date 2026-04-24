@@ -1,6 +1,7 @@
 import { CONVERSION } from '@/lib/constants';
 import type { AircraftState } from '@/lib/types';
 import type { PopularAirport } from '@/app/airports/popularAirports';
+import { cityNameMatches } from '@/lib/data/city-translations';
 
 export interface AirborneStats {
   airborne: number;
@@ -50,8 +51,20 @@ export function filterDepartures(flights: readonly AircraftState[], search: stri
   );
 }
 
+/**
+ * Filter the popular-airports strip by the user's search query.
+ *
+ * <p>Matches against (in order): the IATA code, the English city/airport name,
+ * and any localised variant (so "Nizza" finds NCE just as "Nice" does). The
+ * localisation lookup is powered by {@link cityNameMatches}, which itself
+ * reads from {@code city-i18n.json} lazily loaded at app boot.
+ */
 export function filterAirports(airports: readonly PopularAirport[], search: string): PopularAirport[] {
   const q = search.trim().toLowerCase();
   if (!q) return [...airports];
-  return airports.filter((a) => a.iata.toLowerCase().includes(q) || a.name.toLowerCase().includes(q));
+  return airports.filter((a) =>
+    a.iata.toLowerCase().includes(q)
+    || a.name.toLowerCase().includes(q)
+    || cityNameMatches(a.name, search),
+  );
 }

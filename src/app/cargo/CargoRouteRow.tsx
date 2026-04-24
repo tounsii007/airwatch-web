@@ -2,6 +2,8 @@
 
 import { ArrowRight } from 'lucide-react';
 import { airportCity } from '@/lib/data/airports';
+import { localizeCity } from '@/lib/data/city-translations';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { CargoRouteFlag } from '@/app/cargo/CargoRouteFlag';
 
 interface Props {
@@ -10,7 +12,8 @@ interface Props {
 }
 
 function DepSide({ iata }: { iata: string }) {
-  const city = airportCity(iata);
+  const language = useSettingsStore((s) => s.language);
+  const city = localizeCity(airportCity(iata), language);
   return (
     <div className="flex items-center gap-1.5 flex-1 min-w-0">
       <CargoRouteFlag iata={iata} />
@@ -21,7 +24,8 @@ function DepSide({ iata }: { iata: string }) {
 }
 
 function ArrSide({ iata }: { iata: string }) {
-  const city = airportCity(iata);
+  const language = useSettingsStore((s) => s.language);
+  const city = localizeCity(airportCity(iata), language);
   return (
     <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
       {city && <span className="text-[10px] text-[var(--text-secondary)] font-[var(--font-body)] truncate">{city}</span>}
