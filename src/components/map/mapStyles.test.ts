@@ -36,8 +36,11 @@ describe('MAP_STYLES registry', () => {
 // 2. Each style has valid tile URL
 // ──────────────────────────────────────────────────
 describe.each(Object.entries(MAP_STYLES))('style "%s" tile URL', (name, style) => {
-  it('uses HTTPS', () => {
-    expect(style.url).toMatch(/^https:\/\//);
+  it('is same-origin via the nginx tile proxy', () => {
+    // Tile URLs were migrated to same-origin paths so the browser's
+    // Network tab never reveals the upstream provider. See
+    // airwatch/nginx/nginx.conf for the proxy + cache config.
+    expect(style.url).toMatch(/^\/tiles\//);
   });
 
   it('includes {z}, {x}, {y} placeholders', () => {
@@ -46,17 +49,17 @@ describe.each(Object.entries(MAP_STYLES))('style "%s" tile URL', (name, style) =
     expect(style.url).toContain('{y}');
   });
 
-  it('ends with a valid image extension or tile path', () => {
-    // Tile URLs should end in .png, or contain a tile path pattern
-    expect(style.url).toMatch(/\.(png|jpg|pbf)$|&z=\{z\}/);
+  it('ends with .png OR is a clean RESTful tile path', () => {
+    // Most tile URLs end in .png. The Google-satellite endpoint stays
+    // extension-less because nginx rewrites it to Google's
+    // ?lyrs=s&x={x}&y={y}&z={z} query-param API on the upstream side.
+    expect(style.url).toMatch(/\.png$|\/google\/sat\/\{z\}\/\{x\}\/\{y\}$/);
   });
 
-  it('provides subdomains when URL contains {s} (or uses Leaflet defaults)', () => {
-    if (style.url.includes('{s}')) {
-      // Leaflet defaults to 'abc' if subdomains not specified
-      const subs = style.subdomains ?? 'abc';
-      expect(subs.length).toBeGreaterThanOrEqual(1);
-    }
+  it('does not use the legacy {s} subdomain placeholder', () => {
+    // Same-origin URLs don't need the {s} round-robin trick — HTTP/2
+    // makes the per-host concurrency cap irrelevant.
+    expect(style.url).not.toContain('{s}');
   });
 });
 
@@ -174,7 +177,10 @@ describe('no-labels tiles', () => {
     expect(MAP_STYLES.streets.url).toContain('nolabels');
   });
 
-  it('satellite has no city labels by nature', () => {
-    expect(MAP_STYLES.satellite.url).toContain('lyrs=s');
+  it('satellite uses Google sat tiles via the proxy', () => {
+    // Underlying upstream is Google's `lyrs=s` API; nginx rewrites the
+    // clean RESTful path to Google's query-param form. From the
+    // frontend's perspective we only assert the proxy path.
+    expect(MAP_STYLES.satellite.url).toContain('/tiles/google/sat/');
   });
 });

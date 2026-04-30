@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
-import { ZoomIn, ZoomOut, Locate, CloudRain, Layers, Info } from 'lucide-react';
+import { ZoomIn, ZoomOut, Locate, CloudRain, Info } from 'lucide-react';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { CONFIG } from '@/lib/constants';
 import { useWeatherRadar } from '@/lib/hooks/useWeatherRadar';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
-import { MAP_STYLES, STYLE_ORDER } from '@/components/map/mapStyles';
+import { MAP_STYLES } from '@/components/map/mapStyles';
+import { MapStylePicker } from '@/components/map/MapStylePicker';
 import { t } from '@/lib/i18n/translations';
 import { useLeafletMap } from '@/components/map/hooks/useLeafletMap';
 import { useBaseLayer } from '@/components/map/hooks/useBaseLayer';
@@ -97,7 +98,18 @@ export function MapView() {
   }, [mapRef, selectedAircraft]);
 
   return (
-    <div className="relative w-full" style={{ height: '100%', minHeight: '300px' }}>
+    /* Sizing strategy:
+       * h-full grabs height from the parent (page.tsx wraps us in
+         `fixed top-0 left-0 right-0 bottom-0 lg:pt-12` which gives a
+         well-measured content area).
+       * h-dvh fallback for the rare layouts where a different page
+         drops MapView without forwarding height. dvh follows the
+         mobile address-bar collapse so the map doesn't shrink when
+         the toolbar hides on iOS Safari scroll.
+       * Tile-pane sizing bugs ("map only renders in bottom half") are
+         caught by the ResizeObserver in useLeafletMap which fires
+         map.invalidateSize() on every container size change. */
+    <div className="relative w-full h-full h-dvh">
       <div className="absolute top-3 left-3 z-[1000] flex items-center gap-3 pointer-events-none">
         <span className="neon-text font-[var(--font-heading)] font-bold tracking-wider text-lg text-[var(--primary)]">
           AIRWATCH
@@ -150,18 +162,7 @@ export function MapView() {
         <button onClick={() => setShowRadar(!showRadar)} className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer ${showRadar ? 'bg-[var(--info)]/15 border-[var(--info)]/30' : ''}`}>
           <CloudRain size={18} className={showRadar && !radarShouldShow ? 'text-[var(--info)] opacity-40' : showRadar ? 'text-[var(--info)]' : 'text-[var(--primary)]'} />
         </button>
-        <button
-          onClick={() => {
-            const idx = STYLE_ORDER.indexOf(mapStyle);
-            setMapStyle(STYLE_ORDER[(idx + 1) % STYLE_ORDER.length]);
-          }}
-          className="glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer relative"
-        >
-          <Layers size={18} className="text-[var(--primary)]" />
-          <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 text-[6px] font-[var(--font-heading)] font-bold text-[var(--text-muted)] tracking-wider uppercase">
-            {MAP_STYLES[mapStyle].label}
-          </span>
-        </button>
+        <MapStylePicker mapStyle={mapStyle} onChange={setMapStyle} />
         <button onClick={() => setShowLegend((v) => !v)} className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer lg:hidden ${showLegend ? 'bg-[var(--primary)]/15' : ''}`}>
           <Info size={18} className="text-[var(--primary)]" />
         </button>

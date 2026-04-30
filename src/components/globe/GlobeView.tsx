@@ -36,15 +36,20 @@ export function GlobeView() {
     async function initCesium() {
       try {
         Cesium = await import('cesium');
-        // Set base URL for Cesium assets
-        (window as unknown as Record<string, string>).CESIUM_BASE_URL = 'https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/';
+        // Cesium fetches its workers / WASM / textures from CESIUM_BASE_URL.
+        // We mirror the asset tree at build time (see scripts/copy-cesium-
+        // assets.mjs) so it's served same-origin from /cesium/ — never hits
+        // cesium.com directly. Browser Network tab stays clean and CSP can
+        // drop cesium.com from script-src/connect-src/worker-src/img-src.
+        (window as unknown as Record<string, string>).CESIUM_BASE_URL = '/cesium/';
 
         if (cancelled || !containerRef.current) return;
 
         const viewer = new Cesium.Viewer(containerRef.current, {
           imageryProvider: new Cesium.UrlTemplateImageryProvider({
-            url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
-            subdomains: ['a', 'b', 'c', 'd'],
+            // Same-origin via the nginx tile proxy — see
+            // airwatch/nginx/nginx.conf > location /tiles/carto/.
+            url: '/tiles/carto/dark_nolabels/{z}/{x}/{y}.png',
             maximumLevel: 18,
             credit: new Cesium.Credit('CARTO'),
           }),

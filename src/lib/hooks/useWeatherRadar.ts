@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react';
 
-const RAINVIEWER_API = 'https://api.rainviewer.com/public/weather-maps.json';
-
 /**
  * Fetches the latest RainViewer radar tile timestamp.
- * Returns the tile URL template: replace {z}/{x}/{y} with Leaflet coords.
+ *
+ * Both endpoints are same-origin via the nginx asset proxy:
+ *   /weather-radar/maps.json   → api.rainviewer.com/public/weather-maps.json
+ *   /weather-radar/tiles/...   → tilecache.rainviewer.com/...
+ * The browser's Network tab never sees the actual RainViewer hostnames.
+ *
+ * Returns a tile URL template; replace {z}/{x}/{y} via Leaflet's
+ * TileLayer URL substitution.
  */
+const RADAR_INDEX = '/weather-radar/maps.json';
+
 export function useWeatherRadar(): string | null {
   const [tileUrl, setTileUrl] = useState<string | null>(null);
 
@@ -13,13 +20,16 @@ export function useWeatherRadar(): string | null {
     let cancelled = false;
     async function fetchTimestamp() {
       try {
-        const res = await fetch(RAINVIEWER_API);
+        const res = await fetch(RADAR_INDEX);
         const data = await res.json();
         const radar = data?.radar?.past;
         if (Array.isArray(radar) && radar.length > 0) {
           const latest = radar[radar.length - 1];
           if (latest?.path && !cancelled) {
-            setTileUrl(`https://tilecache.rainviewer.com${latest.path}/256/{z}/{x}/{y}/2/1_1.png`);
+            // RainViewer returns paths like "/v2/radar/1234567890" — they
+            // already start with "/", so concatenation with the proxy
+            // prefix produces /weather-radar/tiles/v2/radar/1234567890/...
+            setTileUrl(`/weather-radar/tiles${latest.path}/256/{z}/{x}/{y}/2/1_1.png`);
           }
         }
       } catch { /* silently fail */ }

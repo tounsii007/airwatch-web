@@ -48,3 +48,8 @@ next-env.d.ts
 
 # Claude Code — local-only state (worktrees, settings, scheduled tasks)
 .claude/
+
+# Cesium assets are mirrored from node_modules/cesium/Build/Cesium at
+# `npm run build` (see scripts/copy-cesium-assets.mjs). Don't commit
+# the ~12 MB blob — it regenerates from the locked cesium version.
+/public/cesium/

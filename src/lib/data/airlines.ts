@@ -173,11 +173,15 @@ export function resolveAirline(callsign: string): AirlineInfo | undefined {
 }
 
 /**
- * Get the airline logo URL from avs.io using the IATA code.
+ * Get the airline logo URL.
+ *
+ * Same-origin: nginx proxies /logos/<size>/<iata>.png to pics.avs.io
+ * with a 30-day disk cache. The browser's Network tab never reveals
+ * the upstream provider. See airwatch/nginx/nginx.conf > /logos/.
  */
 export function getAirlineLogoUrl(iata: string, size: 'sm' | 'md' | 'lg' = 'md'): string {
   const sizes = { sm: '200/80', md: '400/160', lg: '600/200' };
-  return `https://pics.avs.io/${sizes[size]}/${iata.toUpperCase()}.png`;
+  return `/logos/${sizes[size]}/${iata.toUpperCase()}.png`;
 }
 
 /**

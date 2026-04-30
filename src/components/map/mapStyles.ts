@@ -11,55 +11,60 @@ interface StyleDef {
 }
 
 /**
- * All tile URLs use "no labels" variants.
- * Airport labels are rendered by our own useAirportLabels hook.
+ * All tile URLs are SAME-ORIGIN. nginx proxies /tiles/<provider>/... to the
+ * actual CDN (CARTO / Google / OSM / etc.) with disk-cache, so the browser's
+ * Network tab only sees http://localhost:13000/tiles/... — the upstream
+ * provider is invisible to the user. See airwatch/nginx/nginx.conf for the
+ * proxy + cache config and airwatch-web/next.config.ts for the Next.js
+ * rewrite that forwards /tiles/ → nginx.
+ *
+ * Subdomain placeholders ({s}) are gone: with HTTP/2 (which all browsers
+ * use against localhost via Next-standalone) the per-host concurrency
+ * cap is irrelevant, so a single endpoint per provider is simpler.
+ *
+ * "no labels" variants stay — airport labels are rendered by our own
+ * useAirportLabels hook against the AIRPORTS dataset.
  */
 export const MAP_STYLES: Record<MapStyle, StyleDef> = {
   dark: {
-    url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
+    url: '/tiles/carto/dark_nolabels/{z}/{x}/{y}.png',
     attr: '&copy; CARTO &copy; OSM',
     dark: false,
-    subdomains: 'abcd',
     label: 'DRK',
     colors: { low: '#4ADE80', med: '#FBBF24', high: '#E879A8', ground: '#6B7280', selected: '#E0F0FF' },
   },
   night: {
-    url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
+    url: '/tiles/carto/dark_nolabels/{z}/{x}/{y}.png',
     attr: '&copy; CARTO',
     dark: false,
-    subdomains: 'abcd',
     label: 'NGT',
     colors: { low: '#00FF88', med: '#FF9500', high: '#FF3B7A', ground: '#555555', selected: '#FFFFFF' },
   },
   satellite: {
-    url: 'https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+    url: '/tiles/google/sat/{z}/{x}/{y}',
     attr: '&copy; Google',
     dark: false,
-    subdomains: '0123',
     label: 'SAT',
     colors: { low: '#00FF66', med: '#FFD700', high: '#FF4488', ground: '#AAAAAA', selected: '#FFFFFF' },
   },
   streets: {
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
+    url: '/tiles/carto/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
     attr: '&copy; CARTO &copy; OSM',
     dark: false,
-    subdomains: 'abcd',
     label: 'STR',
     colors: { low: '#0066FF', med: '#CC0000', high: '#9900CC', ground: '#333333', selected: '#FF6600' },
   },
   terrain: {
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
+    url: '/tiles/carto/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
     attr: '&copy; CARTO &copy; OSM',
     dark: false,
-    subdomains: 'abcd',
     label: 'TER',
     colors: { low: '#0000FF', med: '#FF0000', high: '#8B00FF', ground: '#000000', selected: '#FF6600' },
   },
   toner: {
-    url: 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',
+    url: '/tiles/carto/light_nolabels/{z}/{x}/{y}.png',
     attr: '&copy; CARTO',
     dark: false,
-    subdomains: 'abcd',
     label: 'LGT',
     colors: { low: '#22C55E', med: '#EAB308', high: '#EC4899', ground: '#9CA3AF', selected: '#2563EB' },
   },

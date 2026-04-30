@@ -12,11 +12,9 @@ interface TileBoundingBox {
 export function buildBasemapLayer() {
   return new TileLayer({
     id: 'basemap-osm',
-    data: [
-      'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    ],
+    // Same-origin: nginx proxies /tiles/osm/* to OSM's CDN with disk
+    // cache. See airwatch/nginx/nginx.conf > location /tiles/osm/.
+    data: ['/tiles/osm/{z}/{x}/{y}.png'],
     minZoom: 0,
     maxZoom: 19,
     tileSize: 256,
