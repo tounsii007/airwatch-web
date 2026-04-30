@@ -1,9 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { MapPin } from 'lucide-react';
-import { NeonText } from '@/components/ui/NeonText';
 import { useGeoFenceStore } from '@/lib/stores/geofenceStore';
+import { PageContainer, FadeIn } from '@/components/ui';
 import { AlertsPanel } from '@/app/geofences/AlertsPanel';
 import { DrawPanel } from '@/app/geofences/DrawPanel';
 import { FenceForm } from '@/app/geofences/FenceForm';
@@ -20,20 +19,6 @@ function applyCircleDraft(form: FenceFormState, draft: GeoFenceDraft): FenceForm
     centerLon: draft.centerLon?.toString() ?? '',
     radiusKm: draft.radiusKm?.toString() ?? form.radiusKm,
   };
-}
-
-function PageHeader({ count }: { count: number }) {
-  return (
-    <header className="mb-6 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <MapPin size={20} className="text-[var(--primary)]" />
-        <NeonText text="GEOFENCES" size="text-xl" />
-      </div>
-      <span className="text-[10px] font-[var(--font-heading)] text-[var(--text-muted)] tracking-widest">
-        {count} ACTIVE
-      </span>
-    </header>
-  );
 }
 
 export default function GeoFencesPage() {
@@ -76,12 +61,38 @@ export default function GeoFencesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] pb-20 pt-6 px-4 md:px-8 lg:pt-16">
-      <PageHeader count={fences.length} />
-      <AlertsPanel alerts={alerts} onDismiss={dismissAlert} onClear={clearAlerts} />
-      <DrawPanel draft={draft} existing={fences} onDraft={handleDraft} />
-      <FenceForm form={form} draft={draft} submitting={submitting} submitError={submitError} onChange={patchForm} onSubmit={handleSubmit} />
-      <FencesList fences={fences} onDelete={remove} />
-    </div>
+    <PageContainer
+      maxWidth="4xl"
+      title="Geofences"
+      subtitle={
+        fences.length > 0 ? (
+          <span className="badge badge-success">{fences.length} active</span>
+        ) : (
+          <span className="badge">No fences yet</span>
+        )
+      }
+    >
+      <div className="space-y-6">
+        <FadeIn>
+          <AlertsPanel alerts={alerts} onDismiss={dismissAlert} onClear={clearAlerts} />
+        </FadeIn>
+        <FadeIn delay={60}>
+          <DrawPanel draft={draft} existing={fences} onDraft={handleDraft} />
+        </FadeIn>
+        <FadeIn delay={120}>
+          <FenceForm
+            form={form}
+            draft={draft}
+            submitting={submitting}
+            submitError={submitError}
+            onChange={patchForm}
+            onSubmit={handleSubmit}
+          />
+        </FadeIn>
+        <FadeIn delay={180}>
+          <FencesList fences={fences} onDelete={remove} />
+        </FadeIn>
+      </div>
+    </PageContainer>
   );
 }

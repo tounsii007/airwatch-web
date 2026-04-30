@@ -2,32 +2,19 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { NeonText } from '@/components/ui/NeonText';
 import { SearchInput } from '@/components/search/SearchInput';
 import { ResultTile } from '@/components/search/ResultTile';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { CONFIG } from '@/lib/constants';
 import { t } from '@/lib/i18n/translations';
-import type { AircraftState, AppLanguage } from '@/lib/types';
+import type { AircraftState } from '@/lib/types';
 import { NoResultsState, TypeToSearchState } from '@/app/search/SearchEmptyState';
 import { ResultsGroup } from '@/app/search/ResultsGroup';
 import { useDebouncedValue } from '@/app/search/useDebouncedValue';
 import { useSearchResults } from '@/app/search/useSearchResults';
 import { MIN_QUERY_LENGTH } from '@/app/search/searchTypes';
-
-function Header({ language, flightCount }: { language: AppLanguage; flightCount: number }) {
-  return (
-    <div className="text-center py-4 mb-2">
-      <NeonText text={t('search', language)} size="text-xl" />
-      {flightCount > 0 && (
-        <p className="text-[var(--text-muted)] text-[10px] font-[var(--font-heading)] mt-2 tracking-wider">
-          {flightCount.toLocaleString()} {t('flights_available', language)}
-        </p>
-      )}
-    </div>
-  );
-}
+import { PageContainer, Stagger, FadeIn, CountUp } from '@/components/ui';
 
 export default function SearchPage() {
   const router = useRouter();
@@ -53,46 +40,85 @@ export default function SearchPage() {
 
   const handleAirlineClick = useCallback((icao: string) => router.push(`/airlines/${icao}`), [router]);
 
+  // Live availability badge — animates in on mount, count tweens via
+  // CountUp so the "live" feel matches the real-time WS feed.
+  const liveBadge = flightCount > 0 ? (
+    <span className="badge badge-success badge-dot">
+      <CountUp value={flightCount} /> {t('flights_available', language)}
+    </span>
+  ) : null;
+
   return (
-    <div className="p-4 max-w-lg mx-auto">
-      <Header language={language} flightCount={flightCount} />
-      <SearchInput value={query} onChange={setQuery} placeholder={t('search_placeholder', language)} />
+    <PageContainer
+      maxWidth="lg"
+      title={t('search', language)}
+      subtitle={liveBadge}
+    >
+      <FadeIn>
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder={t('search_placeholder', language)}
+        />
+      </FadeIn>
 
       <div className="mt-4 space-y-4">
-        {hasQuery && !hasResults && <NoResultsState query={debouncedQuery} language={language} />}
+        {hasQuery && !hasResults && (
+          <FadeIn>
+            <NoResultsState query={debouncedQuery} language={language} />
+          </FadeIn>
+        )}
 
-        <ResultsGroup title={t('live_flights', language)} count={flights.length}>
-          {flights.map((r) => (
-            <ResultTile
-              key={r.aircraft.icao24}
-              type="flight"
-              title={r.title}
-              subtitle={r.subtitle}
-              status={r.status}
-              query={debouncedQuery}
-              onClick={() => handleFlightClick(r.aircraft)}
-              logoUrl={r.logoUrl}
-              aircraft={r.aircraft}
-            />
-          ))}
-        </ResultsGroup>
+        {flights.length > 0 && (
+          <FadeIn delay={50}>
+            <ResultsGroup title={t('live_flights', language)} count={flights.length}>
+              <Stagger>
+                {flights.map((r) => (
+                  <div key={r.aircraft.icao24} className="animate-fade-up">
+                    <ResultTile
+                      type="flight"
+                      title={r.title}
+                      subtitle={r.subtitle}
+                      status={r.status}
+                      query={debouncedQuery}
+                      onClick={() => handleFlightClick(r.aircraft)}
+                      logoUrl={r.logoUrl}
+                      aircraft={r.aircraft}
+                    />
+                  </div>
+                ))}
+              </Stagger>
+            </ResultsGroup>
+          </FadeIn>
+        )}
 
-        <ResultsGroup title={t('airlines', language)} count={airlines.length}>
-          {airlines.map((r) => (
-            <ResultTile
-              key={r.icao}
-              type="airline"
-              title={r.title}
-              subtitle={r.subtitle}
-              query={debouncedQuery}
-              onClick={() => handleAirlineClick(r.icao)}
-              logoUrl={r.logoUrl}
-            />
-          ))}
-        </ResultsGroup>
+        {airlines.length > 0 && (
+          <FadeIn delay={100}>
+            <ResultsGroup title={t('airlines', language)} count={airlines.length}>
+              <Stagger>
+                {airlines.map((r) => (
+                  <div key={r.icao} className="animate-fade-up">
+                    <ResultTile
+                      type="airline"
+                      title={r.title}
+                      subtitle={r.subtitle}
+                      query={debouncedQuery}
+                      onClick={() => handleAirlineClick(r.icao)}
+                      logoUrl={r.logoUrl}
+                    />
+                  </div>
+                ))}
+              </Stagger>
+            </ResultsGroup>
+          </FadeIn>
+        )}
       </div>
 
-      {!hasQuery && <TypeToSearchState language={language} />}
-    </div>
+      {!hasQuery && (
+        <FadeIn delay={150}>
+          <TypeToSearchState language={language} />
+        </FadeIn>
+      )}
+    </PageContainer>
   );
 }

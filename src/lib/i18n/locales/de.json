@@ -195,6 +195,8 @@
   "times_viewed": "Mal",
   "no_stats_yet": "Noch keine Flüge angesehen",
   "no_stats_hint": "Tippe auf ein Flugzeug auf der Karte, um zu beginnen",
+  "flights_tracked": "Flüge verfolgt",
+  "avg_views_per_flight": "DURCHSCHN. AUFRUFE / FLUG",
   "my_statistics": "MEINE STATISTIKEN",
   "dashboard": "DASHBOARD",
   "add_airport_hint": "Flughafen hinzufügen (IATA-Code)...",

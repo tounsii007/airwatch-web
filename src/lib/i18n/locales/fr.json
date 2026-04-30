@@ -195,6 +195,8 @@
   "times_viewed": "vues",
   "no_stats_yet": "Aucun vol consulté pour l'instant",
   "no_stats_hint": "Appuyez sur un avion sur la carte pour commencer",
+  "flights_tracked": "vols suivis",
+  "avg_views_per_flight": "VUES MOY. / VOL",
   "my_statistics": "MES STATISTIQUES",
   "dashboard": "TABLEAU DE BORD",
   "add_airport_hint": "Ajouter un aéroport (code IATA)...",

@@ -10,24 +10,45 @@ const MapView = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-full flex flex-col items-center justify-center gap-6 bg-[var(--bg)]">
-        {/* Animated radar sweep */}
-        <div className="relative w-24 h-24">
-          <div className="absolute inset-0 rounded-full border-2 border-[var(--primary)]/20" />
-          <div className="absolute inset-3 rounded-full border border-[var(--primary)]/15" />
-          <div className="absolute inset-6 rounded-full border border-[var(--primary)]/10" />
-          <div className="absolute inset-0 rounded-full animate-radar origin-center"
-            style={{ background: 'conic-gradient(from 0deg, transparent 0deg, var(--primary) 30deg, transparent 60deg)' , opacity: 0.3 }} />
+      <div className="h-full flex flex-col items-center justify-center gap-8 bg-[var(--bg)] animate-fade-in">
+        {/* Multi-ring radar with sweep + breathing center pulse */}
+        <div className="relative w-32 h-32">
+          {/* Three concentric rings of decreasing strength */}
+          <div className="absolute inset-0 rounded-full border-2 border-[var(--primary)]/25" />
+          <div className="absolute inset-4 rounded-full border border-[var(--primary)]/20" />
+          <div className="absolute inset-8 rounded-full border border-[var(--primary)]/15" />
+
+          {/* Outer pulse-ring — expands and fades, gives a lively "ping" */}
+          <div
+            className="absolute inset-0 rounded-full border-2 border-[var(--primary)]/40"
+            style={{ animation: 'ring-pulse 2.4s ease-out infinite' }}
+          />
+
+          {/* Sweep cone — rotates over the rings */}
+          <div
+            className="absolute inset-0 rounded-full animate-radar origin-center"
+            style={{
+              background:
+                'conic-gradient(from 0deg, transparent 0deg, var(--primary-bright) 45deg, transparent 90deg)',
+              opacity: 0.4,
+            }}
+          />
+
+          {/* Centre dot — breathing glow */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-2 h-2 rounded-full bg-[var(--primary)] animate-pulse-glow" />
+            <div
+              className="w-3 h-3 rounded-full bg-[var(--primary-bright)] animate-pulse-glow"
+              style={{ boxShadow: '0 0 12px var(--primary-bright)' }}
+            />
           </div>
         </div>
-        <div className="text-center">
-          <span className="neon-text font-[var(--font-heading)] font-bold tracking-wider text-2xl text-[var(--primary)] block">
+
+        <div className="text-center animate-fade-up" style={{ animationDelay: '120ms' }}>
+          <span className="gradient-text font-[var(--font-heading)] font-bold tracking-[0.25em] text-3xl block">
             AIRWATCH
           </span>
-          <p className="text-[var(--text-muted)] font-[var(--font-body)] text-xs mt-2 tracking-widest animate-pulse">
-            INITIALIZING FLIGHT SYSTEMS...
+          <p className="text-[var(--text-muted)] font-[var(--font-body)] text-[10px] mt-3 tracking-[0.4em] uppercase">
+            <span className="animate-pulse-glow inline-block">INITIALIZING FLIGHT SYSTEMS</span>
           </p>
         </div>
       </div>

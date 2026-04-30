@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Clock, CuboidIcon, History, Plane } from 'lucide-react';
-import { NeonText } from '@/components/ui/NeonText';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { useMounted } from '@/lib/hooks/useMounted';
 import {
@@ -28,7 +27,6 @@ export default function ReplayPage() {
 
   useEffect(() => {
     if (!mounted) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchAvailableReplays().then(setReplays);
   }, [mounted]);
 
@@ -41,13 +39,15 @@ export default function ReplayPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] pb-20 pt-6 px-4 md:px-8 lg:pt-16">
-      <header className="mb-6 flex items-center gap-3">
-        <History size={20} className="text-[var(--primary)]" />
-        <NeonText text="FLIGHT REPLAY" size="text-xl" />
+    <div className="min-h-screen bg-[var(--bg)] pb-20 pt-6 px-4 md:px-8 lg:pt-16 animate-fade-up">
+      <header className="mb-6 flex items-center gap-3 animate-fade-in">
+        <History size={20} className="text-[var(--primary-bright)]" />
+        <h1 className="gradient-text font-[var(--font-heading)] text-xl font-bold tracking-wider">
+          FLIGHT REPLAY
+        </h1>
         <Link
           href="/replay/3d"
-          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-[var(--font-heading)] font-bold tracking-widest bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--primary)]/30 hover:bg-[var(--primary)]/25 transition-colors cursor-pointer"
+          className="badge badge-info ml-auto hover:bg-[var(--info)]/20 transition-colors cursor-pointer"
         >
           <CuboidIcon size={12} />
           3D-ANSICHT

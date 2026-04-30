@@ -195,6 +195,8 @@
   "times_viewed": "views",
   "no_stats_yet": "No flights viewed yet",
   "no_stats_hint": "Tap any aircraft on the map to start tracking",
+  "flights_tracked": "flights tracked",
+  "avg_views_per_flight": "AVG VIEWS / FLIGHT",
   "my_statistics": "MY STATISTICS",
   "dashboard": "DASHBOARD",
   "add_airport_hint": "Add airport (IATA code)...",

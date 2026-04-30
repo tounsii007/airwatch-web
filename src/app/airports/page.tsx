@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { NeonText } from '@/components/ui/NeonText';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { t } from '@/lib/i18n/translations';
@@ -17,6 +16,7 @@ import {
   filterAirports,
   filterDepartures,
 } from '@/app/airports/airportsStats';
+import { PageContainer, FadeIn } from '@/components/ui';
 
 export default function AirportsPage() {
   const { aircraftMap, startPolling } = useFlightStore();
@@ -31,21 +31,30 @@ export default function AirportsPage() {
   const filteredAirports = useMemo(() => filterAirports(POPULAR_AIRPORTS, search), [search]);
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="text-center py-3">
-        <NeonText text={t('airports', language)} size="text-xl" />
+    <PageContainer maxWidth="3xl" title={t('airports', language)}>
+      <div className="space-y-4">
+        <FadeIn>
+          <StatsRow stats={stats} language={language} />
+        </FadeIn>
+        <FadeIn delay={50}>
+          <QuickLinks language={language} />
+        </FadeIn>
+        <FadeIn delay={100}>
+          <PopularAirportsStrip airports={filteredAirports} language={language} />
+        </FadeIn>
+        <FadeIn delay={150}>
+          <AirportSearch value={search} onChange={setSearch} language={language} />
+        </FadeIn>
+        <FadeIn delay={200}>
+          <DeparturesList
+            flights={filteredDepartures}
+            totalLoaded={aircraftMap.size > 0}
+            altitudeUnit={altitudeUnit}
+            speedUnit={speedUnit}
+            language={language}
+          />
+        </FadeIn>
       </div>
-      <StatsRow stats={stats} language={language} />
-      <QuickLinks language={language} />
-      <PopularAirportsStrip airports={filteredAirports} language={language} />
-      <AirportSearch value={search} onChange={setSearch} language={language} />
-      <DeparturesList
-        flights={filteredDepartures}
-        totalLoaded={aircraftMap.size > 0}
-        altitudeUnit={altitudeUnit}
-        speedUnit={speedUnit}
-        language={language}
-      />
-    </div>
+    </PageContainer>
   );
 }

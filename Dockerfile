@@ -15,10 +15,15 @@ COPY package.json package-lock.json* ./
 # selects from the optionalDependencies cpu/os matrix. Cutting them off
 # breaks `next build` with "lightningcss native binding missing".
 #
+# --legacy-peer-deps is required because @deck.gl/arcgis (transitive via
+# deck.gl) has a peer-dep on @arcgis/core which we don't actually use —
+# strict mode would refuse the install. The lockfile pins everything so
+# this only relaxes peer-conflict reporting, not version resolution.
+#
 # openapi-typescript is invoked via `npx` from the generate:api-types
 # script — see the _dev_tools_note in package.json — so it never lands
 # here either way.
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # ─── build: produce .next/standalone ───────────────────────────────────────
 FROM node:22-alpine AS build

@@ -65,10 +65,40 @@ export function useAircraftMarkers({
       }
     });
 
+    // Grid-based spatial sampling. The previous `index % step` filter
+    // dropped every Nth aircraft from the underlying Map — which maps
+    // well for a uniform random distribution but skews badly for the
+    // real-world data: dense regions (Europe rush hour) keep all their
+    // flights while sparse regions (Pacific) lose theirs entirely.
+    //
+    // Grid sampling: divide the visible bounds into a cell grid sized
+    // so the cell count is ~MAX_VISIBLE_MARKERS, then keep one
+    // representative aircraft per cell. Result: roughly even density
+    // across the visible area regardless of where the planes actually
+    // cluster, with a tunable count cap. Selected aircraft is always
+    // kept regardless of cell occupancy.
     let toRender = visible;
     if (visible.length > MAX_VISIBLE_MARKERS && zoom < 7) {
-      const step = Math.ceil(visible.length / MAX_VISIBLE_MARKERS);
-      toRender = visible.filter((_, index) => index % step === 0);
+      const latSpan = north - south;
+      const lonSpan = east - west;
+      // Cell side picked so total cells ~= MAX_VISIBLE_MARKERS — square
+      // root because we have a 2D grid.
+      const cellsPerSide = Math.ceil(Math.sqrt(MAX_VISIBLE_MARKERS));
+      const cellLat = latSpan / cellsPerSide;
+      const cellLon = lonSpan / cellsPerSide;
+      const grid = new Map<string, AircraftState>();
+      for (const ac of visible) {
+        const gy = Math.floor((ac.latitude! - south) / cellLat);
+        const gx = Math.floor((ac.longitude! - west) / cellLon);
+        const key = `${gy}:${gx}`;
+        // Prefer aircraft with a callsign over those without — gives
+        // identifiable representatives when cells overlap multiple flights.
+        const existing = grid.get(key);
+        if (!existing || (!existing.callsign && ac.callsign)) {
+          grid.set(key, ac);
+        }
+      }
+      toRender = Array.from(grid.values());
     }
 
     if (selectedAircraft && !toRender.some((aircraft) => aircraft.icao24 === selectedAircraft.icao24)) {

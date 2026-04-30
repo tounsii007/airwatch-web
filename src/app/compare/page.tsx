@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { NeonText } from '@/components/ui/NeonText';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { useFlightStore } from '@/lib/stores/flightStore';
+import { PageContainer, FadeIn, ScaleIn } from '@/components/ui';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
-import { formatAltitude, formatSpeed, haversineDistance } from '@/lib/utils';
+import { haversineDistance } from '@/lib/utils';
 import { resolveAirline } from '@/lib/data/airlines';
-import { airportCity, airportCoords } from '@/lib/data/airports';
+import { airportCoords } from '@/lib/data/airports';
 import { t } from '@/lib/i18n/translations';
 import type { AircraftState } from '@/lib/types';
-import { Search, ArrowLeftRight, Plane } from 'lucide-react';
+import { Search, ArrowLeftRight } from 'lucide-react';
 
 function ComparisonRow({ label, valueA, valueB, unit, higherIsBetter = true }: {
   label: string; valueA: number | null; valueB: number | null; unit?: string; higherIsBetter?: boolean;
@@ -91,7 +91,7 @@ function FlightPicker({ value, onSelect, aircraftMap, language }: {
 
 export default function ComparePage() {
   const { aircraftMap, startPolling } = useFlightStore();
-  const { altitudeUnit, speedUnit, language } = useSettingsStore();
+  const { language } = useSettingsStore();
   const [flightA, setFlightA] = useState<AircraftState | null>(null);
   const [flightB, setFlightB] = useState<AircraftState | null>(null);
 
@@ -113,28 +113,38 @@ export default function ComparePage() {
   const distB = getDistance(flightB);
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="text-center py-3">
-        <NeonText text="COMPARE" size="text-xl" />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <FlightPicker value={flightA} onSelect={setFlightA} aircraftMap={aircraftMap} language={language} />
-        <FlightPicker value={flightB} onSelect={setFlightB} aircraftMap={aircraftMap} language={language} />
-      </div>
+    <PageContainer
+      maxWidth="3xl"
+      title="Compare Flights"
+      subtitle={
+        flightA && flightB ? (
+          <span className="badge badge-success">2 flights · ready to compare</span>
+        ) : (
+          <span className="badge">{flightA || flightB ? '1' : '0'}/2 selected</span>
+        )
+      }
+    >
+      <FadeIn>
+        <div className="grid grid-cols-2 gap-3">
+          <FlightPicker value={flightA} onSelect={setFlightA} aircraftMap={aircraftMap} language={language} />
+          <FlightPicker value={flightB} onSelect={setFlightB} aircraftMap={aircraftMap} language={language} />
+        </div>
+      </FadeIn>
 
       {flightA && flightB && (
-        <GlassPanel className="p-4 space-y-1">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="font-[var(--font-heading)] text-sm font-bold text-[var(--primary)]">{flightA.callsign}</span>
-            <ArrowLeftRight size={14} className="text-[var(--text-muted)]" />
-            <span className="font-[var(--font-heading)] text-sm font-bold text-[var(--accent)]">{flightB.callsign}</span>
-          </div>
-          <ComparisonRow label={t('alt_label', language)} valueA={altA} valueB={altB} unit=" ft" />
-          <ComparisonRow label={t('spd_label', language)} valueA={spdA} valueB={spdB} unit=" kts" />
-          <ComparisonRow label="DISTANCE" valueA={distA} valueB={distB} unit=" km" higherIsBetter={false} />
-        </GlassPanel>
+        <ScaleIn delay={120}>
+          <GlassPanel className="p-4 space-y-1 mt-4">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <span className="font-[var(--font-heading)] text-sm font-bold text-[var(--primary-bright)]">{flightA.callsign}</span>
+              <ArrowLeftRight size={14} className="text-[var(--text-muted)]" />
+              <span className="font-[var(--font-heading)] text-sm font-bold text-[var(--accent)]">{flightB.callsign}</span>
+            </div>
+            <ComparisonRow label={t('alt_label', language)} valueA={altA} valueB={altB} unit=" ft" />
+            <ComparisonRow label={t('spd_label', language)} valueA={spdA} valueB={spdB} unit=" kts" />
+            <ComparisonRow label="DISTANCE" valueA={distA} valueB={distB} unit=" km" higherIsBetter={false} />
+          </GlassPanel>
+        </ScaleIn>
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { NeonText } from '@/components/ui/NeonText';
 import { t } from '@/lib/i18n/translations';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
@@ -12,6 +11,7 @@ import { CargoSearch } from '@/app/cargo/CargoSearch';
 import { CargoStatsRow } from '@/app/cargo/CargoStatsRow';
 import { filterCargo, isCargoFlight, type CargoStatusFilter } from '@/app/cargo/cargoFilter';
 import { computeCargoStats } from '@/app/cargo/cargoStats';
+import { PageContainer, FadeIn, CountUp } from '@/components/ui';
 
 function byAltitudeDesc(a: AircraftState, b: AircraftState): number {
   return (b.baroAltitude ?? 0) - (a.baroAltitude ?? 0);
@@ -42,21 +42,41 @@ export default function CargoPage() {
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="text-center py-3">
-        <NeonText text={t('cargo_tracking', language)} size="text-xl" />
+    <PageContainer
+      maxWidth="3xl"
+      title={t('cargo_tracking', language)}
+      subtitle={
+        cargoFlights.length > 0 ? (
+          <span className="badge badge-info">
+            <CountUp value={cargoFlights.length} /> cargo aircraft
+          </span>
+        ) : null
+      }
+    >
+      <div className="space-y-4">
+        <FadeIn>
+          <CargoStatsRow
+            stats={stats}
+            filter={statusFilter}
+            onFilter={setStatusFilter}
+            language={language}
+          />
+        </FadeIn>
+        <FadeIn delay={50}>
+          <CargoSearch value={search} onChange={setSearch} language={language} />
+        </FadeIn>
+        <FadeIn delay={100}>
+          <CargoList
+            flights={filtered}
+            totalLoaded={aircraftMap.size > 0}
+            hasSearch={Boolean(search)}
+            altitudeUnit={altitudeUnit}
+            speedUnit={speedUnit}
+            language={language}
+            onTrack={handleTrack}
+          />
+        </FadeIn>
       </div>
-      <CargoStatsRow stats={stats} filter={statusFilter} onFilter={setStatusFilter} language={language} />
-      <CargoSearch value={search} onChange={setSearch} language={language} />
-      <CargoList
-        flights={filtered}
-        totalLoaded={aircraftMap.size > 0}
-        hasSearch={Boolean(search)}
-        altitudeUnit={altitudeUnit}
-        speedUnit={speedUnit}
-        language={language}
-        onTrack={handleTrack}
-      />
-    </div>
+    </PageContainer>
   );
 }

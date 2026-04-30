@@ -7,7 +7,7 @@ on:
 
 jobs:
   lint-test-build:
-    name: Lint, test, build
+    name: Lint, test, build, size-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,10 +23,68 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Test
+      - name: Unit + component tests (vitest)
         run: npm test
 
-      - name: Build
+      - name: Build (Next.js standalone)
         run: npm run build
         env:
-          NEXT_PUBLIC_PROXY_URL: http://localhost:8080
+          # Build-time URL doesn't matter for the bundle, just needs to
+          # be defined. CI builds same way prod compose builds.
+          NEXT_PUBLIC_PROXY_URL: http://localhost:18080
+          INTERNAL_API_URL: http://localhost:18080
+
+      # Performance budget — fails the build if a PR pushes the bundle
+      # past the limits in package.json `size-limit`. With the budget
+      # gated in CI we can't accidentally ship a 5 MB JS payload to
+      # mobile users.
+      - name: Bundle size check
+        run: npm run size
+
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    # Run E2E in a dedicated job so a flaky test doesn't block the unit
+    # pipeline. `needs:` is intentionally omitted — both can run in
+    # parallel, faster turnaround on PRs.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      # Spin up the airwatch-api stack via docker compose. Tests assume
+      # the full stack is available at localhost:13000 (nginx ingress).
+      # Without the api the Playwright fixtures auto-skip backend-
+      # dependent assertions via the `apiAvailable` helper.
+      - name: Start backend stack
+        working-directory: ../airwatch
+        run: |
+          if [ -f docker-compose.yml ]; then
+            cp .env.example .env
+            docker compose up -d --wait postgres api nginx web || true
+            # Give the stack ~30 s to settle. CI runners are slow.
+            timeout 60 bash -c 'until curl -sf http://localhost:13000/ > /dev/null; do sleep 2; done' || true
+          fi
+        continue-on-error: true
+
+      - name: Run E2E
+        run: npm run test:e2e
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:13000
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

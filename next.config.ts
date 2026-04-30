@@ -1,4 +1,12 @@
 import type { NextConfig } from "next";
+import bundleAnalyzer from '@next/bundle-analyzer';
+
+// `ANALYZE=true npm run build` opens a treemap of the JS bundle in
+// the default browser. Use it to find unexpectedly-large deps before
+// the size-limit CI gate catches them.
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 // The backend's WEB port — see airwatch-api/MultiPortServerConfig. Default
 // is 18080 (NOT Spring's conventional 8080). Override with NEXT_PUBLIC_PROXY_URL
@@ -42,75 +50,14 @@ const INTERNAL_API_URL = process.env.INTERNAL_API_URL || PROXY_TARGET;
 // HTTPS_ENABLED=true only when a TLS-terminating proxy (nginx with cert,
 // caddy, traefik) sits in front.
 // ─────────────────────────────────────────────────────────────────────────
-const isDev      = process.env.NODE_ENV !== 'production';
 const httpsReady = process.env.HTTPS_ENABLED === 'true';
 
-// CSP_REPORT_ONLY=true emits the same policy as `Content-Security-Policy-
-// Report-Only` instead of enforcing it. Browsers log every violation to
-// the console + (when set) POST a JSON report to `report-uri` — but
-// nothing is BLOCKED. Useful for staging environments to find what new
-// origins a feature is calling before tightening the enforcing policy.
-// Pair with `report-uri` set to a logging endpoint to capture violations
-// from real users; without it, only DevTools shows them.
-const cspReportOnly = process.env.CSP_REPORT_ONLY === 'true';
-
-const csp = [
-  "default-src 'self'",
-  // Cesium loads its workers + assets from cesium.com at runtime via
-  // CESIUM_BASE_URL. Keeping it in script-src and connect-src.
-  //
-  // 'unsafe-inline' is unconditional because Next.js 16 + App Router emits
-  // multiple <script>self.__next_f.push(...)</script> tags for React Server
-  // Components streaming hydration. Without 'unsafe-inline' those are
-  // blocked, React never hydrates, and any next/dynamic component sticks
-  // on its server-rendered loading fallback forever (the symptom: the
-  // map page stays on "INITIALIZING FLIGHT SYSTEMS..." indefinitely).
-  //
-  // The proper fix is per-request nonces via Next.js middleware that sets
-  // a fresh nonce on every response and propagates it to <NextScript>.
-  // That's tracked as a follow-up; in the meantime this matches what
-  // Vercel/Next-deployed apps ship by default. Auto-escaping in JSX
-  // bounds the XSS surface — if you ever interpolate raw user HTML you
-  // need to sanitise regardless of the CSP setting.
-  // No external script origins. Cesium's runtime now serves from
-  // /cesium/* (mirrored at build time, see scripts/copy-cesium-assets.mjs).
-  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  "font-src 'self' data:",
-  // EVERYTHING is now same-origin. Tiles, weather, airline logos and
-  // Cesium 3D-globe assets all flow through nginx — the browser only
-  // ever talks to localhost:${WEB_PORT}. The CSP can therefore stay as
-  // strict as `'self'` for cross-origin destinations, with the usual
-  // data:/blob: relaxations for the leaflet/maplibre decoded-tile
-  // pipeline that pipes raster bytes through blob URLs internally.
-  "img-src 'self' data: blob:",
-  "worker-src 'self' blob:",
-  "child-src 'self' blob:",
-  // ws: is the WebSocket scheme token — necessary for the live flight
-  // feed (browser opens ws://localhost:13000/ws/flights, nginx upgrades
-  // and proxies to the api replicas). wss: is for HTTPS deployments.
-  // No cross-origin destinations are needed any more.
-  "connect-src 'self' ws: wss:",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'none'",
-  // upgrade-insecure-requests rewrites every http:// reference (including
-  // absolute ws://) to https/wss. Only safe when EVERY origin we talk to
-  // has a TLS endpoint — otherwise the browser refuses the connection.
-  ...(httpsReady ? ["upgrade-insecure-requests"] : []),
-].join('; ');
-
+// CSP itself moved to middleware.ts — every request gets a fresh nonce
+// that Next.js stamps on its inline scripts, replacing 'unsafe-inline'
+// with strict per-script verification. The remaining headers are
+// constant per request so they stay in next.config (faster than running
+// middleware for them).
 const securityHeaders = [
-  // Either enforce or report-only — never both at once on the same policy
-  // (the browser would still enforce, defeating the purpose of report-only).
-  // For "discover new origins without breaking the page" deploy a SECOND
-  // tighter Report-Only policy alongside this one; keeping both equal lets
-  // CSP_REPORT_ONLY toggle the entire CSP off for emergency debugging.
-  {
-    key: cspReportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy',
-    value: csp,
-  },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -216,4 +163,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

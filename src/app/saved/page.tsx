@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Pin } from 'lucide-react';
-import { NeonText } from '@/components/ui/NeonText';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
@@ -14,6 +13,7 @@ import { SavedCard } from '@/app/saved/SavedCard';
 import { Section } from '@/app/saved/Section';
 import { useSavedGroups } from '@/app/saved/useSavedGroups';
 import type { AircraftState, FavoriteItem } from '@/lib/types';
+import { PageContainer, FadeIn, Stagger } from '@/components/ui';
 
 export default function SavedPage() {
   const { items, removeFavorite, togglePin } = useFavoritesStore();
@@ -41,7 +41,7 @@ export default function SavedPage() {
   };
 
   const renderItem = (item: FavoriteItem) => (
-    <div key={item.id}>
+    <div key={item.id} className="animate-fade-up">
       <SavedCard
         item={item}
         liveData={liveOf(item)}
@@ -56,32 +56,52 @@ export default function SavedPage() {
   );
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="text-center py-3">
-        <NeonText text={t('saved', language)} size="text-xl" />
-      </div>
-
+    <PageContainer
+      maxWidth="2xl"
+      title={t('saved', language)}
+      subtitle={
+        items.length > 0 ? (
+          <span className="badge badge-info">{items.length} items</span>
+        ) : null
+      }
+    >
       {items.length === 0 ? (
-        <EmptyState language={language} />
+        <FadeIn>
+          <EmptyState language={language} />
+        </FadeIn>
       ) : (
-        <>
+        <div className="space-y-4">
           {pinned.length > 0 && (
-            <Section title={`PINNED (${pinned.length})`} icon={<Pin size={10} />} accent="warning">
-              {pinned.map(renderItem)}
-            </Section>
+            <FadeIn>
+              <Section title={`PINNED (${pinned.length})`} icon={<Pin size={10} />} accent="warning">
+                <Stagger>{pinned.map(renderItem)}</Stagger>
+              </Section>
+            </FadeIn>
           )}
           {flights.length > 0 && (
-            <Section title={`${t('flights_upper', language)} (${flights.length})`}>{flights.map(renderItem)}</Section>
+            <FadeIn delay={50}>
+              <Section title={`${t('flights_upper', language)} (${flights.length})`}>
+                <Stagger>{flights.map(renderItem)}</Stagger>
+              </Section>
+            </FadeIn>
           )}
           {airports.length > 0 && (
-            <Section title={`${t('airports', language)} (${airports.length})`}>{airports.map(renderItem)}</Section>
+            <FadeIn delay={100}>
+              <Section title={`${t('airports', language)} (${airports.length})`}>
+                <Stagger>{airports.map(renderItem)}</Stagger>
+              </Section>
+            </FadeIn>
           )}
           {airlines.length > 0 && (
-            <Section title={`${t('airlines', language)} (${airlines.length})`}>{airlines.map(renderItem)}</Section>
+            <FadeIn delay={150}>
+              <Section title={`${t('airlines', language)} (${airlines.length})`}>
+                <Stagger>{airlines.map(renderItem)}</Stagger>
+              </Section>
+            </FadeIn>
           )}
           {items.length > 5 && <BackToTop />}
-        </>
+        </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

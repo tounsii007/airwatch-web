@@ -1,31 +1,67 @@
 @import "tailwindcss";
 
-/* ═══ AirWatch Design System ═══ */
+/* ═══════════════════════════════════════════════════════════════════════
+   AirWatch Design System
+   ─────────────────────────────────────────────────────────────────────
+   Design tokens live in `:root` (dark, default) and `.light` (light theme
+   override). Component primitives below build on those tokens — never
+   hard-code a colour in a component.
+   ═══════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Dark Theme (default) */
+  /* ── Surfaces ─────────────────────────────────────────────────────── */
   --bg: #0A1628;
   --surface: #0F1D32;
   --surface-light: #1A2E48;
+
+  /* ── Brand + accents ──────────────────────────────────────────────── */
   --primary: #7A9ABF;
   --primary-dark: #4A6B8A;
+  --primary-bright: #A4C4E8;
   --accent: #D4A574;
+
+  /* ── Text ─────────────────────────────────────────────────────────── */
   --text-primary: #D0D8E4;
   --text-secondary: #8A9BB0;
   --text-muted: #4A5F78;
+
+  /* ── Semantic state ───────────────────────────────────────────────── */
   --success: #4ADE80;
   --warning: #FBBF24;
   --error: #F87171;
   --info: #60A5FA;
+
+  /* ── Glass panels ─────────────────────────────────────────────────── */
   --glass-bg: rgba(15, 29, 50, 0.8);
+  --glass-bg-strong: rgba(15, 29, 50, 0.92);
   --glass-border: rgba(122, 154, 191, 0.2);
+  --glass-border-strong: rgba(122, 154, 191, 0.4);
   --glass-blur: 14px;
+
+  /* ── Aircraft altitude palette ────────────────────────────────────── */
   --alt-low: #4ADE80;
   --alt-med: #FBBF24;
   --alt-high: #E879A8;
   --ground: #6B7280;
+
+  /* ── Type scale ───────────────────────────────────────────────────── */
   --font-heading: 'Orbitron', monospace;
   --font-body: 'Rajdhani', sans-serif;
+
+  /* ── Elevation (dark-mode glow shadows) ───────────────────────────── */
+  --elev-1: 0 1px 3px rgba(0, 0, 0, 0.30), 0 0 0 1px var(--glass-border);
+  --elev-2: 0 4px 12px rgba(0, 0, 0, 0.40), 0 0 0 1px var(--glass-border-strong),
+            0 0 24px rgba(122, 154, 191, 0.05);
+  --elev-3: 0 12px 32px rgba(0, 0, 0, 0.50), 0 0 0 1px var(--glass-border-strong),
+            0 0 48px rgba(122, 154, 191, 0.08);
+
+  /* ── Motion timing (centralised so animations feel coherent) ──────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
 }
 
 .light {
@@ -34,6 +70,7 @@
   --surface-light: #F8FAFC;
   --primary: #0062A0;
   --primary-dark: #004A7A;
+  --primary-bright: #1A8AD9;
   --accent: #B07D4F;
   --text-primary: #111827;
   --text-secondary: #4B5563;
@@ -43,12 +80,17 @@
   --error: #DC2626;
   --info: #2563EB;
   --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-bg-strong: rgba(255, 255, 255, 1);
   --glass-border: rgba(0, 0, 0, 0.12);
+  --glass-border-strong: rgba(0, 0, 0, 0.20);
   --glass-blur: 10px;
   --alt-low: #16A34A;
   --alt-med: #D97706;
   --alt-high: #DB2777;
   --ground: #6B7280;
+  --elev-1: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --elev-2: 0 4px 12px rgba(0, 0, 0, 0.10);
+  --elev-3: 0 12px 32px rgba(0, 0, 0, 0.15);
 }
 
 @theme inline {
@@ -74,19 +116,174 @@ body {
   color: var(--text-primary);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+
+  /* Subtle ambient gradient mesh — adds depth without distracting from
+     content. Two soft radial gradients positioned off-screen so they
+     bleed into the viewport. Pure CSS = zero runtime cost. Dark mode
+     only; light mode gets a flat surface. */
+  background-image:
+    radial-gradient(ellipse 1200px 800px at 15% -10%, rgba(122, 154, 191, 0.08), transparent 60%),
+    radial-gradient(ellipse 1000px 700px at 85% 110%, rgba(212, 165, 116, 0.05), transparent 60%);
+  background-attachment: fixed;
+}
+
+.light body {
+  background-image: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Glass panels — three elevation tiers
+   ─────────────────────────────────────────────────────────────────────
+   Use .glass-panel as the default. .glass-panel-elevated for cards that
+   need to pop (e.g. selected state). .glass-panel-floating for modals
+   and the topmost layer (dropdowns, tooltips, popovers).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.glass-panel,
+.glass-panel-elevated,
+.glass-panel-floating {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  transition:
+    box-shadow var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+
+.glass-panel { box-shadow: var(--elev-1); }
+.glass-panel-elevated { box-shadow: var(--elev-2); }
+.glass-panel-floating  {
+  background: var(--glass-bg-strong);
+  box-shadow: var(--elev-3);
+  border-color: var(--glass-border-strong);
+}
+
+/* Hover-lift for interactive panels — only when explicitly opt-in via
+   `.interactive` so static panels (legend, info readouts) don't bounce. */
+.glass-panel.interactive:hover,
+.glass-panel-elevated.interactive:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--elev-2);
+  border-color: var(--glass-border-strong);
+}
+
+.glass-panel.interactive:active,
+.glass-panel-elevated.interactive:active {
+  transform: translateY(0);
+  transition-duration: 80ms;
+}
+
+/* Subtle internal sheen on hover — pure CSS gradient overlay that
+   travels left-to-right. GPU-accelerated transform-only animation. */
+.glass-panel.shimmer {
+  position: relative;
   overflow: hidden;
 }
 
-/* ═══ Glass Panel ═══ */
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  border-radius: 14px;
+.glass-panel.shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.04) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform var(--duration-slow) var(--ease-out);
+  pointer-events: none;
 }
 
-/* ═══ Neon Text Glow ═══ */
+.glass-panel.shimmer:hover::before {
+  transform: translateX(100%);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Buttons — three variants × hover/active/focus states
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.btn,
+.btn-primary,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.btn {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
+}
+
+.btn:hover {
+  background: var(--surface-light);
+  border-color: var(--glass-border-strong);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  box-shadow: 0 4px 12px rgba(122, 154, 191, 0.25);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(122, 154, 191, 0.35);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+}
+
+.btn:active,
+.btn-primary:active,
+.btn-ghost:active {
+  transform: translateY(0);
+  transition-duration: 60ms;
+}
+
+.btn:disabled,
+.btn-primary:disabled,
+.btn-ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Text effects
+   ═══════════════════════════════════════════════════════════════════════ */
+
 .neon-text {
   font-family: var(--font-heading);
   text-shadow:
@@ -100,34 +297,204 @@ body {
   color: var(--primary) !important;
 }
 
-/* Light mode glass panels — stronger borders and shadow */
-.light .glass-panel {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary-bright) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
-/* Light mode bottom nav */
-.light nav.fixed {
-  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.06);
+/* Numeric tabular display — fixed-width digits so live counters don't
+   jiggle as values change. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
-/* Light mode scrollbar */
-.light ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
+/* ═══════════════════════════════════════════════════════════════════════
+   Stat cards — used on /dashboard and /stats
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.stat-card {
+  position: relative;
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+  transition: box-shadow var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out),
+              border-color var(--duration-base) var(--ease-out);
 }
 
-/* ═══ Scrollbar ═══ */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
-  border-radius: 2px;
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: linear-gradient(180deg, var(--stat-accent, var(--primary)), transparent);
+  opacity: 0.6;
+  transition: opacity var(--duration-base) var(--ease-out);
 }
 
-/* ═══ Animations ═══ */
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--elev-2);
+  border-color: var(--glass-border-strong);
+}
+
+.stat-card:hover::before { opacity: 1; }
+
+.stat-card-value {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.875rem;
+  line-height: 1.1;
+  color: var(--primary-bright);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-card-label {
+  font-family: var(--font-heading);
+  font-size: 0.625rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-top: 0.5rem;
+}
+
+/* ── Rich variant ────────────────────────────────────────────────────
+   Adds a corner radial glow keyed to `--stat-glow` (set inline by the
+   StatCard component), a larger value with subtle text-shadow tint,
+   and a soft icon halo. The base `.stat-card` styles still apply —
+   `.stat-card-rich` only layers extras on top so unstyled call-sites
+   don't regress. */
+.stat-card-rich {
+  padding: 1.25rem 1.25rem 1.1rem;
+}
+
+.stat-card-rich::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--stat-glow, transparent);
+  opacity: 0.9;
+  pointer-events: none;
+  transition: opacity var(--duration-base) var(--ease-out);
+  z-index: 0;
+}
+
+.stat-card-rich:hover::after { opacity: 1; }
+
+.stat-card-value-rich {
+  font-size: 2.25rem;          /* 36px — bigger than the base 30px */
+  line-height: 1;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.stat-card-value-number {
+  display: inline-flex;
+  align-items: baseline;
+  /* Subtle vertical sheen on the number itself — non-zero values get a
+     gentle text-shadow tint that picks up the card's accent colour. */
+  text-shadow: 0 0 24px color-mix(in srgb, var(--stat-accent, var(--primary-bright)) 25%, transparent);
+  transition: text-shadow var(--duration-base) var(--ease-out);
+}
+
+.stat-card-value-unit {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 0.25rem;
+  letter-spacing: 0.04em;
+}
+
+/* Icon halo — a soft circular badge tinted by the card's accent. The
+   colours come from the inline style (so colour-mix can reference the
+   per-card status var); we only own the geometry + spring on hover. */
+.stat-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  transition: transform var(--duration-base) var(--ease-spring);
+}
+
+.stat-card:hover .stat-card-icon {
+  transform: translateY(-1px) scale(1.04);
+}
+
+/* Light-mode tweak — the corner glow can wash out white surfaces a
+   touch too much, so dial the opacity down. */
+.light .stat-card-rich::after { opacity: 0.6; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Badges — small pill-shaped status indicators
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(122, 154, 191, 0.10);
+  color: var(--primary-bright);
+  border: 1px solid rgba(122, 154, 191, 0.20);
+}
+
+.badge-success { background: rgba(74, 222, 128, 0.10); color: var(--success); border-color: rgba(74, 222, 128, 0.25); }
+.badge-warning { background: rgba(251, 191, 36, 0.10); color: var(--warning); border-color: rgba(251, 191, 36, 0.25); }
+.badge-error   { background: rgba(248, 113, 113, 0.10); color: var(--error);   border-color: rgba(248, 113, 113, 0.25); }
+.badge-info    { background: rgba(96, 165, 250, 0.10); color: var(--info);    border-color: rgba(96, 165, 250, 0.25); }
+
+.badge-dot::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Skeleton loaders — replaces spinner-spinning while data loads
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface) 0%,
+    var(--surface-light) 50%,
+    var(--surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Animations
+   ═══════════════════════════════════════════════════════════════════════ */
+
 @keyframes pulse-glow {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
@@ -143,16 +510,19 @@ body {
   to { transform: translateY(0); opacity: 1; }
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 1.5s ease-in-out infinite;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.animate-radar {
-  animation: radar-sweep 6s linear infinite;
+@keyframes fade-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
+@keyframes scale-in {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 @keyframes squawk-pulse {
@@ -160,15 +530,57 @@ body {
   50% { transform: scale(1.5); opacity: 0; }
 }
 
-/* ═══ Leaflet Overrides ═══ */
+@keyframes ring-pulse {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+.animate-pulse-glow { animation: pulse-glow 1.5s ease-in-out infinite; }
+.animate-radar { animation: radar-sweep 6s linear infinite; }
+.animate-slide-up { animation: slide-up var(--duration-slow) var(--ease-out); }
+.animate-fade-in { animation: fade-in var(--duration-base) var(--ease-out) both; }
+.animate-fade-up { animation: fade-up var(--duration-slow) var(--ease-out) both; }
+.animate-scale-in { animation: scale-in var(--duration-base) var(--ease-spring) both; }
+
+/* Stagger helpers — N children get progressively delayed entry. Kept to
+   12 because beyond that the cumulative delay feels sluggish; if a list
+   has > 12 items use virtualisation instead. */
+.stagger > *:nth-child(1)  { animation-delay:   0ms; }
+.stagger > *:nth-child(2)  { animation-delay:  40ms; }
+.stagger > *:nth-child(3)  { animation-delay:  80ms; }
+.stagger > *:nth-child(4)  { animation-delay: 120ms; }
+.stagger > *:nth-child(5)  { animation-delay: 160ms; }
+.stagger > *:nth-child(6)  { animation-delay: 200ms; }
+.stagger > *:nth-child(7)  { animation-delay: 240ms; }
+.stagger > *:nth-child(8)  { animation-delay: 280ms; }
+.stagger > *:nth-child(9)  { animation-delay: 320ms; }
+.stagger > *:nth-child(10) { animation-delay: 360ms; }
+.stagger > *:nth-child(11) { animation-delay: 400ms; }
+.stagger > *:nth-child(12) { animation-delay: 440ms; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Scrollbar
+   ═══════════════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 3px;
+  transition: background var(--duration-base) var(--ease-out);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--glass-border-strong); }
+.light ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Leaflet overrides
+   ═══════════════════════════════════════════════════════════════════════ */
+
 .leaflet-container {
   background: var(--bg) !important;
   font-family: var(--font-body);
 }
 
-/* Map tile dark filter is applied inline via MapView.tsx based on mapStyle */
-
-/* Airport IATA labels — transparent background, no bubble */
 .leaflet-tooltip.airport-label {
   background: none !important;
   border: none !important;
@@ -176,10 +588,9 @@ body {
   padding: 0 !important;
   margin: 0 !important;
 }
+
 .leaflet-tooltip.airport-label::before,
-.leaflet-tooltip.airport-label::after {
-  display: none !important;
-}
+.leaflet-tooltip.airport-label::after { display: none !important; }
 
 .leaflet-control-attribution {
   background: rgba(15, 29, 50, 0.7) !important;
@@ -187,9 +598,7 @@ body {
   font-size: 9px !important;
 }
 
-.leaflet-control-attribution a {
-  color: var(--primary) !important;
-}
+.leaflet-control-attribution a { color: var(--primary) !important; }
 
 .aircraft-tooltip {
   background: transparent !important;
@@ -198,6 +607,67 @@ body {
   padding: 0 !important;
 }
 
-.aircraft-tooltip::before {
-  display: none !important;
+.aircraft-tooltip::before { display: none !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Light-mode glass panel — tighter shadow + visible border
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.light .glass-panel,
+.light .glass-panel-elevated,
+.light .glass-panel-floating {
+  box-shadow: var(--elev-1);
+}
+
+.light nav.fixed {
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Reduced motion
+   ─────────────────────────────────────────────────────────────────────
+   Users with `prefers-reduced-motion: reduce` (vestibular disorders,
+   motion sickness, attention focus) get every non-essential animation
+   stripped to a static state. Essential motion — Leaflet pan tween —
+   stays because it's part of map navigation.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .glass-panel.shimmer::before { display: none; }
+
+  /* Keep Leaflet's pan/zoom transforms responsive — those are
+     navigation, not decoration. */
+  .leaflet-pane,
+  .leaflet-tile-container,
+  .leaflet-marker-icon {
+    animation: none !important;
+    transition: transform 200ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Focus-visible
+   ─────────────────────────────────────────────────────────────────────
+   Keyboard users only — mouse clicks don't trigger the ring (avoids
+   the "ugly outline on click" complaint). All interactive elements
+   share the same ring colour so the user always knows what's focused.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Selection highlight matches the brand. */
+::selection {
+  background: var(--primary);
+  color: var(--bg);
 }
