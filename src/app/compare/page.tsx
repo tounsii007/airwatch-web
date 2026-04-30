@@ -42,9 +42,12 @@ function ComparisonRow({ label, valueA, valueB, unit, higherIsBetter = true }: {
   );
 }
 
-function FlightPicker({ value, onSelect, aircraftMap, language }: {
-  value: AircraftState | null; onSelect: (ac: AircraftState) => void;
-  aircraftMap: Map<string, AircraftState>; language: import('@/lib/types').AppLanguage;
+function FlightPicker({ value, onSelect, onClear, aircraftMap, language }: {
+  value: AircraftState | null;
+  onSelect: (ac: AircraftState) => void;
+  onClear: () => void;
+  aircraftMap: Map<string, AircraftState>;
+  language: import('@/lib/types').AppLanguage;
 }) {
   const [search, setSearch] = useState('');
   const results = useMemo(() => {
@@ -67,7 +70,7 @@ function FlightPicker({ value, onSelect, aircraftMap, language }: {
         <div className="font-[var(--font-heading)] text-lg font-bold text-[var(--primary)]">{value.callsign ?? value.icao24}</div>
         {info && <div className="text-xs text-[var(--text-secondary)]">{info.name}</div>}
         {value.depIata && value.arrIata && <div className="text-xs text-[var(--text-muted)] mt-1">{value.depIata} → {value.arrIata}</div>}
-        <button onClick={() => onSelect(null as unknown as AircraftState)} className="text-[9px] text-[var(--error)] mt-2 cursor-pointer">{t('remove', language)}</button>
+        <button onClick={onClear} className="text-[9px] text-[var(--error)] mt-2 cursor-pointer">{t('remove', language)}</button>
       </GlassPanel>
     );
   }
@@ -126,8 +129,20 @@ export default function ComparePage() {
     >
       <FadeIn>
         <div className="grid grid-cols-2 gap-3">
-          <FlightPicker value={flightA} onSelect={setFlightA} aircraftMap={aircraftMap} language={language} />
-          <FlightPicker value={flightB} onSelect={setFlightB} aircraftMap={aircraftMap} language={language} />
+          <FlightPicker
+            value={flightA}
+            onSelect={setFlightA}
+            onClear={() => setFlightA(null)}
+            aircraftMap={aircraftMap}
+            language={language}
+          />
+          <FlightPicker
+            value={flightB}
+            onSelect={setFlightB}
+            onClear={() => setFlightB(null)}
+            aircraftMap={aircraftMap}
+            language={language}
+          />
         </div>
       </FadeIn>
 

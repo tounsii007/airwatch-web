@@ -37,7 +37,7 @@ export async function fetchAirlabsFlights(fetchImpl: typeof fetch = fetch): Prom
   // Validate the envelope shape first.
   const envelope = AirlabsFlightsResponseSchema.safeParse(raw);
   if (!envelope.success) {
-    // eslint-disable-next-line no-console
+     
     console.error('[flights/api] malformed response envelope', envelope.error.issues.slice(0, 3));
     return { flights: [], error: 'schema_error' };
   }

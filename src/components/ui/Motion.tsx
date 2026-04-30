@@ -14,7 +14,7 @@
  *   * Reduced-motion: handled centrally in globals.css, not per-call.
  */
 
-import { type ReactNode } from 'react';
+import { Children, useEffect, useRef, type ReactNode } from 'react';
 
 // ── FadeIn ──────────────────────────────────────────────────────────────
 // Element fades from opacity 0 → 1 with a tiny upward shift on mount.
@@ -62,6 +62,14 @@ export function ScaleIn({
   );
 }
 
+// Beyond this, the cumulative animation delay reaches ~1 s — the human
+// eye starts perceiving the last item as "lagging" rather than
+// "staggered". Lists this long should use virtualisation (react-window
+// / TanStack Virtual) and animate only the rendered slice. The CSS
+// rule `.stagger > :nth-child(n+25)` clamps to a single delay so items
+// 25+ don't animate instantly, but they all enter together.
+const STAGGER_WARN_LIMIT = 24;
+
 // ── Stagger ─────────────────────────────────────────────────────────────
 // Wrap a list — children automatically fade-up with progressive delay
 // (handled by `.stagger` selectors in globals.css). Each child should
@@ -71,6 +79,10 @@ export function ScaleIn({
 //     <FadeIn>...</FadeIn>
 //     <FadeIn>...</FadeIn>
 //   </Stagger>
+//
+// In dev, logs a warning when the child count exceeds the per-CSS
+// limit — production builds skip the check entirely (process.env
+// branches are dead-code-eliminated by Next/Webpack).
 export function Stagger({
   children,
   className = '',
@@ -78,5 +90,22 @@ export function Stagger({
   children: ReactNode;
   className?: string;
 }) {
+  const warned = useRef(false);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return;
+    if (warned.current) return;
+    const count = Children.count(children);
+    if (count > STAGGER_WARN_LIMIT) {
+      warned.current = true;
+
+      console.warn(
+        `[Stagger] ${count} children exceeds the ${STAGGER_WARN_LIMIT}-item ` +
+        `stagger budget. Items 25+ will share the same animation-delay (no ` +
+        `cascading entry). Use virtualisation for lists this long.`,
+      );
+    }
+  }, [children]);
+
   return <div className={`stagger ${className}`}>{children}</div>;
 }

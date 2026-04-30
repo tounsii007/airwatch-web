@@ -26,13 +26,13 @@
       "vitest related --run"
     ]
   },
+  "_size_limit_note": "Gzipped because that's what users actually download — raw bytes overstate by ~3x. The bulk of the gzipped JS is the lazy-loaded Cesium chunk (~1.2 MB) for /globe; users who never visit /globe don't pay it. The total budget below is the upper bound across ALL routes — a safety net that catches creep without being so tight it forbids the 3D globe feature. The CSS bound stays raw because Tailwind output doesn't benefit much from compression and is already tiny.",
   "size-limit": [
     {
-      "name": "All JS chunks (raw)",
+      "name": "All JS chunks (gzipped)",
       "path": ".next/static/chunks/*.js",
       "limit": "2500 KB",
-      "brotli": false,
-      "gzip": false
+      "gzip": true
     },
     {
       "name": "All CSS (raw)",
@@ -55,7 +55,6 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-leaflet": "^5.0.0",
-    "resium": "^1.21.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
   },

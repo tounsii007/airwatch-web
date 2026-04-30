@@ -82,7 +82,7 @@ export function FlightReplayMap({ positions }: Props) {
     markerRef.current = L.marker([first.latitude, first.longitude], { icon }).addTo(map);
 
     // Intentional: reset playhead when the track changes. Cheap, runs once per input.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setIndex(0);
   }, [sortedPositions]);
 

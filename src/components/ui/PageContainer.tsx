@@ -16,9 +16,32 @@
  *       {results.map(r => <FadeIn key={r.id}><Card .../></FadeIn>)}
  *     </Stagger>
  *   </PageContainer>
+ *
+ * Tailwind safety note: do NOT switch the `MAX_WIDTH_CLASS` map below
+ * to a template-string lookup like `max-w-${maxWidth}`. Tailwind 4's
+ * JIT scans source files for **literal** class names — dynamic strings
+ * are silently dropped from the output CSS, and the page renders at
+ * the browser default width with no error. The literal map keeps every
+ * class statically present in source so the JIT picks them up.
  */
 
 import type { ReactNode } from 'react';
+
+type MaxWidth = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
+
+const MAX_WIDTH_CLASS: Record<MaxWidth, string> = {
+  sm: 'max-w-sm',
+  md: 'max-w-md',
+  lg: 'max-w-lg',
+  xl: 'max-w-xl',
+  '2xl': 'max-w-2xl',
+  '3xl': 'max-w-3xl',
+  '4xl': 'max-w-4xl',
+  '5xl': 'max-w-5xl',
+  '6xl': 'max-w-6xl',
+  '7xl': 'max-w-7xl',
+  full: '',
+};
 
 export function PageContainer({
   title,
@@ -32,10 +55,10 @@ export function PageContainer({
   subtitle?: ReactNode;
   actions?: ReactNode;
   children: ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
+  maxWidth?: MaxWidth;
   className?: string;
 }) {
-  const maxClass = maxWidth === 'full' ? '' : `max-w-${maxWidth}`;
+  const maxClass = MAX_WIDTH_CLASS[maxWidth];
   return (
     <div className={`relative w-full ${maxClass} mx-auto px-4 lg:px-6 pt-4 pb-8 ${className}`}>
       {(title || subtitle || actions) && (

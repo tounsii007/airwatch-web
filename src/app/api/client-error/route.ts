@@ -14,18 +14,33 @@
  *
  * Privacy: the endpoint receives ONLY the data the browser explicitly
  * sends (message, stack, url, ua, digest). No cookies, no fetch'd
- * data. Stack traces are capped at 4 KB upstream to keep cardinality
- * manageable in Loki.
+ * data.
  *
- * Rate-limit shape: rough fixed window (10 errors / IP / minute) so a
- * runaway useEffect can't DoS our log pipeline. Implemented with an
- * in-memory map — small and per-instance, but the worst case is the
- * page sees no further reports for the rest of the minute.
+ * Defense in depth — body size:
+ *   1. proxy layer caps every buffered request at 64 KB (next.config
+ *      `experimental.proxyClientMaxBodySize`).
+ *   2. We re-check Content-Length here in case the request bypassed
+ *      the proxy matcher (under /api/* the proxy is currently still
+ *      active, but if the matcher ever changes this guard prevents
+ *      regression).
+ *   3. The stack trace is truncated to MAX_STACK_BYTES post-parse.
+ *
+ * Rate-limit shape: rough fixed window per IP. Note the `MAX_PER_WINDOW`
+ * is per *replica* — with 5 API replicas behind nginx, a single IP can
+ * legitimately hit 5× this number across the fleet. Acceptable for a
+ * log sink (worst-case duplicate logs, never lost ones); a Redis-backed
+ * shared counter is the upgrade path if cross-replica accuracy ever
+ * matters here.
  */
 import { NextResponse } from 'next/server';
 
 const WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 10;
+// 16 KB — a 4 KB stack + url + ua + digest comfortably fits, but a
+// runaway loop dumping a 10 MB JSON payload doesn't.
+const MAX_BODY_BYTES = 16 * 1024;
+// Stack-trace cap (post-parse). Loki cardinality stays tractable.
+const MAX_STACK_BYTES = 4 * 1024;
 const buckets = new Map<string, { count: number; resetAt: number }>();
 
 function rateLimit(key: string): boolean {
@@ -61,31 +76,56 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, reason: 'rate_limited' }, { status: 429 });
   }
 
+  // Reject oversized bodies BEFORE buffering — a Content-Length header
+  // is mandatory for fetch/XHR POSTs from browsers, so this catches
+  // the common case cheaply. Streamed requests without Content-Length
+  // are unusual from a browser; they fall through to the post-parse
+  // guard below.
+  const declared = req.headers.get('content-length');
+  if (declared && Number(declared) > MAX_BODY_BYTES) {
+    return NextResponse.json(
+      { ok: false, reason: 'body_too_large' },
+      { status: 413 },
+    );
+  }
+
   let body: ClientErrorReport;
   try {
-    body = (await req.json()) as ClientErrorReport;
+    const text = await req.text();
+    if (text.length > MAX_BODY_BYTES) {
+      return NextResponse.json(
+        { ok: false, reason: 'body_too_large' },
+        { status: 413 },
+      );
+    }
+    body = JSON.parse(text) as ClientErrorReport;
   } catch {
     return NextResponse.json({ ok: false, reason: 'bad_json' }, { status: 400 });
   }
 
+  // Hard cap on stack regardless of what the client sent — this is a
+  // server-side invariant the log pipeline relies on.
+  const stack =
+    typeof body.stack === 'string' ? body.stack.slice(0, MAX_STACK_BYTES) : null;
+
   // Structured log line — Promtail's pipeline_stages regex extracts
   // `level` from the leading `ERROR` token and labels the stream
   // with service=web (already from docker-compose).
-   
+
   console.error(
     JSON.stringify({
       level: 'ERROR',
       kind: 'client_error',
       scope: body.scope ?? 'route',
       digest: body.digest ?? null,
-      message: body.message ?? '(no message)',
-      url: body.url ?? null,
-      ua: body.ua ?? null,
+      message: typeof body.message === 'string' ? body.message.slice(0, 1024) : '(no message)',
+      url: typeof body.url === 'string' ? body.url.slice(0, 2048) : null,
+      ua: typeof body.ua === 'string' ? body.ua.slice(0, 512) : null,
       ts: body.ts ?? Date.now(),
       ip,
       // Stack last so log readers can scan the line head and decide
       // whether to drill in.
-      stack: body.stack ?? null,
+      stack,
     }),
   );
 

@@ -56,7 +56,16 @@ export function useFlightDetailsLoader(selectedAircraft: AircraftState | null) {
     if (!selectedAircraft || !selectionKey) return;
     const controller = new AbortController();
     const reqId = ++requestIdRef.current;
-    setRefreshStatus('idle');
+    // Defer the status reset onto a microtask so the setState fires
+    // outside the synchronous effect body (avoids React 19's
+    // `react-hooks/set-state-in-effect` cascading-render warning).
+    // The guard ensures a switch-during-flight doesn't flip status
+    // back to 'idle' after a newer selection already settled.
+    queueMicrotask(() => {
+      if (!controller.signal.aborted && reqId === requestIdRef.current) {
+        setRefreshStatus('idle');
+      }
+    });
     void loadOnce(selectedAircraft, selectionKey, controller.signal, reqId);
     return () => controller.abort();
   }, [selectedAircraft, selectionKey, loadOnce]);

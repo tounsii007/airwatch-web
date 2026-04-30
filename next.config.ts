@@ -52,11 +52,11 @@ const INTERNAL_API_URL = process.env.INTERNAL_API_URL || PROXY_TARGET;
 // ─────────────────────────────────────────────────────────────────────────
 const httpsReady = process.env.HTTPS_ENABLED === 'true';
 
-// CSP itself moved to middleware.ts — every request gets a fresh nonce
-// that Next.js stamps on its inline scripts, replacing 'unsafe-inline'
-// with strict per-script verification. The remaining headers are
-// constant per request so they stay in next.config (faster than running
-// middleware for them).
+// CSP itself moved to proxy.ts — every request gets a fresh nonce that
+// Next.js stamps on its inline scripts, replacing 'unsafe-inline' with
+// strict per-script verification. The remaining headers are constant
+// per request so they stay in next.config (faster than running the
+// proxy layer for them).
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -79,6 +79,16 @@ const nextConfig: NextConfig = {
   // to ~150 MB and means the runtime container has no compiler / package
   // manager to weaponise if something gets RCE.
   output: 'standalone',
+  // Cap the per-request body Next.js buffers when the proxy runs. Default
+  // is 10 MB which is generous for our log-sink endpoints (web-vitals +
+  // client-error each ship a few KB at most). 64 KB is comfortably above
+  // the largest legitimate payload (a 4 KB stack trace + headers) but
+  // small enough that a malicious client can't tie up server memory by
+  // streaming gigabytes. Per-route handlers do their own validation on
+  // top — defense in depth.
+  experimental: {
+    proxyClientMaxBodySize: '64kb',
+  },
   images: {
     // Airline logos are now served same-origin via /logos/<size>/<iata>.png
     // (proxied by nginx to pics.avs.io). next/image's loader treats

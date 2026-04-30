@@ -96,12 +96,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Read the per-request CSP nonce that middleware.ts stamped on the
-  // request headers. Next.js auto-applies it to its own inline scripts
-  // because middleware also sets `Content-Security-Policy` on the
-  // request headers — we don't need to manually pass it to <NextScript>.
-  // Kept here in case client-side code later needs to reference it
-  // (e.g. dynamically injected scripts that should match the policy).
+  // Read the per-request CSP nonce that proxy.ts stamped on the request
+  // headers. Next.js auto-applies it to its own inline scripts because
+  // proxy also sets `Content-Security-Policy` on the request headers —
+  // we don't need to manually pass it to <NextScript>. Kept here in
+  // case client-side code later needs to reference it (e.g. dynamically
+  // injected scripts that should match the policy).
   const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   return (

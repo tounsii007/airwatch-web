@@ -9,11 +9,16 @@
  *   * requestAnimationFrame loop with cubic-out easing — matches the
  *     `--ease-out` curve used elsewhere in the design system.
  *   * Cleanup on unmount or value change cancels the in-flight rAF
- *     so we never leak callbacks.
+ *     so we never leak callbacks. A `cancelled` flag guards against
+ *     the rare race where the rAF callback has already started
+ *     executing when the cleanup fires — the callback bails before
+ *     touching React state or `fromRef`.
  *   * Locale-aware formatting via `Intl.NumberFormat` for thousands
  *     separators (1,234 in en-US, 1.234 in de-DE).
- *   * Honours `prefers-reduced-motion` — snaps directly to the new
- *     value if the user opted out of motion.
+ *   * Honours `prefers-reduced-motion` — defers to the next frame
+ *     (so the setState happens outside the synchronous effect body,
+ *     which React 19 flags via `react-hooks/set-state-in-effect`)
+ *     and snaps directly to the new value.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -38,20 +43,26 @@ export function CountUp({
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Reduced-motion users get an instant snap, but we still defer the
-    // setState onto the next frame rather than firing it synchronously
-    // inside the effect body — that avoids React's
-    // `react-hooks/set-state-in-effect` cascading-render warning while
-    // matching the rAF scheduling of the animated path below.
+    // `cancelled` is the source of truth for "this effect has been torn
+    // down". Even if a rAF callback is mid-execution when cleanup runs,
+    // it sees the flag flip and bails before any state mutation.
+    let cancelled = false;
+
     const reduced =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     if (reduced || !Number.isFinite(value)) {
+      // Defer the snap onto the next frame so the setState fires outside
+      // the synchronous effect body (avoids React 19's
+      // `react-hooks/set-state-in-effect` cascading-render warning).
       rafRef.current = requestAnimationFrame(() => {
+        if (cancelled) return;
         setDisplay(value);
         fromRef.current = value;
       });
       return () => {
+        cancelled = true;
         if (rafRef.current) cancelAnimationFrame(rafRef.current);
       };
     }
@@ -60,6 +71,7 @@ export function CountUp({
     const start = performance.now();
 
     const tick = (now: number) => {
+      if (cancelled) return;
       const t = Math.min(1, (now - start) / duration);
       const eased = easeOutCubic(t);
       const current = from + (value - from) * eased;
@@ -73,6 +85,7 @@ export function CountUp({
 
     rafRef.current = requestAnimationFrame(tick);
     return () => {
+      cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [value, duration]);

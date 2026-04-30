@@ -120,7 +120,7 @@ export type ReplayInfo = z.infer<typeof ReplayInfoSchema>;
 export function safeParse<T>(schema: z.ZodType<T>, value: unknown, label?: string): T | null {
   const result = schema.safeParse(value);
   if (!result.success) {
-    // eslint-disable-next-line no-console
+     
     console.error(`[schema:${label ?? 'unknown'}]`, result.error.issues.slice(0, 3));
     return null;
   }
@@ -145,7 +145,7 @@ export function safeParseArray<T>(
     else dropped++;
   }
   if (dropped > 0) {
-    // eslint-disable-next-line no-console
+     
     console.warn(`[schema:${label ?? 'unknown'}] dropped ${dropped} malformed entries`);
   }
   return { items, dropped };
