@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { WebVitalsReporter } from "@/components/layout/WebVitalsReporter";
 import { ServiceWorkerRegistrar } from "@/components/layout/ServiceWorkerRegistrar";
 import { CommandPaletteController } from "@/components/layout/CommandPaletteController";
+import { StatsBeacon } from "@/components/layout/StatsBeacon";
 import { DevTools } from "@/components/debug/DevTools";
 
 const orbitron = Orbitron({
@@ -118,6 +119,7 @@ export default async function RootLayout({
         <GlobalEffects />
         <ServiceWorkerRegistrar />
         <WebVitalsReporter />
+        <StatsBeacon />
         <BottomNav />
         <CommandPaletteController />
         {/* Mobile: top-bar offset (pt-11) + bottom-bar offset (pb-20).

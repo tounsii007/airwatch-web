@@ -65,7 +65,40 @@ export const config = {
   ],
 };
 
+/**
+ * Hosts that the dedicated admin ingress is reachable on. Requests to
+ * `/admin/*` arriving from these hosts are allowed; requests from any
+ * other host are rejected with 404 to make admin look invisible from
+ * the public web ingress.
+ *
+ * In docker-compose the nginx admin server listens on
+ * NGINX_ADMIN_PORT (default 13099) which gets mapped to 127.0.0.1 on
+ * the host. nginx forwards the request with the original Host header
+ * preserved — we match on `:13099` substring so any operator hostname
+ * still works.
+ */
+const ADMIN_HOST_PATTERNS = [
+  /:1?3099\b/, // dev: localhost:13099
+  /admin\./,    // prod hint: admin.airwatch.example
+];
+
 export function proxy(request: NextRequest) {
+  // ── Public-port admin gate ────────────────────────────────────────
+  // The /admin/* routes serve the operator dashboard (a fully separated
+  // route group inside this Next.js app). They MUST NOT be reachable
+  // via the public WEB_PORT — only via the admin ingress on
+  // NGINX_ADMIN_PORT. This gate enforces that at the edge: any
+  // /admin/* request whose Host: header doesn't look like the admin
+  // port gets a 404, indistinguishable from "page not found".
+  const path = request.nextUrl.pathname;
+  if (path.startsWith('/admin')) {
+    const host = request.headers.get('host') ?? '';
+    const isAdminHost = ADMIN_HOST_PATTERNS.some((rx) => rx.test(host));
+    if (!isAdminHost) {
+      return new NextResponse(null, { status: 404 });
+    }
+  }
+
   // 122-bit (UUID v4 entropy) cryptographically random nonce, base64-url
   // encoded. crypto.randomUUID is available in the Edge runtime; we
   // strip dashes so the value is shorter and remains URL-safe in headers.
