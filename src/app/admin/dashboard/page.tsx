@@ -21,8 +21,11 @@ import { HBar }        from '@/app/admin/charts/HBar';
 import { WorldMap }    from '@/app/admin/charts/WorldMap';
 import { KpiCard }     from '@/app/admin/components/KpiCard';
 import { LiveFeed }    from '@/app/admin/components/LiveFeed';
-import { LoadCurves }  from '@/app/admin/components/LoadCurves';
-import { UserCurves }  from '@/app/admin/components/UserCurves';
+import { LoadCurves }         from '@/app/admin/components/LoadCurves';
+import { UserCurves }         from '@/app/admin/components/UserCurves';
+import { CountryChart }       from '@/app/admin/components/CountryChart';
+import { ViewPopularityChart } from '@/app/admin/components/ViewPopularityChart';
+import { MapStyleChart }      from '@/app/admin/components/MapStyleChart';
 
 interface PortRow {
   port_name: string;
@@ -284,16 +287,25 @@ export default async function AdminDashboardPage() {
         </section>
       </div>
 
-      {/* ── Phase-2 teaser ────────────────────────────────────────────── */}
+      {/* ── Country + view popularity row (Phase 2) ───────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="admin-grid-2col">
+        <CountryChart />
+        <ViewPopularityChart />
+      </div>
+
+      {/* ── Map-style usage (Phase 2) ─────────────────────────────────── */}
+      <MapStyleChart />
+
+      {/* ── Phase-3 teaser ────────────────────────────────────────────── */}
       <section className="admin-card" style={{ borderStyle: 'dashed', opacity: 0.7 }}>
-        <h2>Coming in Phase 2</h2>
+        <h2>Coming in Phase 3</h2>
         <ul style={{ listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '0.5rem', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-          <li>· Geo-IP country enrichment (top-10 chart per app)</li>
-          <li>· Concurrent-user gauge (web vs mobile split)</li>
-          <li>· Daily view-popularity breakdown</li>
-          <li>· Map-style usage chart</li>
-          <li>· Critical-error rolling window</li>
-          <li>· Email alerts on instance failure</li>
+          <li>· Email alerts on instance failure with detail counts</li>
+          <li>· Critical-error rolling-window sweep + dashboard panel</li>
+          <li>· Docker stats integration for web/mobile load curves</li>
+          <li>· Watchdog for nginx / postgres / web outage emails</li>
+          <li>· Per-IP unauthorised-attempt email on threshold breach</li>
+          <li>· Multi-day country / view trend curves</li>
         </ul>
       </section>
     </div>
