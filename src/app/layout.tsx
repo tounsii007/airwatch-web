@@ -8,6 +8,7 @@ import { GlobalEffects } from "@/components/layout/GlobalEffects";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { WebVitalsReporter } from "@/components/layout/WebVitalsReporter";
 import { ServiceWorkerRegistrar } from "@/components/layout/ServiceWorkerRegistrar";
+import { CommandPaletteController } from "@/components/layout/CommandPaletteController";
 import { DevTools } from "@/components/debug/DevTools";
 
 const orbitron = Orbitron({
@@ -118,8 +119,10 @@ export default async function RootLayout({
         <ServiceWorkerRegistrar />
         <WebVitalsReporter />
         <BottomNav />
-        {/* Desktop: offset for sidebar (lg:pl-20), Mobile: offset for bottom bar (pb-20) */}
-        <main className="h-full overflow-auto pb-20 lg:pb-0 lg:pt-12">
+        <CommandPaletteController />
+        {/* Mobile: top-bar offset (pt-11) + bottom-bar offset (pb-20).
+            Desktop: top-bar offset (lg:pt-12), no bottom bar. */}
+        <main className="h-full overflow-auto pt-11 pb-20 lg:pt-12 lg:pb-0">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
         <DevTools />

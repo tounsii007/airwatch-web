@@ -78,8 +78,11 @@ export default function MapPage() {
   }, [selectedAircraft, recordView]);
 
   return (
-    /* Map page uses full viewport — dvh for mobile browser address bar */
-    <div className="w-full fixed top-0 left-0 right-0 bottom-0 lg:pt-12">
+    /* Map page uses full viewport — dvh for mobile browser address bar.
+       Top offset accommodates the mobile top-bar (44 px) and desktop
+       header (48 px); bottom offset on mobile leaves room for the
+       bottom navigation. */
+    <div className="w-full fixed top-11 lg:top-12 left-0 right-0 bottom-16 lg:bottom-0">
       <MapView />
       <SquawkAlertBanner />
       <FlightDetailsPanel />

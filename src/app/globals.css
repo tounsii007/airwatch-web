@@ -21,9 +21,14 @@
   --accent: #D4A574;
 
   /* ── Text ─────────────────────────────────────────────────────────── */
+  /* Lifted from 4A5F78 (≈ 3.8:1 on glass) to 6B85A4 (≈ 4.7:1) so muted
+     text passes WCAG AA on the dark glass background. The old value
+     showed up in screenshots as "almost-invisible grey" — the new one
+     reads cleanly without losing the visual hierarchy of muted vs
+     primary copy. */
   --text-primary: #D0D8E4;
-  --text-secondary: #8A9BB0;
-  --text-muted: #4A5F78;
+  --text-secondary: #A2B3C8;
+  --text-muted: #6B85A4;
 
   /* ── Semantic state ───────────────────────────────────────────────── */
   --success: #4ADE80;
@@ -73,8 +78,8 @@
   --primary-bright: #1A8AD9;
   --accent: #B07D4F;
   --text-primary: #111827;
-  --text-secondary: #4B5563;
-  --text-muted: #6B7280;
+  --text-secondary: #475569;
+  --text-muted: #5B6B7F;
   --success: #16A34A;
   --warning: #D97706;
   --error: #DC2626;
@@ -310,6 +315,49 @@ body {
 .tabular {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Typography scale
+   ─────────────────────────────────────────────────────────────────────
+   Five named sizes, every one ≥ 11 px so even our densest UI stays
+   legible on a phone in daylight. Use these instead of bespoke
+   `text-[Npx]` arbitrary values — one place to retune the scale.
+
+     .t-meta   11 px  ─ smallest secondary text (timestamps, captions)
+     .t-label  12 px  ─ form labels, badge text, schedule rows
+     .t-body   14 px  ─ body copy, list items
+     .t-value  16 px  ─ numerical values that the eye must hit fast
+     .t-display 24 px ─ section heads inside a page
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.t-meta    { font-size: 0.6875rem; line-height: 1.1; letter-spacing: 0.05em; }   /* 11px */
+.t-label   { font-size: 0.75rem;   line-height: 1.2; letter-spacing: 0.04em; }   /* 12px */
+.t-body    { font-size: 0.875rem;  line-height: 1.4; }                            /* 14px */
+.t-value   { font-size: 1rem;      line-height: 1.2; font-weight: 600; }          /* 16px */
+.t-display { font-size: 1.5rem;    line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; }
+
+/* Heading-font variant of each size — opt-in via .t-mono. */
+.t-mono { font-family: var(--font-heading); }
+
+/* ── Minimum-size guard ──────────────────────────────────────────────
+   Legacy code uses `text-[8px]`, `text-[9px]`, `text-[10px]`
+   arbitrary-value Tailwind classes in 60+ places. Sweeping them all
+   manually is risky (silent layout breaks). Instead we enforce a
+   floor here: any of those classes renders at 11 px. New code should
+   use the .t-meta / .t-label scale above; this rule is a transitional
+   safety net.
+
+   Why this works without `!important`: Tailwind's arbitrary-value
+   classes generate a single property at the same specificity as a
+   selector with one class. By scoping our override under `body` we
+   add specificity (1 element + 1 attr) and win the cascade — no
+   `!important` keyword, no override-chain debt. */
+body [class*="text-[7px]"],
+body [class*="text-[8px]"],
+body [class*="text-[9px]"],
+body [class*="text-[10px]"] {
+  font-size: 0.6875rem; /* 11 px — matches .t-meta */
 }
 
 /* ═══════════════════════════════════════════════════════════════════════

@@ -26,14 +26,44 @@ function delayValue(flight: AirportScheduleFlight, key: Props['timeKey']): numbe
   return key === 'dep' ? flight.depDelayed : flight.arrDelayed;
 }
 
-function Row({ flight, peer, timeKey }: { flight: AirportScheduleFlight; peer: Props['peer']; timeKey: Props['timeKey'] }) {
+/** Single schedule row. Three columns:
+ *    flight code | peer airport | time (+optional delay chip)
+ *  Sized so each column has predictable width — eye sweeps right-to-
+ *  left in two beats instead of needing to parse a wall of identical
+ *  text. */
+function Row({
+  flight,
+  peer,
+  timeKey,
+}: {
+  flight: AirportScheduleFlight;
+  peer: Props['peer'];
+  timeKey: Props['timeKey'];
+}) {
   const delay = delayValue(flight, timeKey);
+  const code = flight.flightIata || flight.flightIcao;
+  const peerCode = peerIata(flight, peer);
   return (
-    <div className="flex items-center justify-between text-[10px]">
-      <span className="font-[var(--font-heading)] font-bold text-[var(--primary)]">{flight.flightIata || flight.flightIcao}</span>
-      <span className="text-[var(--text-secondary)]">{peerIata(flight, peer)}</span>
-      <span className="text-[var(--text-muted)]">{formatTimeShort(timeValue(flight, timeKey))}</span>
-      {(delay ?? 0) > 0 && <span className="text-[var(--error)] text-[8px]">+{delay}</span>}
+    <div className="grid grid-cols-[5rem_4rem_1fr] items-center gap-2 t-label">
+      <span className="t-mono font-bold text-[var(--primary-bright)] truncate" title={code}>
+        {code}
+      </span>
+      <span className="text-[var(--text-secondary)] truncate" title={peerCode}>
+        {peerCode}
+      </span>
+      <span className="flex items-center justify-end gap-1.5 tabular">
+        <span className="text-[var(--text-primary)]">
+          {formatTimeShort(timeValue(flight, timeKey))}
+        </span>
+        {(delay ?? 0) > 0 && (
+          <span
+            className="t-meta t-mono px-1 py-px rounded bg-[var(--error)]/15 text-[var(--error)]"
+            aria-label={`delayed ${delay} minutes`}
+          >
+            +{delay}
+          </span>
+        )}
+      </span>
     </div>
   );
 }
@@ -42,17 +72,22 @@ function Row({ flight, peer, timeKey }: { flight: AirportScheduleFlight; peer: P
 export function ScheduleList({ icon, label, flights, peer, timeKey }: Props) {
   return (
     <div>
-      <div className="flex items-center gap-1 mb-1.5">
+      <div className="flex items-center gap-1.5 mb-1.5">
         {icon}
-        <span className="text-[9px] font-[var(--font-heading)] text-[var(--text-muted)] tracking-widest">
-          {label} ({flights.length})
+        <span className="t-meta t-mono font-bold text-[var(--text-secondary)] tracking-widest uppercase">
+          {label}
+        </span>
+        <span className="t-meta t-mono text-[var(--text-muted)] tabular">
+          ({flights.length})
         </span>
       </div>
       <div className="space-y-1">
         {flights.slice(0, 5).map((f, i) => (
           <Row key={`${f.flightIata}-${i}`} flight={f} peer={peer} timeKey={timeKey} />
         ))}
-        {flights.length === 0 && <span className="text-[9px] text-[var(--text-muted)]">--</span>}
+        {flights.length === 0 && (
+          <span className="t-meta text-[var(--text-muted)]">— none scheduled</span>
+        )}
       </div>
     </div>
   );
