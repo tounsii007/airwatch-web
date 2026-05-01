@@ -28,7 +28,8 @@ import { UserCurves }           from '@/app/admin/dashboard/sections/UserCurves'
 import { CountryChart }         from '@/app/admin/dashboard/sections/CountryChart';
 import { ViewPopularityChart }  from '@/app/admin/dashboard/sections/ViewPopularityChart';
 import { MapStyleChart }        from '@/app/admin/dashboard/sections/MapStyleChart';
-import { Phase3Teaser }         from '@/app/admin/dashboard/sections/Phase3Teaser';
+import { AlertsPanel }          from '@/app/admin/dashboard/sections/AlertsPanel';
+import { CriticalErrorPanel }   from '@/app/admin/dashboard/sections/CriticalErrorPanel';
 
 export default async function AdminDashboardPage() {
   const { ports, portsWithHistory, blocked, recent } = await fetchDashboardData();
@@ -94,7 +95,14 @@ export default async function AdminDashboardPage() {
 
       <MapStyleChart />
 
-      <Phase3Teaser />
+      {/* ── Alerts + critical errors row (Phase 3) ────────────────────── */}
+      <div
+        style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}
+        className="admin-grid-2col"
+      >
+        <AlertsPanel />
+        <CriticalErrorPanel />
+      </div>
     </div>
   );
 }
