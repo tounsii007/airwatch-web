@@ -35,9 +35,11 @@ jobs:
           INTERNAL_API_URL: http://localhost:18080
 
       # Performance budget — fails the build if a PR pushes the bundle
-      # past the limits in package.json `size-limit`. With the budget
-      # gated in CI we can't accidentally ship a 5 MB JS payload to
-      # mobile users.
+      # past the budgets in scripts/check-bundle-budget.mjs. The script
+      # splits chunks into "core" (every-user code) and "lazy 3D"
+      # (Cesium / deck.gl, gated behind /globe and /replay/3d) so a
+      # routine Cesium update doesn't trip CI but a regression in the
+      # shared shell or a accidental static import of a heavy lib does.
       - name: Bundle size check
         run: npm run size
 
