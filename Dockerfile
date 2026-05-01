@@ -77,7 +77,11 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
+# 127.0.0.1 not localhost — alpine's musl resolver tries ::1 first for
+# `localhost`, but Next.js binds IPv4-only via HOSTNAME=0.0.0.0 above,
+# so the IPv6 attempt gets "connection refused" and the container is
+# flagged unhealthy even when the app is fine.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget -qO- http://localhost:${PORT}/ || exit 1
+  CMD wget -qO- http://127.0.0.1:${PORT}/ || exit 1
 
 CMD ["node", "server.js"]
