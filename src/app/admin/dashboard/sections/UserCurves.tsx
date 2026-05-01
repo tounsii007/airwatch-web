@@ -6,8 +6,9 @@
  * which returns http_sessions + ws_sessions per minute.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { LineChart, type Series } from '@/app/admin/charts/LineChart';
-import { TimeRangePicker, RANGES } from '@/app/admin/components/TimeRangePicker';
+import { LineChart, type Series } from '@/app/admin/shared/charts/LineChart';
+import { TimeRangePicker, RANGES } from '@/app/admin/shared/components/TimeRangePicker';
+import { AppToggle, type App } from '@/app/admin/shared/components/AppToggle';
 
 interface UserRow {
   bucket_at: string;
@@ -18,7 +19,7 @@ interface UserRow {
 
 export function UserCurves() {
   const [range, setRange]   = useState<string>('1h');
-  const [app, setApp]       = useState<'web' | 'mobile'>('web');
+  const [app, setApp]       = useState<App>('web');
   const [rows, setRows]     = useState<UserRow[] | null>(null);
   const [loading, setLoad]  = useState(false);
 
@@ -84,32 +85,7 @@ export function UserCurves() {
           </span>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-          <div role="tablist" aria-label="App" style={{ display: 'inline-flex', gap: 0, padding: 3, background: 'rgba(15, 29, 50, 0.6)', border: '1px solid var(--border)', borderRadius: 999 }}>
-            {(['web', 'mobile'] as const).map((a) => (
-              <button
-                key={a}
-                role="tab"
-                aria-selected={app === a}
-                onClick={() => setApp(a)}
-                style={{
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '4px 12px',
-                  borderRadius: 999,
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: '0.6875rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: app === a ? 'var(--bg)' : 'var(--text-muted)',
-                  background: app === a ? 'var(--accent)' : 'transparent',
-                  transition: 'background 200ms, color 200ms',
-                }}
-              >
-                {a}
-              </button>
-            ))}
-          </div>
+          <AppToggle value={app} onChange={setApp} activeColor="var(--accent)" />
           <TimeRangePicker value={range} onChange={setRange} />
         </div>
       </header>

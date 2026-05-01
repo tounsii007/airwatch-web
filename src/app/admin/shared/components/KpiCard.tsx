@@ -10,7 +10,7 @@
  * tacky-territory; the colour adapts to status (success / warning / error).
  */
 import { CountUp } from '@/components/ui';
-import { Sparkline } from '@/app/admin/charts/Sparkline';
+import { Sparkline } from '@/app/admin/shared/charts/Sparkline';
 
 type Tone = 'default' | 'success' | 'warning' | 'error' | 'info';
 

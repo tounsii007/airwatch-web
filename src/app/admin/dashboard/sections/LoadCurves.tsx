@@ -10,8 +10,8 @@
  * rows × N instances — the chart renders fast.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { LineChart, type Series } from '@/app/admin/charts/LineChart';
-import { TimeRangePicker, RANGES } from '@/app/admin/components/TimeRangePicker';
+import { LineChart, type Series } from '@/app/admin/shared/charts/LineChart';
+import { TimeRangePicker, RANGES } from '@/app/admin/shared/components/TimeRangePicker';
 
 interface LoadRow {
   bucket_at: string;

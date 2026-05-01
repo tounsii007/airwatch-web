@@ -13,6 +13,7 @@
  * be over-engineered.
  */
 import { useEffect, useState } from 'react';
+import { AppToggle, type App } from '@/app/admin/shared/components/AppToggle';
 
 interface MapStyleRow {
   map_style: string;
@@ -30,7 +31,7 @@ const SEGMENT_COLOURS = [
 ];
 
 export function MapStyleChart() {
-  const [app, setApp] = useState<'web' | 'mobile'>('web');
+  const [app, setApp] = useState<App>('web');
   const [rows, setRows] = useState<MapStyleRow[] | null>(null);
 
   useEffect(() => {
@@ -180,33 +181,3 @@ function StackedDonut({ rows }: { rows: readonly MapStyleRow[] }) {
   );
 }
 
-function AppToggle({ value, onChange }: { value: 'web' | 'mobile'; onChange: (v: 'web' | 'mobile') => void }) {
-  return (
-    <div role="tablist" style={{ display: 'inline-flex', padding: 3, background: 'rgba(15, 29, 50, 0.6)', border: '1px solid var(--border)', borderRadius: 999 }}>
-      {(['web', 'mobile'] as const).map((a) => (
-        <button
-          key={a}
-          role="tab"
-          aria-selected={value === a}
-          onClick={() => onChange(a)}
-          style={{
-            border: 'none',
-            cursor: 'pointer',
-            padding: '4px 12px',
-            borderRadius: 999,
-            fontFamily: 'var(--font-heading)',
-            fontSize: '0.6875rem',
-            fontWeight: 700,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            color: value === a ? 'var(--bg)' : 'var(--text-muted)',
-            background: value === a ? 'var(--primary-bright)' : 'transparent',
-            transition: 'background 200ms, color 200ms',
-          }}
-        >
-          {a}
-        </button>
-      ))}
-    </div>
-  );
-}
