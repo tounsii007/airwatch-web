@@ -92,10 +92,18 @@ export function proxy(request: NextRequest) {
   // port gets a 404, indistinguishable from "page not found".
   const path = request.nextUrl.pathname;
   if (path.startsWith('/admin')) {
-    const host = request.headers.get('host') ?? '';
-    const isAdminHost = ADMIN_HOST_PATTERNS.some((rx) => rx.test(host));
-    if (!isAdminHost) {
-      return new NextResponse(null, { status: 404 });
+    // Telemetry-beacon endpoints are deliberately public — the public-
+    // facing client app posts view + map-style events to them, and the
+    // browser's origin is the WEB_PORT, not the admin port. The api
+    // side AdminAuthFilter excludes these paths from session-cookie
+    // gating; we mirror that here so the proxy doesn't 404 them.
+    const isPublicBeacon = path.startsWith('/admin/api/stats/ingest/');
+    if (!isPublicBeacon) {
+      const host = request.headers.get('host') ?? '';
+      const isAdminHost = ADMIN_HOST_PATTERNS.some((rx) => rx.test(host));
+      if (!isAdminHost) {
+        return new NextResponse(null, { status: 404 });
+      }
     }
   }
 
