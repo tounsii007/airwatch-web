@@ -36,11 +36,12 @@ describe('MAP_STYLES registry', () => {
 // 2. Each style has valid tile URL
 // ──────────────────────────────────────────────────
 describe.each(Object.entries(MAP_STYLES))('style "%s" tile URL', (name, style) => {
-  it('is same-origin via the nginx tile proxy', () => {
-    // Tile URLs were migrated to same-origin paths so the browser's
-    // Network tab never reveals the upstream provider. See
-    // airwatch/nginx/nginx.conf for the proxy + cache config.
-    expect(style.url).toMatch(/^\/tiles\//);
+  it('is a direct CDN URL (HTTPS, third-party host, no /tiles/ proxy)', () => {
+    // Tile URLs migrated FROM same-origin /tiles/* TO direct CDN to
+    // avoid the per-host concurrency cap on localhost and to let the
+    // browser cache against the upstream provider's real cache headers.
+    expect(style.url).toMatch(/^https:\/\//);
+    expect(style.url).not.toMatch(/^\/tiles\//);
   });
 
   it('includes {z}, {x}, {y} placeholders', () => {
@@ -49,17 +50,11 @@ describe.each(Object.entries(MAP_STYLES))('style "%s" tile URL', (name, style) =
     expect(style.url).toContain('{y}');
   });
 
-  it('ends with .png OR is a clean RESTful tile path', () => {
-    // Most tile URLs end in .png. The Google-satellite endpoint stays
-    // extension-less because nginx rewrites it to Google's
-    // ?lyrs=s&x={x}&y={y}&z={z} query-param API on the upstream side.
-    expect(style.url).toMatch(/\.png$|\/google\/sat\/\{z\}\/\{x\}\/\{y\}$/);
-  });
-
-  it('does not use the legacy {s} subdomain placeholder', () => {
-    // Same-origin URLs don't need the {s} round-robin trick — HTTP/2
-    // makes the per-host concurrency cap irrelevant.
-    expect(style.url).not.toContain('{s}');
+  it('uses {s} subdomain split for parallel connections', () => {
+    // Direct CDN means the per-host cap matters again; {s} is Leaflet's
+    // round-robin placeholder over the configured `subdomains` string.
+    expect(style.url).toContain('{s}');
+    expect(style.subdomains).toBeTruthy();
   });
 });
 
@@ -161,26 +156,43 @@ describe('constants', () => {
 });
 
 // ──────────────────────────────────────────────────
-// 9. No-labels tile URLs
+// 9. Per-style upstream identity — guards against the regression where
+// 5 of 6 styles shared 2 URLs, so the picker visibly didn't change the
+// basemap.
 // ──────────────────────────────────────────────────
-describe('no-labels tiles', () => {
-  it('dark and night use CARTO nolabels', () => {
-    expect(MAP_STYLES.dark.url).toContain('nolabels');
-    expect(MAP_STYLES.night.url).toContain('nolabels');
+describe('distinct basemap per style', () => {
+  it('every style has a UNIQUE base URL (path before {z}/{x}/{y})', () => {
+    // Strip placeholders so identical-with-different-{s}-mapping doesn't
+    // false-positive. The path-before-templating is the actual upstream
+    // raster identity.
+    const basePaths = STYLE_ORDER.map((id) =>
+      MAP_STYLES[id].url.replace(/\{[sxyz]\}/g, '')
+    );
+    expect(new Set(basePaths).size).toBe(STYLE_ORDER.length);
   });
 
-  it('toner uses CARTO light nolabels', () => {
-    expect(MAP_STYLES.toner.url).toContain('nolabels');
+  it('dark uses CARTO dark_nolabels (no city labels)', () => {
+    expect(MAP_STYLES.dark.url).toContain('dark_nolabels');
   });
 
-  it('streets uses voyager nolabels', () => {
-    expect(MAP_STYLES.streets.url).toContain('nolabels');
+  it('night uses CARTO dark_all (with city labels) — distinct from dark', () => {
+    expect(MAP_STYLES.night.url).toContain('dark_all');
   });
 
-  it('satellite uses Google sat tiles via the proxy', () => {
-    // Underlying upstream is Google's `lyrs=s` API; nginx rewrites the
-    // clean RESTful path to Google's query-param form. From the
-    // frontend's perspective we only assert the proxy path.
-    expect(MAP_STYLES.satellite.url).toContain('/tiles/google/sat/');
+  it('streets uses voyager WITH labels', () => {
+    expect(MAP_STYLES.streets.url).toMatch(/voyager(?!_nolabels)/);
+  });
+
+  it('terrain uses OpenTopoMap (only API-key-free terrain raster)', () => {
+    expect(MAP_STYLES.terrain.url).toContain('tile.opentopomap.org');
+  });
+
+  it('toner uses CARTO light_nolabels', () => {
+    expect(MAP_STYLES.toner.url).toContain('light_nolabels');
+  });
+
+  it('satellite uses Google direct lyrs=s API', () => {
+    expect(MAP_STYLES.satellite.url).toContain('mt{s}.google.com/vt');
+    expect(MAP_STYLES.satellite.url).toContain('lyrs=s');
   });
 });

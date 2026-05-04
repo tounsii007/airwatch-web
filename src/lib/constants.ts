@@ -21,9 +21,9 @@ export const API = {
   weather: (lat: number, lon: number) => `${PROXY_BASE_URL}/weather/${lat.toFixed(2)}/${lon.toFixed(2)}`,
   aircraftMeta: (hex: string) => `${PROXY_BASE_URL}/hexdb/${hex}`,
   aircraftPhoto: (hex: string) => `${PROXY_BASE_URL}/photo/${hex}`,
-  // Same-origin via the nginx /logos/ proxy → pics.avs.io. Browser
-  // never learns the upstream provider; tile cache holds 30 d.
-  airlineLogo: (iata: string) => `/logos/200/80/${iata.toUpperCase()}.png`,
+  // Direct CDN — pics.avs.io serves airline logos with months-long
+  // cache headers. Server proxy removed; CSP img-src allowlists the host.
+  airlineLogo: (iata: string) => `https://pics.avs.io/200/80/${iata.toUpperCase()}.png`,
   imageProxy: (url: string) => `${PROXY_BASE_URL}/img/${encodeURIComponent(url)}`,
   turbulence: () => `${PROXY_BASE_URL}/turbulence`,
 };

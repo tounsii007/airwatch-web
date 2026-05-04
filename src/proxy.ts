@@ -54,8 +54,13 @@ export const config = {
      *   tile / asset proxy paths (handled by nginx, no inline scripts)
      */
     {
+      // tiles/, weather-radar/, logos/ removed from this exclusion list —
+      // they're now hit directly on the upstream CDN by the browser, so
+      // no Next.js request ever lands on those paths. Keeping them in the
+      // negative-lookahead would only hide bugs (a stray /tiles/ link
+      // would silently 404 instead of being noticed).
       source:
-        '/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|tiles/|weather-radar/|logos/|cesium/|api/proxy/|ws/).*)',
+        '/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|cesium/|api/proxy/|ws/).*)',
       missing: [
         // Skip prefetch metadata requests — no rendered HTML to nonce-stamp.
         { type: 'header', key: 'next-router-prefetch' },
@@ -122,10 +127,31 @@ export function proxy(request: NextRequest) {
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'wasm-unsafe-eval'`,
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
-    "img-src 'self' data: blob:",
+    // Direct-CDN allowlist for every external image source.
+    // Add a host here whenever a code path generates an off-origin
+    // image URL — otherwise the browser silently drops the request
+    // and the affected feature renders empty.
+    //
+    //   *.basemaps.cartocdn.com    — CARTO basemaps (Leaflet + Cesium)
+    //   mt0-3.google.com           — Google satellite tiles
+    //   *.tile.openstreetmap.org   — OSM raster (deck.gl 3D replay basemap)
+    //   *.tile.opentopomap.org     — OpenTopoMap terrain raster
+    //   tilecache.rainviewer.com   — RainViewer radar overlay
+    //   pics.avs.io                — airline logo CDN
+    "img-src 'self' data: blob: " +
+      "https://*.basemaps.cartocdn.com " +
+      "https://mt0.google.com https://mt1.google.com " +
+      "https://mt2.google.com https://mt3.google.com " +
+      "https://*.tile.openstreetmap.org " +
+      "https://*.tile.opentopomap.org " +
+      "https://tilecache.rainviewer.com " +
+      "https://pics.avs.io",
     "worker-src 'self' blob:",
     "child-src 'self' blob:",
-    "connect-src 'self' ws: wss:",
+    // connect-src must allow any cross-origin fetch() target.
+    // RainViewer's JSON index is fetched directly (see useWeatherRadar.ts);
+    // the WS URLs cover the public flight-feed websocket.
+    "connect-src 'self' ws: wss: https://api.rainviewer.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

@@ -25,7 +25,11 @@
  * Plus workbox bundles ~30 KB of runtime; ours is < 3 KB.
  */
 
-const CACHE_VERSION = 'v1';
+// Bump after every change that affects what gets cached or which paths
+// the SW intercepts. Old SW deletes its own caches in `activate` when
+// the version no longer matches — that's how we evict stale HTML/JS
+// referencing the old map-tile URLs (`/tiles/...`) that no longer exist.
+const CACHE_VERSION = 'v2';
 const SHELL_CACHE = `airwatch-shell-${CACHE_VERSION}`;
 const ASSET_CACHE = `airwatch-assets-${CACHE_VERSION}`;
 
@@ -81,14 +85,16 @@ self.addEventListener('fetch', (event) => {
   // metric POSTs would be nonsense.
   if (url.pathname.startsWith('/api/')) return;
 
-  // Tiles + logos + cesium → stale-while-revalidate. Browser sees
-  // instant response, network refresh happens in the background.
-  if (
-    url.pathname.startsWith('/tiles/') ||
-    url.pathname.startsWith('/logos/') ||
-    url.pathname.startsWith('/cesium/') ||
-    url.pathname.startsWith('/weather-radar/tiles/')
-  ) {
+  // Cesium → stale-while-revalidate. Browser sees instant response,
+  // network refresh happens in the background.
+  //
+  // Tiles, logos, weather-radar/tiles used to live here too. They moved
+  // to direct CDN URLs (cartocdn / openstreetmap / pics.avs.io / etc.)
+  // and the browser handles their cache against the upstream's Cache-
+  // Control headers — no SW intercept needed. Same-origin SWs CANNOT
+  // intercept cross-origin requests anyway, so leaving the patterns
+  // here would only mislead someone reading this file.
+  if (url.pathname.startsWith('/cesium/')) {
     event.respondWith(staleWhileRevalidate(req, ASSET_CACHE));
     return;
   }

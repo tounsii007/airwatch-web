@@ -47,9 +47,12 @@ export function GlobeView() {
 
         const viewer = new Cesium.Viewer(containerRef.current, {
           imageryProvider: new Cesium.UrlTemplateImageryProvider({
-            // Same-origin via the nginx tile proxy — see
-            // airwatch/nginx/nginx.conf > location /tiles/carto/.
-            url: '/tiles/carto/dark_nolabels/{z}/{x}/{y}.png',
+            // Direct CARTO CDN — Cesium has its own per-host pool so
+            // hammering one cartocdn host (no {s} round-robin in the
+            // template) is fine. The nginx /tiles/* proxy was removed
+            // along with the Leaflet basemap migration; see
+            // src/components/map/mapStyles.ts header for the rationale.
+            url: 'https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
             maximumLevel: 18,
             credit: new Cesium.Credit('CARTO'),
           }),

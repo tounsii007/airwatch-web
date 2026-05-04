@@ -125,13 +125,13 @@ const nextConfig: NextConfig = {
       // Negative-lookahead skips:
       //   _next/    — Next-internal static + image-optimizer routes
       //   api/      — proxied API responses (their own Cache-Control)
-      //   tiles/    — nginx tile proxy (7-day immutable from upstream)
-      //   weather-radar/ + logos/ — same as tiles, nginx-managed
       //   cesium/   — versioned Cesium assets, safe to cache
-      //   *.<ext>   — any file with a recognisable extension (favicon
-      //               etc.) is named-stable, cache-friendly
+      //
+      // tiles/, weather-radar/, logos/ removed — those paths used to
+      // hit the server-side proxy; everything is now direct CDN, so no
+      // request ever reaches Next.js on those paths.
       {
-        source: '/:path((?!_next/|api/|tiles/|weather-radar/|logos/|cesium/).*)',
+        source: '/:path((?!_next/|api/|cesium/).*)',
         missing: [
           // Skip the rule when the request looks like a static asset
           // (has a typical file extension). Plain HTML routes have none.
@@ -145,29 +145,14 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
-      // ── Existing back-end API proxy ─────────────────────────────────────
+      // Back-end API proxy (the only remaining server-side rewrite).
+      // /tiles/*, /weather-radar/*, /logos/* used to live here; all
+      // three were removed when their consumers moved to direct CDN
+      // calls. See src/components/map/mapStyles.ts header for the
+      // full migration rationale.
       {
         source: '/api/proxy/:path*',
         destination: `${INTERNAL_API_URL}/:path*`,
-      },
-      // ── Map tile providers — same-origin masquerade ─────────────────────
-      // Browser sees /tiles/carto/... → nginx → CARTO CDN. The upstream
-      // hostname stays inside the docker network; the network tab in
-      // DevTools only ever shows http://localhost:13000/tiles/...
-      //
-      // Cache hit ratio is visible via the X-Cache-Status response header
-      // that nginx adds (HIT / MISS / EXPIRED / STALE).
-      {
-        source: '/tiles/:path*',
-        destination: `${INTERNAL_API_URL}/tiles/:path*`,
-      },
-      {
-        source: '/weather-radar/:path*',
-        destination: `${INTERNAL_API_URL}/weather-radar/:path*`,
-      },
-      {
-        source: '/logos/:path*',
-        destination: `${INTERNAL_API_URL}/logos/:path*`,
       },
     ];
   },
