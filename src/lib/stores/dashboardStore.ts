@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { DEFAULT_AIRPORTS } from '@/app/dashboard/dashboardData';
+import { DEFAULT_AIRPORTS } from '@/app/(public)/dashboard/dashboardData';
 
 interface DashboardStoreState {
   airportCodes: string[];
