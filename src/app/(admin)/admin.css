@@ -1,0 +1,735 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Admin dashboard styling — intentionally minimal.
+   ─────────────────────────────────────────────────────────────────────────
+   Reuses the same design tokens as the public app (`--primary`, `--bg`,
+   `--text-*`) but does NOT import the public globals.css. That keeps the
+   admin bundle from carrying glass-panel keyframes, neon-text shadows,
+   stagger CSS, etc. — none of which a serious admin dashboard needs.
+
+   The visual language is utilitarian: high-contrast tabular layouts,
+   colour-coded status (green up / red down / amber stale), mono numbers.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/*
+ * Tailwind v4 — utilities are available inside the admin shell so new
+ * shadcn/Tremor-style primitives (under shared/ui/*) can be authored
+ * with utility classes instead of inline styles. Existing inline-style
+ * components keep working unchanged because they reference the same
+ * CSS variables; Tailwind's reset is scoped via the @layer system so
+ * it doesn't fight our hand-written rules below.
+ */
+@import "tailwindcss";
+
+/*
+ * Map our existing CSS variables to Tailwind's @theme namespace so
+ * utility classes like `bg-bg`, `text-primary-bright`, `border-border`,
+ * `text-success` work and respect any active theme (dark / light /
+ * soft / slate / auto). Tailwind v4 picks these up automatically.
+ *
+ * Where the variable name maps cleanly to a Tailwind colour role we
+ * use the role name (success/warning/error/info); for our domain
+ * tokens (primary, primary-bright, accent, surface, text-primary,
+ * text-secondary, text-muted) we expose them under their literal
+ * variable name with hyphens.
+ */
+@theme {
+  --color-bg:              var(--bg);
+  --color-surface:         var(--surface);
+  --color-surface-light:   var(--surface-light);
+  --color-primary:         var(--primary);
+  --color-primary-bright:  var(--primary-bright);
+  --color-accent:          var(--accent);
+  --color-text-primary:    var(--text-primary);
+  --color-text-secondary:  var(--text-secondary);
+  --color-text-muted:      var(--text-muted);
+  --color-border:          var(--border);
+  --color-border-strong:   var(--border-strong);
+  --color-success:         var(--success);
+  --color-warning:         var(--warning);
+  --color-error:           var(--error);
+  --color-info:            var(--info);
+  --font-heading:          var(--font-heading);
+  --font-body:             var(--font-body);
+}
+
+/*
+ * Theme tokens.
+ *
+ * `:root` carries the default DARK palette so any element rendered before
+ * the layout's theme class settles (a brief window during the in-head
+ * theme-bootstrap script) still looks correct. Theme switching layers
+ * additional .admin-shell.theme-* classes that override the variables —
+ * higher specificity wins, no `!important` needed.
+ *
+ * To add a new theme: copy the .admin-shell.theme-light block, change
+ * the variable values, and add an entry to AVAILABLE_THEMES in
+ * ThemeSwitcher.tsx.
+ */
+:root {
+  --bg:             #0A1628;
+  --surface:        #0F1D32;
+  --surface-light:  #1A2E48;
+  --primary:        #7A9ABF;
+  --primary-bright: #A4C4E8;
+  --accent:         #D4A574;
+  --text-primary:   #D0D8E4;
+  --text-secondary: #A2B3C8;
+  --text-muted:     #6B85A4;
+  --border:         rgba(122, 154, 191, 0.20);
+  --border-strong:  rgba(122, 154, 191, 0.40);
+  /* Inset / sunken background for nested rows + inline panels (alert
+     rows, help-panel body, code-block backgrounds, etc.). Replaces the
+     historical hardcoded rgba(15,29,50,0.X) which baked the dark-theme
+     navy into every component and produced muddy gray patches on the
+     light + soft themes. Each theme overrides this token with a value
+     that reads as "slightly recessed" against its own --bg / --surface. */
+  --sunken:         rgba(0, 0, 0, 0.30);
+  --success:        #4ADE80;
+  --warning:        #FBBF24;
+  --error:          #F87171;
+  --info:           #60A5FA;
+  --font-heading:   'Orbitron', monospace;
+  --font-body:      'Rajdhani', sans-serif;
+}
+
+/* ── Light theme ─────────────────────────────────────────────────────────
+   Crisp paper-white background, deep slate text. Everything else
+   (KPI cards, charts, status pills) inherits via CSS variables so each
+   page stays in lockstep with the active palette. */
+.admin-shell.theme-light {
+  --bg:             #F5F7FA;
+  --surface:        #FFFFFF;
+  --surface-light:  #EDF1F7;
+  --primary:        #2563EB;
+  --primary-bright: #1D4ED8;
+  --accent:         #C2410C;
+  --text-primary:   #111827;
+  --text-secondary: #374151;
+  --text-muted:     #6B7280;
+  --border:         rgba(15, 23, 42, 0.12);
+  --border-strong:  rgba(15, 23, 42, 0.25);
+  /* Light-theme sunken — very faint slate tint. Anything more is a
+     dirty gray patch on the cream paper. */
+  --sunken:         rgba(15, 23, 42, 0.05);
+  --success:        #15803D;
+  --warning:        #B45309;
+  --error:          #B91C1C;
+  --info:           #1D4ED8;
+}
+
+/* ── Soft / sepia ────────────────────────────────────────────────────────
+   Warm light tone — easier on the eyes during long shifts than pure
+   white, and visibly different from the slate-blue dark theme so
+   accidental theme drift is impossible to miss. */
+.admin-shell.theme-soft {
+  --bg:             #FAF6EE;
+  --surface:        #FFFAF0;
+  --surface-light:  #F1E9D6;
+  --primary:        #92400E;
+  --primary-bright: #78350F;
+  --accent:         #9A3412;
+  --text-primary:   #2A1F10;
+  --text-secondary: #5C4A30;
+  --text-muted:     #97825F;
+  --border:         rgba(80, 50, 20, 0.15);
+  --border-strong:  rgba(80, 50, 20, 0.30);
+  /* Soft-theme sunken — warm tint matching the sepia palette. */
+  --sunken:         rgba(80, 50, 20, 0.06);
+  --success:        #166534;
+  --warning:        #92400E;
+  --error:          #991B1B;
+  --info:           #1E3A8A;
+}
+
+/* ── Slate / muted dark ──────────────────────────────────────────────────
+   Lower-contrast dark variant for users who find the default navy too
+   high-contrast at night. Same blue family, less saturation. */
+.admin-shell.theme-slate {
+  --bg:             #1A1F2E;
+  --surface:        #232838;
+  --surface-light:  #2E3445;
+  --primary:        #94A3B8;
+  --primary-bright: #CBD5E1;
+  --accent:         #FBBF24;
+  --text-primary:   #E2E8F0;
+  --text-secondary: #CBD5E1;
+  --text-muted:     #94A3B8;
+  --border:         rgba(148, 163, 184, 0.20);
+  --border-strong:  rgba(148, 163, 184, 0.35);
+  /* Slate-theme sunken — slightly deeper than the slate --bg. */
+  --sunken:         rgba(0, 0, 0, 0.30);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  height: 100%;
+}
+
+.admin-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-brand {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--primary-bright);
+}
+
+.admin-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/*
+ * Each <span class="admin-nav-group"> wraps a logical cluster of links
+ * (operations / metrics / actions). Tighter inner gap groups them
+ * visually; the dividers between groups carry the rest of the spacing.
+ */
+.admin-nav-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.admin-nav-divider {
+  width: 1px;
+  height: 1.1rem;
+  background: var(--border);
+  margin: 0 0.5rem;
+  flex-shrink: 0;
+}
+
+.admin-nav a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: color 150ms, background 150ms;
+  white-space: nowrap;
+}
+
+.admin-nav a:hover {
+  color: var(--text-primary);
+  background: rgba(122, 154, 191, 0.10);
+}
+
+/*
+ * Logout sits inside a <form> so it can POST to /admin/logout. We strip
+ * the default button chrome and reuse the same shape as the <a> nav
+ * items, then tint the colour towards --error so it visually reads as a
+ * destructive / state-changing action (and so an operator clicking
+ * around won't pull the trigger by accident).
+ */
+/*
+ * ── Grouped nav dropdowns (Phase 3.6 layout cleanup) ──────────────────
+ *
+ * Replaces the wide single-row of every link with 4 grouped dropdowns
+ * (Live / Metrics / Tools / System). Saves horizontal space, makes the
+ * structure obvious, and the dropdown panels can hold longer translated
+ * labels without the header line wrapping.
+ *
+ * Hover-driven (no JS state) — the panel sits absolutely below its
+ * trigger and is shown when the parent is hovered or focused-within.
+ * Keyboard works because the focusable links inside the panel keep the
+ * :focus-within state alive while the user tabs through them.
+ */
+.admin-nav-dropdown {
+  position: relative;
+  display: inline-block;
+}
+.admin-nav-trigger {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.65rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: color 150ms, background 150ms;
+}
+.admin-nav-trigger::after {
+  content: '▾';
+  font-size: 0.6rem;
+  opacity: 0.65;
+}
+.admin-nav-dropdown:hover .admin-nav-trigger,
+.admin-nav-dropdown:focus-within .admin-nav-trigger {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.admin-nav-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 180px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  z-index: 50;
+}
+.admin-nav-dropdown:hover .admin-nav-panel,
+.admin-nav-dropdown:focus-within .admin-nav-panel {
+  display: flex;
+}
+.admin-nav-panel a {
+  padding: 0.4rem 0.7rem;
+  border-radius: 3px;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-size: 0.78rem;
+}
+.admin-nav-panel a:hover {
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+}
+/* Top-level "Dashboard" link sits outside the dropdowns — keep its
+   styling consistent with the trigger but without the chevron. */
+.admin-nav-direct {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.3rem 0.65rem;
+  border-radius: 4px;
+  transition: color 150ms, background 150ms;
+}
+.admin-nav-direct:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+/*
+ * Right-aligned chrome cluster (AutoRefresh, language switcher, Logout).
+ * margin-left:auto pushes it to the far right of the header regardless
+ * of how many nav dropdowns are rendered.
+ */
+.admin-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.admin-nav-logout {
+  display: inline-flex;
+  margin: 0;
+  padding: 0;
+}
+.admin-nav-logout button {
+  color: var(--error);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--error) 25%, transparent);
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.65rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 150ms, background 150ms, border-color 150ms;
+}
+.admin-nav-logout button:hover {
+  color: #fff;
+  background: color-mix(in srgb, var(--error) 22%, transparent);
+  border-color: color-mix(in srgb, var(--error) 55%, transparent);
+}
+
+.admin-main {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+
+.admin-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+}
+
+.admin-card h2 {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+
+.admin-table {
+  width: 100%;
+  border-collapse: separate;     /* allows border-radius on cells + sticky thead shadow */
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Wrap any horizontally-scrollable table in <div class="admin-table-wrap">
+ * to get a styled scrollbar + a subtle gradient fade at the right edge
+ * indicating "more columns offscreen". The per-replica × per-category
+ * matrix is the canonical case.
+ */
+.admin-table-wrap {
+  overflow-x: auto;
+  border-radius: 6px;
+  background: var(--surface);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+.admin-table-wrap::-webkit-scrollbar { height: 8px; }
+.admin-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-table thead th {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  /* Sticky header so wide tables (per-replica matrix, audit log) keep
+     the column labels visible while the body scrolls vertically AND
+     horizontally. The two-direction stickiness needs `position:sticky`
+     on the th itself, plus a solid background to occlude rows
+     scrolling underneath. */
+  position: sticky;
+  top: 0;
+  background: color-mix(in srgb, var(--surface) 95%, var(--bg));
+  z-index: 2;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+/* Zebra striping — odd rows get a faint sunken tint that adapts to
+   theme (no hardcoded color). Even rows stay on --surface. */
+.admin-table tbody tr:nth-child(odd) td {
+  background: var(--sunken);
+}
+
+.admin-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  transition: background 120ms ease-out;
+}
+
+/* "Total" / summary row — last row of a totals-aggregated table. Add
+   class="admin-table-total" to the <tr>. */
+.admin-table tbody tr.admin-table-total td {
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+  border-top: 2px solid var(--border-strong);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Numeric cells — right-align is more legible. Add class="num" to td/th. */
+.admin-table .num,
+.admin-table th.num { text-align: right; }
+
+/* Compact + dense variants for tables with many columns. */
+.admin-table.compact th,
+.admin-table.compact td { padding: 0.35rem 0.55rem; font-size: 0.78rem; }
+
+/* ── Status pills ──────────────────────────────────────────────────────── */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(122, 154, 191, 0.10);
+  color: var(--primary-bright);
+  border: 1px solid var(--border);
+}
+
+.pill-up    { background: rgba( 74, 222, 128, 0.10); color: var(--success); border-color: rgba( 74, 222, 128, 0.25); }
+.pill-down  { background: rgba(248, 113, 113, 0.10); color: var(--error);   border-color: rgba(248, 113, 113, 0.25); }
+.pill-warn  { background: rgba(251, 191,  36, 0.10); color: var(--warning); border-color: rgba(251, 191,  36, 0.25); }
+
+.pill-up::before    { content: ''; width: 6px; height: 6px; border-radius: 999px; background: currentColor; box-shadow: 0 0 6px currentColor; }
+.pill-down::before  { content: ''; width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+.pill-warn::before  { content: ''; width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+
+/* ── Grid ──────────────────────────────────────────────────────────────── */
+
+.admin-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+/* ── Responsive: small viewports (phones / narrow side panels) ────────── */
+/*
+ * The dashboard is operator-first and assumes a desktop, but operators
+ * also pull it up on a phone during incidents — make sure nothing is
+ * unreadable. Most layouts are already auto-fit minmax based and adapt
+ * naturally; these rules cover the few hard-coded cases.
+ */
+@media (max-width: 720px) {
+  .admin-main {
+    padding: 0.875rem;
+  }
+  .admin-header {
+    padding: 0.6rem 0.875rem;
+    gap: 0.5rem;
+  }
+  .admin-brand {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+  }
+  .admin-nav a,
+  .admin-nav-logout button {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.45rem;
+  }
+  .admin-nav-divider { display: none; }
+  /*
+   * .admin-grid-2col is the dashboard's "two cards side by side" wrapper.
+   * On phones, stack instead — the side-by-side becomes unreadable
+   * narrow.
+   */
+  .admin-grid-2col {
+    grid-template-columns: 1fr !important;
+  }
+  .admin-card {
+    padding: 0.875rem 1rem;
+  }
+  .admin-card h2 {
+    font-size: 0.6875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-main {
+    padding: 0.625rem;
+  }
+}
+
+/* ── Skip-link (a11y) ─────────────────────────────────────────────────── */
+/*
+ * Off-screen "Skip to main content" link that becomes visible on focus.
+ * Lets keyboard / screen-reader users jump past the nav on every page
+ * load — required by WCAG 2.4.1 (Bypass Blocks).
+ */
+.admin-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--primary-bright);
+  color: var(--bg);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  z-index: 10000;
+}
+.admin-skip-link:focus {
+  left: 0;
+  top: 0;
+  outline: 2px solid var(--primary-bright);
+  outline-offset: 2px;
+}
+
+/* ── Skeleton shimmer animation ───────────────────────────────────────── */
+@keyframes admin-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-skeleton { animation: none !important; }
+}
+
+/* ── Mobile hamburger nav ─────────────────────────────────────────────── */
+/*
+ * Trigger only visible below 720 px; matches the @media that hides the
+ * desktop inline nav.
+ */
+.admin-mobile-nav-trigger {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--primary-bright);
+  font-size: 1.1rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.admin-mobile-nav-trigger:hover { background: rgba(122, 154, 191, 0.10); }
+.admin-mobile-nav-trigger:focus-visible {
+  outline: 2px solid var(--primary-bright);
+  outline-offset: 2px;
+}
+
+.admin-mobile-nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: flex-end;
+  animation: admin-mobile-nav-fade 200ms ease-out;
+}
+.admin-mobile-nav-panel {
+  background: var(--surface);
+  border-left: 1px solid var(--border-strong);
+  width: min(320px, 88vw);
+  height: 100vh;
+  padding: 1.25rem 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: admin-mobile-nav-slide 220ms cubic-bezier(.2,.9,.3,1);
+}
+.admin-mobile-nav-group {
+  font-family: var(--font-heading);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+.admin-mobile-nav-link {
+  display: block;
+  padding: 0.55rem 0.6rem;
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: 4px;
+  margin-bottom: 0.15rem;
+  transition: color 150ms, background 150ms;
+}
+.admin-mobile-nav-link:hover,
+.admin-mobile-nav-link:focus-visible {
+  color: var(--primary-bright);
+  background: rgba(122, 154, 191, 0.10);
+  outline: none;
+}
+@keyframes admin-mobile-nav-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes admin-mobile-nav-slide {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@media (max-width: 720px) {
+  .admin-mobile-nav-trigger { display: inline-flex; }
+  .admin-nav-group, .admin-nav-divider { display: none; }
+  /* AutoRefresh + Logout still visible on mobile but more compact. */
+}
+
+/* ── Focus visibility (a11y) ───────────────────────────────────────────── */
+/*
+ * Browsers' default focus rings vary; pin a consistent one on every
+ * interactive element so keyboard users always see WHERE they are.
+ */
+.admin-shell a:focus-visible,
+.admin-shell button:focus-visible,
+.admin-shell select:focus-visible,
+.admin-shell input:focus-visible,
+.admin-shell textarea:focus-visible {
+  outline: 2px solid var(--primary-bright);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* ── Print stylesheet ─────────────────────────────────────────────────── */
+/*
+ * Operators occasionally export a dashboard view as PDF for an audit
+ * report or postmortem. Hide chrome (nav, refresh button, logout) and
+ * force light backgrounds so the printed pages don't waste toner.
+ */
+@media print {
+  .admin-header,
+  .admin-mobile-nav-trigger,
+  .admin-nav-logout,
+  .admin-skip-link,
+  [data-admin-no-print] {
+    display: none !important;
+  }
+  .admin-shell, .admin-shell body, .admin-main, .admin-card {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .admin-card {
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+  .admin-card h2 {
+    color: #333 !important;
+  }
+  .admin-main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+}
