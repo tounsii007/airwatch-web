@@ -15,6 +15,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "size": "node scripts/check-bundle-budget.mjs",
+    "size:admin": "node scripts/check-perf-budget.mjs",
+    "i18n:check": "node scripts/check-i18n-coverage.mjs --max 200",
     "analyze": "ANALYZE=true next build",
     "generate:api-types": "npx --yes --package=openapi-typescript@^7.13.0 -- openapi-typescript http://localhost:18080/v3/api-docs --output src/lib/api-types.generated.ts",
     "build:city-i18n": "node scripts/build-city-i18n.mjs",
@@ -28,6 +30,7 @@
   },
   "_size_budget_note": "Bundle budget is enforced by scripts/check-bundle-budget.mjs which splits chunks into 'core' (every-user code) and 'lazy 3D' (Cesium for /globe, deck.gl for /replay/3d) buckets with separate budgets. Run `npm run size` after a build to validate. See the script header for the rationale.",
   "dependencies": {
+    "@tanstack/react-table": "^8.21.3",
     "@types/canvas-confetti": "^1.9.0",
     "@types/leaflet": "^1.9.21",
     "@types/leaflet-draw": "^1.0.13",
@@ -44,6 +47,8 @@
     "react-dom": "^19.2.5",
     "react-leaflet": "^5.0.0",
     "recharts": "^3.8.1",
+    "source-map-js": "^1.2.1",
+    "swr": "^2.4.1",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
   },

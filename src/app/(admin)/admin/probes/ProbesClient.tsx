@@ -7,6 +7,7 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useToast } from '@/app/(admin)/Toast';
 import { ClientTime } from '@/app/(admin)/ClientTime';
+import { useAdminEvents } from '@/app/(admin)/admin/shared/live/AdminEventStream';
 
 interface Probe {
   id: number;
@@ -72,6 +73,11 @@ export function ProbesClient({ initialProbes, csrfToken }: Props) {
     const id = setInterval(() => void reload(), 30_000);
     return () => clearInterval(id);
   }, [reload]);
+
+  // Phase 4 — SSE push. Every probe execution sends a probe.recorded
+  // event; on receipt we re-pull the probes list so the operator sees
+  // the new last_run_at + last_status without waiting up to 30 s.
+  useAdminEvents('probe.recorded', () => { void reload(); });
 
   async function handleCreate(ev: React.FormEvent) {
     ev.preventDefault();

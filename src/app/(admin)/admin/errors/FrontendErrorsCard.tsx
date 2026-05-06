@@ -1,55 +1,71 @@
 /**
- * Frontend (browser-side) error feed. (Phase 3.1)
+ * Frontend (browser-side) error feed. (Phase 3.1+ / V13)
  *
- * Polls /admin/api/frontend-errors every 15 s. Each row is an aggregated
- * signature: same exception bumped via the dedup logic in
- * FrontendErrorBuffer.record(). Hovering the count or message reveals
- * first-seen / last-seen timestamps; expanding a row shows the full
- * stack trace.
+ * <h3>Live vs Persisted</h3>
+ * Two modes via a header toggle:
+ *   * <b>Live</b>  — polls the in-memory ring at /admin/api/frontend-errors
+ *     every 15 s. Fast read; cleared when the api restarts.
+ *   * <b>Persisted</b> — pulls /admin/api/frontend-errors/persisted which
+ *     queries admin_frontend_error directly. Survives api restarts +
+ *     replica failovers; ideal for an investigation that pre-dates the
+ *     current process.
+ *
+ * Each row is an aggregated signature: same exception bumped via the
+ * dedup logic in FrontendErrorBuffer.record(). Expanding a row reveals:
+ *   * Stack trace (raw — TODO source-map de-min)
+ *   * URL, user-agent, username
+ *   * <b>Release tag</b> — which build the error came from
+ *   * <b>Session id</b> — joinable with admin_audit_log
+ *   * <b>Breadcrumbs</b> — last 10 user actions before the throw
+ *     (Sentry-style, captured in the browser by installBreadcrumbAutoCapture)
  */
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ClientTime } from '@/app/(admin)/ClientTime';
+import { useLiveData } from '@/app/(admin)/admin/shared/live/useLiveData';
 
 interface FrontendErrorEntry {
   id: number;
-  firstSeen: string;
-  lastSeen: string;
-  count: number;
+  firstSeen?: string;
+  occurredAt?: string;
+  lastSeen?: string;
+  lastSeenAt?: string;
+  count?: number;
+  occurrenceCount?: number;
   signature: string;
   message: string;
   stack: string | null;
   url: string | null;
   userAgent: string | null;
   username: string | null;
+  releaseTag?: string | null;
+  sessionId?: string | null;
+  breadcrumbs?: string | null;
 }
 
-interface Payload {
-  total: number;
-  buffered: number;
-  entries: FrontendErrorEntry[];
-}
+interface LivePayload    { total: number; buffered: number; entries: FrontendErrorEntry[] }
+interface PersistedPayload { limit: number; entries: FrontendErrorEntry[] }
 
 const REFRESH_MS = 15_000;
 
+type Mode = 'live' | 'persisted';
+
 export function FrontendErrorsCard() {
-  const [data, setData] = useState<Payload | null>(null);
+  const [mode, setMode] = useState<Mode>('live');
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
-  const reload = useCallback(async () => {
-    try {
-      const res = await fetch('/admin/api/frontend-errors', { credentials: 'include', cache: 'no-store' });
-      if (!res.ok) return;
-      setData(await res.json());
-    } catch { /* network blip */ }
-  }, []);
+  const live = useLiveData<LivePayload>(
+    mode === 'live' ? '/admin/api/frontend-errors' : null,
+    { intervalMs: REFRESH_MS },
+  );
+  const persisted = useLiveData<PersistedPayload>(
+    mode === 'persisted' ? '/admin/api/frontend-errors/persisted?limit=200' : null,
+    { intervalMs: REFRESH_MS },
+  );
 
-  useEffect(() => {
-    void reload();
-    const id = setInterval(() => void reload(), REFRESH_MS);
-    return () => clearInterval(id);
-  }, [reload]);
+  const data = mode === 'live' ? live.data : persisted.data;
+  const entries: FrontendErrorEntry[] = data?.entries ?? [];
 
   function toggle(id: number) {
     setExpanded(prev => {
@@ -59,35 +75,34 @@ export function FrontendErrorsCard() {
     });
   }
 
-  if (data === null) {
-    return (
-      <section className="admin-card">
-        <h2>Frontend errors</h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>Loading…</p>
-      </section>
-    );
-  }
-
   return (
     <section className="admin-card">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.75rem' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: 8 }}>
         <h2 style={{ margin: 0 }}>Frontend errors</h2>
-        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-          {data.entries.length} signatures · {data.total} total seen lifetime
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <ModeToggle mode={mode} onChange={setMode} />
+          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+            {mode === 'live' && live.data
+              ? `${entries.length} signatures · ${live.data.total} total seen lifetime`
+              : `${entries.length} signatures (DB)`}
+          </span>
+        </div>
       </header>
 
       <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '0.75rem' }}>
-        Uncaught exceptions + unhandled promise rejections from the admin shell. Same as the backend ring buffer
-        but for browser code. Cleared when the api restarts.
+        Uncaught exceptions + unhandled promise rejections from the admin shell. Live = current api process&apos;s ring;
+        Persisted = admin_frontend_error table (survives restarts).
       </p>
 
-      {data.entries.length === 0 ? (
+      {entries.length === 0 ? (
         <p style={{ color: 'var(--success)', fontSize: '0.8125rem' }}>✓ No browser-side errors recorded.</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {data.entries.map(e => {
-            const isOpen = expanded.has(e.id);
+          {entries.map(e => {
+            const isOpen   = expanded.has(e.id);
+            const lastSeen = e.lastSeenAt ?? e.lastSeen ?? e.occurredAt ?? '';
+            const firstSeen = e.firstSeen ?? e.occurredAt ?? '';
+            const count    = e.occurrenceCount ?? e.count ?? 1;
             return (
               <div key={e.id} style={{
                 borderLeft: `3px solid var(--error)`,
@@ -98,7 +113,7 @@ export function FrontendErrorsCard() {
                 <button type="button" onClick={() => toggle(e.id)}
                         style={{
                           display: 'grid',
-                          gridTemplateColumns: 'auto auto 1fr auto',
+                          gridTemplateColumns: 'auto auto 1fr auto auto',
                           alignItems: 'center',
                           gap: '0.6rem',
                           width: '100%',
@@ -110,9 +125,9 @@ export function FrontendErrorsCard() {
                           color: 'inherit',
                           fontFamily: 'inherit',
                         }}
-                        title={isOpen ? 'Collapse' : 'Expand stack'}>
+                        title={isOpen ? 'Collapse' : 'Expand details'}>
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>{isOpen ? '▾' : '▸'}</span>
-                  <span style={countBadgeStyle}>×{e.count}</span>
+                  <span style={countBadgeStyle}>×{count}</span>
                   <span style={{
                     color: 'var(--text-primary)',
                     fontFamily: 'var(--font-body)',
@@ -121,16 +136,20 @@ export function FrontendErrorsCard() {
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                   }} title={e.message}>{e.message}</span>
+                  {e.releaseTag && <span style={releaseBadgeStyle} title="Release tag">{e.releaseTag}</span>}
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
-                    <ClientTime iso={e.lastSeen} mode="relative" />
+                    {lastSeen && <ClientTime iso={lastSeen} mode="relative" />}
                   </span>
                 </button>
                 {isOpen && (
                   <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                     <Field label="URL"        value={e.url} mono />
                     <Field label="User-Agent" value={e.userAgent} small />
-                    {e.username && <Field label="Username" value={e.username} />}
-                    <Field label="First seen" value={new Date(e.firstSeen).toLocaleString('de-DE')} small />
+                    {e.username    && <Field label="Username"    value={e.username} />}
+                    {e.releaseTag  && <Field label="Release"     value={e.releaseTag} />}
+                    {e.sessionId   && <Field label="Session id"  value={e.sessionId} mono small />}
+                    {firstSeen && <Field label="First seen" value={new Date(firstSeen).toLocaleString('de-DE')} small />}
+                    {e.breadcrumbs && <BreadcrumbList raw={e.breadcrumbs} />}
                     {e.stack && (
                       <div>
                         <div style={fieldLabelStyle}>Stack</div>
@@ -159,8 +178,95 @@ export function FrontendErrorsCard() {
   );
 }
 
+function ModeToggle({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => void }) {
+  return (
+    <div style={{ display: 'inline-flex', borderRadius: 4, border: '1px solid var(--border)', overflow: 'hidden' }}>
+      <ModeButton label="Live"      active={mode === 'live'}      onClick={() => onChange('live')} />
+      <ModeButton label="Persisted" active={mode === 'persisted'} onClick={() => onChange('persisted')} />
+    </div>
+  );
+}
+
+function ModeButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        fontFamily: 'var(--font-heading)',
+        fontSize: '0.625rem',
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase' as const,
+        color: active ? 'var(--primary-bright)' : 'var(--text-secondary)',
+        background: active ? 'color-mix(in srgb, var(--primary-bright) 14%, transparent)' : 'transparent',
+        border: 'none',
+        padding: '0.35rem 0.75rem',
+        cursor: 'pointer',
+      }}
+    >{label}</button>
+  );
+}
+
+function BreadcrumbList({ raw }: { raw: string }) {
+  let crumbs: Array<{ ts: string; kind: string; data: Record<string, unknown> }> = [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) crumbs = parsed;
+  } catch { /* malformed — render nothing */ }
+  if (crumbs.length === 0) return null;
+  return (
+    <div>
+      <div style={fieldLabelStyle}>Breadcrumbs (last {crumbs.length})</div>
+      <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {crumbs.map((c, i) => (
+          <li key={i} style={{
+            display: 'grid',
+            gridTemplateColumns: '90px 110px 1fr',
+            gap: 8,
+            fontSize: '0.7rem',
+            fontFamily: 'monospace',
+            color: 'var(--text-secondary)',
+            padding: '2px 6px',
+            background: 'rgba(0,0,0,0.2)',
+            borderRadius: 3,
+          }}>
+            <span style={{ color: 'var(--text-muted)' }}>
+              {new Date(c.ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </span>
+            <span style={{ color: kindColor(c.kind) }}>{c.kind}</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  title={JSON.stringify(c.data)}>
+              {summarizeData(c.kind, c.data)}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function summarizeData(kind: string, data: Record<string, unknown>): string {
+  if (kind === 'route' && typeof data.to === 'string')   return `→ ${data.to}`;
+  if (kind === 'click' && typeof data.selector === 'string') return data.selector;
+  if (kind === 'fetch:start' && typeof data.url === 'string') return `${data.method ?? 'GET'} ${data.url}`;
+  if (kind === 'fetch:response' && typeof data.url === 'string') {
+    return `${data.method ?? 'GET'} ${data.url} → ${data.status} (${data.durationMs ?? '?'}ms)`;
+  }
+  if (kind === 'error' && typeof data.message === 'string') return data.message;
+  return JSON.stringify(data);
+}
+
+function kindColor(kind: string): string {
+  if (kind === 'error')          return 'var(--error)';
+  if (kind === 'fetch:response') return 'var(--info)';
+  if (kind === 'fetch:start')    return 'var(--text-muted)';
+  if (kind === 'click')          return 'var(--primary-bright)';
+  if (kind === 'route')          return 'var(--success)';
+  return 'var(--text-secondary)';
+}
+
 function Field({ label, value, mono = false, small = false }: {
-  label: string; value: string | null; mono?: boolean; small?: boolean;
+  label: string; value: string | null | undefined; mono?: boolean; small?: boolean;
 }) {
   if (!value) return null;
   return (
@@ -192,6 +298,17 @@ const countBadgeStyle = {
   color: 'var(--error)',
   background: 'color-mix(in srgb, var(--error) 12%, transparent)',
   border: '1px solid color-mix(in srgb, var(--error) 25%, transparent)',
+  padding: '1px 6px',
+  borderRadius: 3,
+  whiteSpace: 'nowrap' as const,
+};
+const releaseBadgeStyle = {
+  fontFamily: 'monospace',
+  fontSize: '0.6rem',
+  letterSpacing: '0.05em',
+  color: 'var(--text-muted)',
+  background: 'rgba(0,0,0,0.25)',
+  border: '1px solid var(--border)',
   padding: '1px 6px',
   borderRadius: 3,
   whiteSpace: 'nowrap' as const,

@@ -15,6 +15,8 @@ import { GroupedNav } from '@/app/(admin)/GroupedNav';
 import { KeyboardShortcuts } from '@/app/(admin)/KeyboardShortcuts';
 import { MobileNav } from '@/app/(admin)/MobileNav';
 import { MaintenanceBanner } from '@/app/(admin)/MaintenanceBanner';
+import { SWRProvider } from '@/app/(admin)/admin/shared/live/SWRProvider';
+import { AdminEventStreamProvider } from '@/app/(admin)/admin/shared/live/AdminEventStream';
 import './admin.css';
 
 /**
@@ -108,6 +110,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <ToastProvider>
         <I18nProvider locale={locale}>
         {/*
+          SWR cache + dedup + retry-with-backoff for every client-side
+          live data fetch under /admin/*. See SWRProvider.tsx for the
+          full rationale; the short version is "10 widgets fetching
+          /admin/api/csrf used to mean 10 round-trips, now 1".
+        */}
+        <SWRProvider>
+        {/*
+          Phase 4 — single SSE connection per admin tab. AlertsPanel /
+          ProbesClient / dashboard banners subscribe via useAdminEvents
+          to invalidate their SWR caches the instant the api pushes a
+          state change. See AdminEventStream.tsx for the full rationale.
+        */}
+        <AdminEventStreamProvider>
+        {/*
           Server-rendered banner — only shown when maintenance mode is
           ON in Redis. See MaintenanceBanner.tsx; the toggle endpoints
           live at /admin/maintenance/{enable,disable}.
@@ -159,6 +175,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           on the Errors page under the "Frontend" tab.
         */}
         <FrontendErrorReporter />
+        </AdminEventStreamProvider>
+        </SWRProvider>
         </I18nProvider>
         </ToastProvider>
       </body>

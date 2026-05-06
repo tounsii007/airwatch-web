@@ -67,6 +67,7 @@ export const MESSAGES: Record<LocaleCode, Record<string, string>> = {
     'nav.settings':               'Settings',
     'nav.incidents':              'Incidents',
     'nav.probes':                 'Probes',
+    'nav.webhooks':               'Webhooks',
     'nav.health':                 'Health',
     'nav.quota':                  'Quota',
     'nav.features':               'Features',
@@ -148,6 +149,16 @@ export const MESSAGES: Record<LocaleCode, Record<string, string>> = {
     'time.last_60min':            'last 60 minutes',
     'time.last_24h':              'last 24 hours',
     'time.last_30days':           'last 30 days',
+    // ICU plural keys (V13+) — drop-in replacements for the
+    // hand-branched time.minute / time.minutes patterns above. Use
+    // these for any new translation; the old keys stay for back-compat.
+    'time.seconds_ago':           '{count, plural, =0 {just now} one {1 second ago} other {# seconds ago}}',
+    'time.minutes_ago':           '{count, plural, =0 {just now} one {1 minute ago} other {# minutes ago}}',
+    'time.hours_ago':             '{count, plural, one {1 hour ago} other {# hours ago}}',
+    'time.days_ago':              '{count, plural, one {1 day ago} other {# days ago}}',
+    'time.duration.minutes':      '{count, plural, =0 {< 1 minute} one {1 minute} other {# minutes}}',
+    'time.duration.hours':        '{count, plural, =0 {< 1 hour} one {1 hour} other {# hours}}',
+    'time.duration.days':         '{count, plural, =0 {< 1 day} one {1 day} other {# days}}',
 
     // ─── Auto-refresh widget ──────────────────────────────────────────
     'autorefresh.label':          'Auto-refresh',
@@ -220,7 +231,16 @@ export const MESSAGES: Record<LocaleCode, Record<string, string>> = {
 
     // ─── Page: Health ─────────────────────────────────────────────────
     'page.health.title':          'Health',
-    'page.health.subtitle':       'Per-component health snapshot — DB connection, Airlabs poller, WebSocket handler, endpoint metrics.',
+    'page.health.subtitle':       'Live probes from one api replica. Refresh for another sample.',
+    'page.health.kpi.healthy':       'HEALTHY',
+    'page.health.kpi.healthy_hint':  'probes returning OK',
+    'page.health.kpi.warning':       'WARNING',
+    'page.health.kpi.warning_hint':  'degraded but functional',
+    'page.health.kpi.failing':       'FAILING',
+    'page.health.kpi.failing_hint':  'hard failures',
+    'page.health.section.probes':    'Probes',
+    'page.health.sampled':           'sampled',
+    'page.health.empty':             'API unreachable or no probes registered.',
 
     // ─── Page: Quota ──────────────────────────────────────────────────
     'page.quota.title':           'Airlabs quota',
@@ -324,6 +344,7 @@ export const MESSAGES: Record<LocaleCode, Record<string, string>> = {
     'page.features.kpi.most_used':'MOST USED',
     'page.features.kpi.unused':   'UNUSED',
     'page.features.kpi.unused_hint':'features at zero',
+    'page.features.kpi.unused_hint_all': 'every feature seen activity',
     'page.features.section.flags':'Feature flags',
     'page.features.section.usage':'Usage by category',
 
@@ -388,6 +409,7 @@ export const MESSAGES: Record<LocaleCode, Record<string, string>> = {
     'nav.settings':               'Einstellungen',
     'nav.incidents':              'Vorfälle',
     'nav.probes':                 'Probes',
+    'nav.webhooks':               'Webhooks',
     'nav.health':                 'Gesundheit',
     'nav.quota':                  'Kontingent',
     'nav.features':               'Features',
@@ -469,6 +491,13 @@ export const MESSAGES: Record<LocaleCode, Record<string, string>> = {
     'time.last_60min':            'letzte 60 Minuten',
     'time.last_24h':              'letzte 24 Stunden',
     'time.last_30days':           'letzte 30 Tage',
+    'time.seconds_ago':           '{count, plural, =0 {gerade eben} one {vor 1 Sekunde} other {vor # Sekunden}}',
+    'time.minutes_ago':           '{count, plural, =0 {gerade eben} one {vor 1 Minute} other {vor # Minuten}}',
+    'time.hours_ago':             '{count, plural, one {vor 1 Stunde} other {vor # Stunden}}',
+    'time.days_ago':              '{count, plural, one {vor 1 Tag} other {vor # Tagen}}',
+    'time.duration.minutes':      '{count, plural, =0 {< 1 Minute} one {1 Minute} other {# Minuten}}',
+    'time.duration.hours':        '{count, plural, =0 {< 1 Stunde} one {1 Stunde} other {# Stunden}}',
+    'time.duration.days':         '{count, plural, =0 {< 1 Tag} one {1 Tag} other {# Tage}}',
 
     // ─── Auto-refresh widget ──────────────────────────────────────────
     'autorefresh.label':          'Auto-Aktualisierung',
@@ -541,7 +570,16 @@ export const MESSAGES: Record<LocaleCode, Record<string, string>> = {
 
     // ─── Page: Health ─────────────────────────────────────────────────
     'page.health.title':          'Gesundheit',
-    'page.health.subtitle':       'Komponenten-Gesundheits-Snapshot — DB-Verbindung, Airlabs-Poller, WebSocket-Handler, Endpunkt-Metriken.',
+    'page.health.subtitle':       'Live-Proben von einer API-Replica. Aktualisieren für eine weitere Probe.',
+    'page.health.kpi.healthy':       'GESUND',
+    'page.health.kpi.healthy_hint':  'Proben mit OK',
+    'page.health.kpi.warning':       'WARNUNG',
+    'page.health.kpi.warning_hint':  'eingeschränkt aber funktional',
+    'page.health.kpi.failing':       'FEHLERHAFT',
+    'page.health.kpi.failing_hint':  'harte Fehler',
+    'page.health.section.probes':    'Proben',
+    'page.health.sampled':           'erfasst',
+    'page.health.empty':             'API nicht erreichbar oder keine Proben registriert.',
 
     // ─── Page: Quota ──────────────────────────────────────────────────
     'page.quota.title':           'Airlabs-Kontingent',
@@ -645,6 +683,7 @@ export const MESSAGES: Record<LocaleCode, Record<string, string>> = {
     'page.features.kpi.most_used':'AM HÄUFIGSTEN',
     'page.features.kpi.unused':   'UNGENUTZT',
     'page.features.kpi.unused_hint':'Features bei Null',
+    'page.features.kpi.unused_hint_all': 'jede Funktion zeigt Aktivität',
     'page.features.section.flags':'Feature-Flags',
     'page.features.section.usage':'Nutzung pro Kategorie',
 
@@ -691,17 +730,266 @@ export const MESSAGES: Record<LocaleCode, Record<string, string>> = {
 export type MessageKey = keyof typeof MESSAGES['en'];
 
 /**
- * Direct lookup — used by both the {@link useT} client hook AND server
- * components that resolve the locale from cookies at render time.
- *
- * <p>Falls back through: requested locale → English → key itself. The
- * last fallback is a debugging aid: if you see "page.system.title"
- * rendered literally, you have a missing-key issue — fix the dictionary
- * rather than the call site.
+ * Translation parameters. Numbers, strings, dates supported.
+ * Use a Date instance for date placeholders so the formatter can
+ * pick the locale-appropriate rendering automatically.
  */
-export function translate(locale: LocaleCode, key: string): string {
+export type TranslationParams = Record<string, string | number | Date>;
+
+/**
+ * Direct lookup with optional parameter interpolation.
+ *
+ * <h3>Plain replacement</h3>
+ * <pre>
+ *   t('hello.name', { name: 'Ada' })
+ *   // dict: 'hello.name': 'Hello, {name}'
+ *   // → 'Hello, Ada'
+ * </pre>
+ *
+ * <h3>Pluralization (ICU subset)</h3>
+ * Pre-V13 the dictionary had {@code time.minute} and {@code time.minutes}
+ * as separate keys, picked by hand at the call site. That breaks for
+ * languages with more than two plural forms (Russian, Polish, Arabic),
+ * and means every consumer has to write the {@code n === 1 ? a : b}
+ * branch. The new keys use ICU plural syntax:
+ * <pre>
+ *   'time.minutes':  '{count, plural, =0 {just now} one {1 minute ago} other {# minutes ago}}'
+ *   t('time.minutes', { count: 5 }) → '5 minutes ago'
+ *   t('time.minutes', { count: 1 }) → '1 minute ago'
+ *   t('time.minutes', { count: 0 }) → 'just now'
+ * </pre>
+ *
+ * <h3>Select (enum branching)</h3>
+ * <pre>
+ *   'role.label': '{role, select, ADMIN {Administrator} VIEWER {Viewer} other {Operator}}'
+ *   t('role.label', { role: 'ADMIN' }) → 'Administrator'
+ * </pre>
+ *
+ * <h3>Fallbacks</h3>
+ * Falls back through: requested locale → English → key itself. The
+ * last fallback is a debugging aid: if you see "page.system.title"
+ * rendered literally, you have a missing-key issue — fix the
+ * dictionary rather than the call site.
+ */
+export function translate(locale: LocaleCode, key: string, params?: TranslationParams): string {
   const dict = MESSAGES[locale];
-  if (dict && key in dict) return dict[key];
-  if (locale !== 'en' && key in MESSAGES.en) return MESSAGES.en[key];
-  return key;
+  let pattern: string;
+  if (dict && key in dict)                        pattern = dict[key];
+  else if (locale !== 'en' && key in MESSAGES.en) pattern = MESSAGES.en[key];
+  else                                            return key;
+  if (!params) return pattern;
+  return formatIcu(pattern, params, locale);
+}
+
+/**
+ * Locale-aware number formatter. Wraps Intl.NumberFormat. Defaults to
+ * the locale's default grouping + decimal style; pass options for
+ * percent / currency / compact rendering.
+ *
+ * <pre>
+ *   formatNumber(1234.56, 'de') → '1.234,56'
+ *   formatNumber(1234.56, 'en') → '1,234.56'
+ *   formatNumber(0.42, 'de', { style: 'percent' }) → '42 %'
+ *   formatNumber(1500, 'en', { notation: 'compact' }) → '1.5K'
+ * </pre>
+ */
+export function formatNumber(value: number, locale: LocaleCode, options?: Intl.NumberFormatOptions): string {
+  if (!Number.isFinite(value)) return String(value);
+  try {
+    return new Intl.NumberFormat(locale, options).format(value);
+  } catch {
+    return value.toString();
+  }
+}
+
+/**
+ * Locale-aware date/time formatter. Wraps Intl.DateTimeFormat with
+ * sensible defaults — short date + short time. Operators get
+ * dd.MM.yyyy in DE, M/d/yyyy in EN, automatically.
+ */
+export function formatDate(value: Date | string | number, locale: LocaleCode, options?: Intl.DateTimeFormatOptions): string {
+  const d = value instanceof Date ? value
+          : typeof value === 'number' ? new Date(value)
+          : new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  try {
+    return new Intl.DateTimeFormat(locale, options ?? {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    }).format(d);
+  } catch {
+    return d.toISOString();
+  }
+}
+
+/**
+ * Locale-aware relative time formatter. Wraps Intl.RelativeTimeFormat.
+ * Picks the largest unit that yields a |value| ≥ 1 (so "2 hours ago"
+ * not "120 minutes ago"). Returns "just now" within the last 5 s.
+ */
+export function formatRelative(deltaMs: number, locale: LocaleCode): string {
+  const abs = Math.abs(deltaMs);
+  if (abs < 5_000) return locale === 'de' ? 'gerade eben' : 'just now';
+  const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+    ['year',   365 * 86_400_000],
+    ['month',   30 * 86_400_000],
+    ['day',          86_400_000],
+    ['hour',          3_600_000],
+    ['minute',           60_000],
+    ['second',            1_000],
+  ];
+  for (const [unit, msPer] of units) {
+    if (abs >= msPer) {
+      // Don't double-sign: deltaMs already carries the sign, so dividing
+      // preserves it. Intl.RelativeTimeFormat reads negative = past,
+      // positive = future — exactly what we want.
+      const value = Math.round(deltaMs / msPer);
+      try {
+        return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(value, unit);
+      } catch {
+        return `${value} ${unit}`;
+      }
+    }
+  }
+  return locale === 'de' ? 'gerade eben' : 'just now';
+}
+
+// ─── ICU MessageFormat (subset) ─────────────────────────────────────────
+
+/**
+ * Format a pattern with ICU placeholders against {@code params}.
+ *
+ * <h3>Supported syntax</h3>
+ * <ul>
+ *   <li>{@code {name}} — simple replacement (number formatted via
+ *       {@link formatNumber}, Date via {@link formatDate})</li>
+ *   <li>{@code {count, plural, =N {...} one {...} other {...}}} — plural,
+ *       with {@code #} substituted by the count</li>
+ *   <li>{@code {role, select, KEY {...} other {...}}} — select / enum</li>
+ * </ul>
+ *
+ * Anything more exotic (skeletons, nested placeholders, gender, ordinal)
+ * is intentionally unsupported — keep the runtime small. If we ever
+ * need that, swap in {@code intl-messageformat}.
+ */
+function formatIcu(pattern: string, params: TranslationParams, locale: LocaleCode): string {
+  let out = '';
+  let i = 0;
+  while (i < pattern.length) {
+    const ch = pattern[i];
+    if (ch === '{') {
+      const end = findMatchingBrace(pattern, i);
+      if (end < 0) { out += ch; i++; continue; }
+      const inner = pattern.slice(i + 1, end);
+      out += evaluatePlaceholder(inner, params, locale);
+      i = end + 1;
+    } else {
+      out += ch;
+      i++;
+    }
+  }
+  return out;
+}
+
+function evaluatePlaceholder(inner: string, params: TranslationParams, locale: LocaleCode): string {
+  // Split into name + optional ", type, body" with awareness of nested {}.
+  const firstComma = indexOfTopLevel(inner, ',');
+  if (firstComma < 0) {
+    // Simple {name}
+    const name = inner.trim();
+    return formatScalar(params[name], locale);
+  }
+  const name = inner.slice(0, firstComma).trim();
+  const rest = inner.slice(firstComma + 1);
+  const secondComma = indexOfTopLevel(rest, ',');
+  if (secondComma < 0) {
+    // Malformed: {name, type} without body — fall back to scalar.
+    return formatScalar(params[name], locale);
+  }
+  const type = rest.slice(0, secondComma).trim();
+  const body = rest.slice(secondComma + 1);
+  const value = params[name];
+  if (type === 'plural') return evaluatePlural(value, body, params, locale);
+  if (type === 'select') return evaluateSelect(value, body, params, locale);
+  // Unknown type — just dump the scalar.
+  return formatScalar(value, locale);
+}
+
+function evaluatePlural(value: string | number | Date | undefined,
+                        body: string, params: TranslationParams, locale: LocaleCode): string {
+  const n = typeof value === 'number' ? value : Number(value ?? 0);
+  const branches = parseBranches(body);
+  // Exact-match branches first (=0, =1, …)
+  const exact = branches.find(b => b.key === `=${n}`);
+  if (exact) return substituteHash(formatIcu(exact.value, params, locale), n, locale);
+  // PluralRules → 'one' / 'other' / etc.
+  let category: string = 'other';
+  try { category = new Intl.PluralRules(locale).select(n); } catch { /* fall through */ }
+  const cat = branches.find(b => b.key === category);
+  if (cat) return substituteHash(formatIcu(cat.value, params, locale), n, locale);
+  const other = branches.find(b => b.key === 'other');
+  return other ? substituteHash(formatIcu(other.value, params, locale), n, locale) : '';
+}
+
+function evaluateSelect(value: string | number | Date | undefined,
+                        body: string, params: TranslationParams, locale: LocaleCode): string {
+  const v = String(value ?? '');
+  const branches = parseBranches(body);
+  const match = branches.find(b => b.key === v);
+  if (match) return formatIcu(match.value, params, locale);
+  const other = branches.find(b => b.key === 'other');
+  return other ? formatIcu(other.value, params, locale) : '';
+}
+
+function parseBranches(body: string): Array<{ key: string; value: string }> {
+  const out: Array<{ key: string; value: string }> = [];
+  let i = 0;
+  while (i < body.length) {
+    while (i < body.length && /\s/.test(body[i])) i++;
+    if (i >= body.length) break;
+    // Read key up to '{'
+    let keyEnd = i;
+    while (keyEnd < body.length && body[keyEnd] !== '{') keyEnd++;
+    const key = body.slice(i, keyEnd).trim();
+    if (keyEnd >= body.length) break;
+    const closeBrace = findMatchingBrace(body, keyEnd);
+    if (closeBrace < 0) break;
+    const value = body.slice(keyEnd + 1, closeBrace);
+    out.push({ key, value });
+    i = closeBrace + 1;
+  }
+  return out;
+}
+
+function substituteHash(text: string, n: number, locale: LocaleCode): string {
+  return text.replace(/#/g, formatNumber(n, locale));
+}
+
+function findMatchingBrace(s: string, openIdx: number): number {
+  let depth = 0;
+  for (let i = openIdx; i < s.length; i++) {
+    if (s[i] === '{') depth++;
+    else if (s[i] === '}') {
+      depth--;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+function indexOfTopLevel(s: string, ch: string): number {
+  let depth = 0;
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === '{') depth++;
+    else if (s[i] === '}') depth--;
+    else if (depth === 0 && s[i] === ch) return i;
+  }
+  return -1;
+}
+
+function formatScalar(value: string | number | Date | undefined, locale: LocaleCode): string {
+  if (value == null) return '';
+  if (value instanceof Date) return formatDate(value, locale);
+  if (typeof value === 'number') return formatNumber(value, locale);
+  return String(value);
 }

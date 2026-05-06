@@ -79,6 +79,24 @@ const nextConfig: NextConfig = {
   // to ~150 MB and means the runtime container has no compiler / package
   // manager to weaponise if something gets RCE.
   output: 'standalone',
+  // Phase 3 — emit .js.map files alongside production JS chunks so the
+  // admin shell's FrontendErrorReporter can resolve minified stack
+  // traces back to original source positions. The maps are referenced
+  // by the JS files via `//# sourceMappingURL=...`, which the browser
+  // ignores in production but the reporter (sourceMapResolver.ts) uses
+  // to rewrite the stack before POSTing.
+  //
+  // Trade-off: maps are ~2-3× the JS size and are publicly fetchable
+  // from /_next/static/chunks/*.js.map. Source code structure is
+  // exposed to anyone who fetches the maps. Acceptable here because:
+  //   1. The admin shell is gated behind /admin/login on a loopback
+  //      nginx (13099) — non-admin traffic never reaches it.
+  //   2. The public app's secrets aren't in the source — all secrets
+  //      come from server-side env vars at runtime.
+  //   3. Server-side resolution would need a Java sourcemap parser,
+  //      which is more code surface than the trade-off justifies for
+  //      the current threat model.
+  productionBrowserSourceMaps: true,
   // Cap the per-request body Next.js buffers when the proxy runs. Default
   // is 10 MB which is generous for our log-sink endpoints (web-vitals +
   // client-error each ship a few KB at most). 64 KB is comfortably above

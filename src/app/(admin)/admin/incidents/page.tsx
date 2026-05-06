@@ -11,6 +11,8 @@ import { ClientTime } from '@/app/(admin)/ClientTime';
 import { ActionResultToast } from '@/app/(admin)/ActionResultToast';
 import { HelpPanel } from '@/app/(admin)/admin/shared/components/HelpPanel';
 import { IncidentsClient } from '@/app/(admin)/admin/incidents/IncidentsClient';
+import { getLocale } from '@/app/(admin)/i18n/getLocale';
+import { translate } from '@/app/(admin)/i18n/messages';
 
 interface Incident {
   id: number;
@@ -52,10 +54,12 @@ Match the worst alert in the group. \`critical\` shows in red across the dashboa
 `;
 
 export default async function IncidentsPage() {
-  const [data, csrfToken] = await Promise.all([
+  const [data, csrfToken, locale] = await Promise.all([
     fetchJson<IncidentsPayload>('/admin/api/incidents?limit=50'),
     fetchCsrfToken(),
+    getLocale(),
   ]);
+  const t = (key: string, params?: Record<string, string | number>) => translate(locale, key, params);
 
   const stats     = data?.stats    ?? { open: 0, total7d: 0, avgMin30d: 0 };
   const incidents = data?.incidents ?? [];
@@ -69,16 +73,16 @@ export default async function IncidentsPage() {
       }} />
 
       <header>
-        <h1 style={headingStyle}>Incidents</h1>
-        <p style={subtitleStyle}>Operator-managed incident lifecycle. Open one when a real production event needs a postmortem.</p>
+        <h1 style={headingStyle}>{t('page.incidents.title')}</h1>
+        <p style={subtitleStyle}>{t('page.incidents.subtitle')}</p>
       </header>
 
       <HelpPanel pageId="incidents" markdown={RUNBOOK} />
 
       <div style={kpiGridStyle}>
-        <KpiCard label="OPEN NOW"          value={stats.open}     tone={stats.open > 0 ? 'warning' : 'success'} hint={stats.open === 0 ? 'all clear' : 'investigate'} />
-        <KpiCard label="OPENED IN 7 DAYS"  value={stats.total7d}  hint="trailing week" />
-        <KpiCard label="AVG DURATION 30D"  value={stats.avgMin30d} unit=" min" decimals={1} hint="closed only" />
+        <KpiCard label={t('page.incidents.kpi.open')}        value={stats.open}     tone={stats.open > 0 ? 'warning' : 'success'} hint={stats.open === 0 ? t('page.incidents.kpi.open_hint_ok') : t('page.incidents.kpi.open_hint_bad')} />
+        <KpiCard label={t('page.incidents.kpi.opened_7d')}   value={stats.total7d}  hint={t('page.incidents.kpi.opened_7d_hint')} />
+        <KpiCard label={t('page.incidents.kpi.avg_30d')} value={stats.avgMin30d} unit=" min" decimals={1} hint={t('page.incidents.kpi.avg_30d_hint')} />
       </div>
 
       <IncidentsClient initialIncidents={incidents} csrfToken={csrfToken} />

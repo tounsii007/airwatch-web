@@ -20,27 +20,32 @@
 'use client';
 
 import { createContext, useContext } from 'react';
-import { translate, type LocaleCode, DEFAULT_LOCALE } from './messages';
+import { translate, formatNumber, formatDate, formatRelative,
+         type LocaleCode, type TranslationParams,
+         DEFAULT_LOCALE } from './messages';
 
 interface I18nValue {
   locale: LocaleCode;
-  t: (key: string) => string;
+  t: (key: string, params?: TranslationParams) => string;
 }
 
 const I18nContext = createContext<I18nValue>({
   locale: DEFAULT_LOCALE,
-  t: (key) => translate(DEFAULT_LOCALE, key),
+  t: (key, params) => translate(DEFAULT_LOCALE, key, params),
 });
 
 export function I18nProvider({ locale, children }: { locale: LocaleCode; children: React.ReactNode }) {
   const value: I18nValue = {
     locale,
-    t: (key: string) => translate(locale, key),
+    t: (key, params) => translate(locale, key, params),
   };
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
-/** Translate-function hook. Returns the verbatim key if no entry exists (helps catch missing keys in dev). */
+/**
+ * Translate-function hook with optional params for ICU pluralization +
+ * named placeholders. Returns the verbatim key if no entry exists.
+ */
 export function useT() {
   return useContext(I18nContext).t;
 }
@@ -48,4 +53,22 @@ export function useT() {
 /** Read the current locale (e.g. for date/number formatting hints). */
 export function useLocale(): LocaleCode {
   return useContext(I18nContext).locale;
+}
+
+/** Locale-aware number formatter hook. */
+export function useFormatNumber() {
+  const locale = useLocale();
+  return (n: number, options?: Intl.NumberFormatOptions) => formatNumber(n, locale, options);
+}
+
+/** Locale-aware date formatter hook. */
+export function useFormatDate() {
+  const locale = useLocale();
+  return (d: Date | string | number, options?: Intl.DateTimeFormatOptions) => formatDate(d, locale, options);
+}
+
+/** Locale-aware "X minutes ago" formatter hook. */
+export function useFormatRelative() {
+  const locale = useLocale();
+  return (deltaMs: number) => formatRelative(deltaMs, locale);
 }

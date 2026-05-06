@@ -37,6 +37,13 @@ COPY . .
 ARG NEXT_PUBLIC_PROXY_URL=http://localhost:18080
 ENV NEXT_PUBLIC_PROXY_URL=$NEXT_PUBLIC_PROXY_URL
 
+# Phase 2 / V13 — release tag baked into the admin bundle at build time.
+# Surfaces in admin_frontend_error.release_tag for operator triage.
+# Defaults to "dev" so unbaked local builds still produce a meaningful
+# value; CI overrides with a git SHA / job number / semver.
+ARG NEXT_PUBLIC_RELEASE_TAG=dev
+ENV NEXT_PUBLIC_RELEASE_TAG=$NEXT_PUBLIC_RELEASE_TAG
+
 # Server-only target for Next.js's rewrite() proxy. Next bakes the rewrite
 # destinations into the standalone build output at `npm run build` time, so
 # this MUST be available as an ENV at build time. Defaults to the docker

@@ -52,6 +52,7 @@ const GROUPS: NavGroup[] = [
       { href: '/admin/instances', labelKey: 'nav.instances' },
       { href: '/admin/probes',    labelKey: 'nav.probes'    },
       { href: '/admin/incidents', labelKey: 'nav.incidents' },
+      { href: '/admin/webhooks',  labelKey: 'nav.webhooks'  },
     ],
   },
   {

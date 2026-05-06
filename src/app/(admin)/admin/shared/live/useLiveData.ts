@@ -18,22 +18,57 @@
  * backgrounded, when an operator is editing a form). It also lets
  * heavy widgets opt out of fast intervals.
  *
+ * <h3>Backed by SWR</h3>
+ * The hook is a thin facade over `useSWR`. The external API is
+ * preserved (intervalMs / pauseWhenHidden / skipInitialFetch /
+ * initialData / lastUpdatedMs / refresh) so all existing call sites
+ * keep working unchanged. Underneath we now get:
+ *
+ *   * **Request de-duplication**: 10 widgets fetching the same URL
+ *     within `dedupingInterval` (2 s, see SWRProvider) share a single
+ *     in-flight request and a single response. Pre-SWR, `useLiveData`
+ *     fired one request per mount.
+ *   * **Exponential backoff** on transient errors: SWR retries at
+ *     ~1 s / ~2 s / ~4 s (capped by `errorRetryCount`) instead of the
+ *     pre-SWR "no retry, wait for next tick" behaviour. 4xx auth/404
+ *     are skipped — see SWRProvider's `shouldRetryOnError`.
+ *   * **Cross-widget invalidation**: the legacy CustomEvent broadcast
+ *     is preserved AND piggy-backed on `mutate(() => true)` so SWR
+ *     consumers that don't go through `useLiveData` are also notified
+ *     by `dispatchGlobalRefresh()`.
+ *   * **Optimistic mutations**: callers can patch their cache before
+ *     the writer round-trips. See {@link LiveDataResult.mutate}.
+ *
  * <h3>Global broadcast</h3>
  * Window-level CustomEvent {@link REFRESH_EVENT}. Anything can dispatch
  * it (the global "Refresh" button, the AutoRefresh tick, a successful
  * mutation that should fan out to readers). Every mounted hook listens
- * and re-fetches.
+ * via SWR's revalidation. We also dispatch the legacy CustomEvent so
+ * any non-SWR observer (e.g. a future widget that wants to flash a UI
+ * cue on global refresh) can still subscribe.
  */
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import useSWR, { mutate as globalMutate, type KeyedMutator } from 'swr';
 
 /** CustomEvent name. Listen with window.addEventListener. */
 export const REFRESH_EVENT = 'admin:refresh-all';
 
-/** Broadcast a refresh to every mounted useLiveData hook. */
+/**
+ * Broadcast a refresh to every mounted useLiveData hook.
+ *
+ * Two channels in one call:
+ *   1. SWR `mutate(() => true)` — re-validates every cache entry, no
+ *      matter what hook owns it.
+ *   2. The legacy `REFRESH_EVENT` CustomEvent for any non-SWR listener.
+ */
 export function dispatchGlobalRefresh() {
   if (typeof window === 'undefined') return;
+  // SWR's `mutate(() => true, undefined, { revalidate: true })` matches
+  // every cache entry and triggers a re-fetch. The empty data argument
+  // means "don't touch the cached value, just re-pull".
+  void globalMutate(() => true, undefined, { revalidate: true });
   window.dispatchEvent(new CustomEvent(REFRESH_EVENT));
 }
 
@@ -57,93 +92,138 @@ export interface LiveDataResult<T> {
   lastUpdatedMs: number | null;
   /** Manually trigger a re-fetch. Returns the promise so callers can await. */
   refresh: () => Promise<void>;
+  /**
+   * Optimistic mutation helper.
+   *
+   * Patches the SWR cache to `optimisticData` immediately, runs
+   * `writer()` (typically a POST/PATCH/DELETE round-trip), then
+   * re-validates the URL. On error the cache rolls back automatically.
+   *
+   * Use this from a row-level Ack / Snooze button so the badge flips
+   * the instant the operator clicks, without waiting on the 30 s
+   * polling tick. The pre-SWR `useLiveData` had no equivalent —
+   * mutations had to manually call `refresh()` after the writer
+   * resolved, which left a 100-300 ms "stale" window where the row
+   * still showed the old state.
+   */
+  mutate: <R>(
+    writer: () => Promise<R>,
+    opts?: { optimisticData?: T; rollbackOnError?: boolean },
+  ) => Promise<R | undefined>;
 }
 
 /**
  * Subscribe to one URL with refresh semantics.
  *
- * @param url        endpoint to fetch (relative or absolute)
+ * @param url        endpoint to fetch (relative or absolute). Pass null
+ *                   to skip — useful for "fetch only if X is set" cases.
  * @param options    polling cadence + lifecycle hints
  */
-export function useLiveData<T = unknown>(url: string, options: LiveDataOptions = {}): LiveDataResult<T> {
+export function useLiveData<T = unknown>(
+  url: string | null,
+  options: LiveDataOptions = {},
+): LiveDataResult<T> {
   const {
-    intervalMs        = 0,
-    pauseWhenHidden   = true,
-    skipInitialFetch  = false,
-    initialData       = null,
+    intervalMs       = 0,
+    pauseWhenHidden  = true,
+    skipInitialFetch = false,
+    initialData      = null,
   } = options;
 
-  const [data, setData]         = useState<T | null>(initialData as T | null);
-  const [loading, setLoading]   = useState(!skipInitialFetch);
-  const [error, setError]       = useState<string | null>(null);
-  const [lastUpdatedMs, setLastUpdatedMs] = useState<number | null>(initialData ? Date.now() : null);
+  // SWR treats null as "skip this request". We map that through.
+  const swrKey: string | null = url;
 
-  // AbortController for the in-flight request — cancelled on unmount or
-  // on the next refresh, so a slow first request never overwrites a
-  // newer second response (last-write-wins-by-time race).
-  const abortRef = useRef<AbortController | null>(null);
+  // We only set fallbackData when the caller actually provided
+  // initialData. Passing `undefined` lets SWR distinguish "no value"
+  // from "explicit null/empty".
+  const hasInitial = initialData != null;
 
-  const refresh = useCallback(async () => {
-    abortRef.current?.abort();
-    const ac = new AbortController();
-    abortRef.current = ac;
-    setLoading(true);
-    try {
-      const res = await fetch(url, { credentials: 'include', cache: 'no-store', signal: ac.signal });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const body = await res.json() as T;
-      if (ac.signal.aborted) return;
-      setData(body);
-      setError(null);
-      setLastUpdatedMs(Date.now());
-    } catch (ex) {
-      if (ac.signal.aborted) return;
-      setError(ex instanceof Error ? ex.message : 'fetch failed');
-    } finally {
-      if (!ac.signal.aborted) setLoading(false);
-    }
-  }, [url]);
+  const swr = useSWR<T>(swrKey, {
+    refreshInterval: intervalMs > 0 ? intervalMs : 0,
+    // SWR's flag is the inverse: `refreshWhenHidden: true` means keep
+    // ticking while hidden. `pauseWhenHidden: true` (our option) maps
+    // to `refreshWhenHidden: false`.
+    refreshWhenHidden: !pauseWhenHidden,
+    refreshWhenOffline: false,
+    fallbackData: hasInitial ? (initialData as T) : undefined,
+    // skipInitialFetch only matters when fallbackData is present; when
+    // there's no fallback we always need the initial fetch to populate
+    // the cache.
+    revalidateOnMount: !(skipInitialFetch && hasInitial),
+  });
 
-  // Initial fetch (unless suppressed).
+  // Track the timestamp of the last successful fetch. SWR doesn't
+  // expose this directly, so we observe data + error + isValidating
+  // transitions: the moment isValidating flips false WITHOUT an error,
+  // we know a fetch just succeeded. We seed the value from initialData
+  // so the "Updated Xs ago" label doesn't show "—" for the first
+  // render of a SSR-hydrated widget.
+  const [lastUpdatedMs, setLastUpdatedMs] = useState<number | null>(
+    hasInitial ? Date.now() : null,
+  );
+  const wasValidatingRef = useRef<boolean>(false);
   useEffect(() => {
-    if (!skipInitialFetch) void refresh();
-    return () => abortRef.current?.abort();
-    // intentionally omit refresh from deps — it's stable per url
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url]);
+    const isValidating = swr.isValidating;
+    // edge: isValidating just flipped from true → false
+    if (wasValidatingRef.current && !isValidating) {
+      if (!swr.error && swr.data !== undefined) {
+        setLastUpdatedMs(Date.now());
+      }
+    }
+    wasValidatingRef.current = isValidating;
+  }, [swr.isValidating, swr.error, swr.data]);
 
-  // Auto-refresh interval (paused on hidden tab if requested).
+  // The legacy CustomEvent broadcast still fans out — any non-SWR
+  // listener can act on it. SWR consumers don't need this listener
+  // (dispatchGlobalRefresh already triggers SWR's matcher mutate),
+  // but we keep it for forward-compat with widgets that may want to
+  // react to a "refresh-all" cue without going through SWR.
+  const swrMutate: KeyedMutator<T> = swr.mutate;
   useEffect(() => {
-    if (intervalMs <= 0) return;
-    let id: ReturnType<typeof setInterval> | null = null;
-    function start() {
-      if (id != null) return;
-      id = setInterval(() => { void refresh(); }, intervalMs);
-    }
-    function stop() {
-      if (id == null) return;
-      clearInterval(id);
-      id = null;
-    }
-    function onVisibility() {
-      if (!pauseWhenHidden) return;
-      if (document.hidden) stop();
-      else start();
-    }
-    if (!pauseWhenHidden || !document.hidden) start();
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility);
-      stop();
-    };
-  }, [intervalMs, pauseWhenHidden, refresh]);
-
-  // Subscribe to the global refresh broadcast.
-  useEffect(() => {
-    function handler() { void refresh(); }
+    function handler() { void swrMutate(); }
     window.addEventListener(REFRESH_EVENT, handler);
     return () => window.removeEventListener(REFRESH_EVENT, handler);
-  }, [refresh]);
+  }, [swrMutate]);
 
-  return { data, loading, error, lastUpdatedMs, refresh };
+  return {
+    data: (swr.data ?? null) as T | null,
+    // Match the pre-SWR semantics: loading is true on every fetch
+    // (not just the first). This drives the "spin the refresh icon"
+    // affordance in LiveWidgetHeader.
+    loading: swr.isValidating,
+    error: swr.error ? (swr.error as Error).message : null,
+    lastUpdatedMs,
+    refresh: async () => { await swrMutate(); },
+    mutate: async <R,>(
+      writer: () => Promise<R>,
+      opts?: { optimisticData?: T; rollbackOnError?: boolean },
+    ): Promise<R | undefined> => {
+      const optimisticData = opts?.optimisticData;
+      const rollbackOnError = opts?.rollbackOnError !== false;
+      let writerResult: R | undefined;
+      try {
+        await swrMutate(
+          async () => {
+            writerResult = await writer();
+            // Returning undefined tells SWR "I don't have the new
+            // server value, please re-pull". We avoid threading the
+            // mutation response into the cache directly because the
+            // shape of admin endpoints varies (some return the row,
+            // some return {ok:true}, some 204).
+            return undefined;
+          },
+          {
+            optimisticData,
+            rollbackOnError,
+            populateCache: false,
+            revalidate: true,
+          },
+        );
+        return writerResult;
+      } catch (e) {
+        if (rollbackOnError) return undefined;
+        throw e;
+      }
+    },
+  };
 }

@@ -9,6 +9,8 @@
 import { fetchJson } from '@/app/(admin)/admin/dashboard/fetcher';
 import { KpiCard } from '@/app/(admin)/admin/shared/components/KpiCard';
 import { relativeTime } from '@/app/(admin)/admin/dashboard/utils';
+import { getLocale } from '@/app/(admin)/i18n/getLocale';
+import { translate } from '@/app/(admin)/i18n/messages';
 
 interface Check {
   name: string;
@@ -30,6 +32,8 @@ const STATUS_COLOR: Record<Check['status'], string> = {
 
 export default async function AdminHealthPage() {
   const h = await fetchJson<HealthPayload>('/admin/api/health');
+  const locale = await getLocale();
+  const t = (key: string) => translate(locale, key);
 
   const overall = h?.overall ?? 'ERROR';
   const checks  = h?.checks ?? [];
@@ -43,27 +47,27 @@ export default async function AdminHealthPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <header style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
         <div>
-          <h1 style={headingStyle}>Health</h1>
-          <p style={subtitleStyle}>Live probes from one api replica. Refresh for another sample.</p>
+          <h1 style={headingStyle}>{t('page.health.title')}</h1>
+          <p style={subtitleStyle}>{t('page.health.subtitle')}</p>
         </div>
         <span style={overallPillStyle(overall)}>● {overall}</span>
       </header>
 
       <div style={kpiGridStyle}>
-        <KpiCard label="HEALTHY" value={okCount} tone="success" hint="probes returning OK" />
-        <KpiCard label="WARNING" value={warnCount} tone={warnCount > 0 ? 'warning' : 'success'} hint="degraded but functional" />
-        <KpiCard label="FAILING" value={errorCount} tone={errorCount > 0 ? 'error' : 'success'} hint="hard failures" />
+        <KpiCard label={t('page.health.kpi.healthy')}  value={okCount}    tone="success" hint={t('page.health.kpi.healthy_hint')} />
+        <KpiCard label={t('page.health.kpi.warning')}  value={warnCount}  tone={warnCount > 0 ? 'warning' : 'success'} hint={t('page.health.kpi.warning_hint')} />
+        <KpiCard label={t('page.health.kpi.failing')}  value={errorCount} tone={errorCount > 0 ? 'error' : 'success'}   hint={t('page.health.kpi.failing_hint')} />
       </div>
 
       <section className="admin-card">
         <h2>
-          Probes
+          {t('page.health.section.probes')}
           <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.6875rem', color: 'var(--text-muted)', marginLeft: '0.75rem' }} suppressHydrationWarning>
-            sampled {ts > 0 ? relativeTime(new Date(ts).toISOString()) : '—'} ago
+            {t('page.health.sampled')} {ts > 0 ? relativeTime(new Date(ts).toISOString()) : '—'}
           </span>
         </h2>
         {checks.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>API unreachable or no probes registered.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>{t('page.health.empty')}</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {checks.map((c) => (

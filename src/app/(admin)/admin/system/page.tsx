@@ -3,10 +3,11 @@
  * uptime, available cores. Operators check this when an api replica
  * goes unhealthy or the overall response time degrades.
  */
-import { fetchJson } from '@/app/(admin)/admin/dashboard/fetcher';
+import { fetchJson, fetchCsrfToken } from '@/app/(admin)/admin/dashboard/fetcher';
 import { KpiCard } from '@/app/(admin)/admin/shared/components/KpiCard';
 import { getLocale } from '@/app/(admin)/i18n/getLocale';
 import { translate } from '@/app/(admin)/i18n/messages';
+import { BackupSection } from '@/app/(admin)/admin/system/BackupSection';
 
 interface SystemPayload {
   availableProcessors: number;
@@ -19,9 +20,10 @@ interface SystemPayload {
 }
 
 export default async function AdminSystemPage() {
-  const [s, locale] = await Promise.all([
+  const [s, locale, csrfToken] = await Promise.all([
     fetchJson<SystemPayload>('/admin/api/system'),
     getLocale(),
+    fetchCsrfToken(),
   ]);
   const t = (key: string) => translate(locale, key);
 
@@ -67,6 +69,8 @@ export default async function AdminSystemPage() {
           <li>{t('page.system.note.threads')}</li>
         </ul>
       </section>
+
+      <BackupSection csrfToken={csrfToken} />
     </div>
   );
 }

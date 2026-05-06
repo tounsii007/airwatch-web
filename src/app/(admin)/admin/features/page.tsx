@@ -11,12 +11,16 @@ import { KpiCard } from '@/app/(admin)/admin/shared/components/KpiCard';
 import { HBar } from '@/app/(admin)/admin/shared/charts/HBar';
 import { EmptyState } from '@/app/(admin)/admin/shared/components/EmptyState';
 import { FeatureFlagsCard } from '@/app/(admin)/admin/features/FeatureFlagsCard';
+import { getLocale } from '@/app/(admin)/i18n/getLocale';
+import { translate } from '@/app/(admin)/i18n/messages';
 
 export default async function AdminFeaturesPage() {
-  const [features, csrfToken] = await Promise.all([
+  const [features, csrfToken, locale] = await Promise.all([
     fetchJson<Record<string, number>>('/admin/api/features'),
     fetchCsrfToken(),
+    getLocale(),
   ]);
+  const t = (key: string, params?: Record<string, string | number>) => translate(locale, key, params);
   const entries = Object.entries(features ?? {}).sort(([, a], [, b]) => b - a);
 
   const total = entries.reduce((a, [, v]) => a + v, 0);
@@ -36,22 +40,22 @@ export default async function AdminFeaturesPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <header>
-        <h1 style={headingStyle}>Features</h1>
-        <p style={subtitleStyle}>Event-counter totals per feature category since process start.</p>
+        <h1 style={headingStyle}>{t('page.features.title')}</h1>
+        <p style={subtitleStyle}>{t('page.features.subtitle')}</p>
       </header>
 
       {/* Phase 2.8 — runtime feature flags. Renders the catalog with toggles. */}
       {csrfToken && <FeatureFlagsCard csrfToken={csrfToken} />}
 
       <div style={kpiGridStyle}>
-        <KpiCard label="CATEGORIES" value={entries.length} hint="distinct features tracked" />
-        <KpiCard label="TOTAL EVENTS" value={total} hint="all categories combined" />
-        <KpiCard label="MOST USED" value={topUsed?.[1] ?? 0} tone="success" hint={topUsed?.[0] ?? '—'} />
-        <KpiCard label="UNUSED" value={unused.length} tone={unused.length > 0 ? 'warning' : 'success'} hint={unused.length > 0 ? 'features at zero' : 'every feature seen activity'} />
+        <KpiCard label={t('page.features.kpi.categories')} value={entries.length} hint={t('page.features.kpi.categories_hint')} />
+        <KpiCard label={t('page.features.kpi.total')}      value={total}            hint={t('page.features.kpi.total_hint')} />
+        <KpiCard label={t('page.features.kpi.most_used')}  value={topUsed?.[1] ?? 0} tone="success" hint={topUsed?.[0] ?? '—'} />
+        <KpiCard label={t('page.features.kpi.unused')}     value={unused.length}    tone={unused.length > 0 ? 'warning' : 'success'} hint={unused.length > 0 ? t('page.features.kpi.unused_hint') : t('page.features.kpi.unused_hint_all')} />
       </div>
 
       <section className="admin-card">
-        <h2>Usage by category</h2>
+        <h2>{t('page.features.section.usage')}</h2>
         {items.length === 0 ? (
           <EmptyState
             icon="〰"

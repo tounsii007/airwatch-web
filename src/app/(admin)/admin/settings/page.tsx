@@ -18,6 +18,8 @@ import { ApiKeysCard } from '@/app/(admin)/admin/settings/ApiKeysCard';
 import { WebhookCard } from '@/app/(admin)/admin/settings/WebhookCard';
 import { ActionResultToast } from '@/app/(admin)/ActionResultToast';
 import { HelpPanel } from '@/app/(admin)/admin/shared/components/HelpPanel';
+import { getLocale } from '@/app/(admin)/i18n/getLocale';
+import { translate } from '@/app/(admin)/i18n/messages';
 
 const SETTINGS_RUNBOOK = `
 # Sections in order
@@ -71,10 +73,12 @@ export default async function AdminSettingsPage(_props: {
   // searchParams is intentionally unused here — ActionResultToast (a
   // client component) reads them via useSearchParams and dispatches the
   // toast itself, so we don't need the server-side render branch.
-  const [data, csrfToken] = await Promise.all([
+  const [data, csrfToken, locale] = await Promise.all([
     fetchJson<SettingsPayload>('/admin/api/settings'),
     fetchCsrfToken(),
+    getLocale(),
   ]);
+  const t = (key: string, params?: Record<string, string | number>) => translate(locale, key, params);
 
   const username      = data?.username ?? '—';
   const totpEnabled   = data?.totpEnabled ?? false;
@@ -91,8 +95,8 @@ export default async function AdminSettingsPage(_props: {
       <HelpPanel pageId="settings" markdown={SETTINGS_RUNBOOK} />
 
       <header>
-        <h1 style={headingStyle}>Settings</h1>
-        <p style={subtitleStyle}>Account credentials + two-factor authentication for user <code style={inlineCode}>{username}</code>.</p>
+        <h1 style={headingStyle}>{t('page.settings.title')}</h1>
+        <p style={subtitleStyle}>{t('page.settings.subtitle')} <code style={inlineCode}>{username}</code>.</p>
       </header>
 
       {/*
@@ -133,7 +137,7 @@ export default async function AdminSettingsPage(_props: {
       {csrfToken && <WebhookCard csrfToken={csrfToken} />}
 
       <section className="admin-card">
-        <h2>Change password</h2>
+        <h2>{t('page.settings.section.password')}</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.75rem' }}>
           New password must be at least 12 characters. Persists to the <code style={inlineCode}>admin_settings</code> table — overrides the env-configured hash.
         </p>
@@ -151,7 +155,7 @@ export default async function AdminSettingsPage(_props: {
       </section>
 
       <section className="admin-card">
-        <h2>Two-factor authentication</h2>
+        <h2>{t('page.settings.section.2fa')}</h2>
         {totpEnabled ? (
           <>
             <p style={{ color: 'var(--success)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>

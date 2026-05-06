@@ -17,6 +17,8 @@ import { AuditTable, type AuditEntry } from '@/app/(admin)/admin/security/AuditT
 import { AuditHistoryChart, type AuditDailyPoint } from '@/app/(admin)/admin/security/AuditHistoryChart';
 import { HelpPanel } from '@/app/(admin)/admin/shared/components/HelpPanel';
 import { AuditSavedViews } from '@/app/(admin)/admin/security/AuditSavedViews';
+import { getLocale } from '@/app/(admin)/i18n/getLocale';
+import { translate } from '@/app/(admin)/i18n/messages';
 
 const SECURITY_RUNBOOK = `
 # Sources
@@ -61,12 +63,14 @@ export default async function AdminSecurityPage({
   const auditUrl = query
     ? `/admin/api/audit?q=${encodeURIComponent(query)}&limit=500`
     : '/admin/api/audit';
-  const [audit, history, blocked, recent] = await Promise.all([
+  const [audit, history, blocked, recent, locale] = await Promise.all([
     fetchJson<AuditPayload>(auditUrl),
     fetchJson<AuditHistoryPayload>('/admin/api/audit/history?days=30'),
     fetchJson<BlockedIp[]>('/admin/api/monitoring/unauthorized-ips?limit=50'),
     fetchJson<RejectEvent[]>('/admin/api/monitoring/unauthorized-events?limit=50'),
+    getLocale(),
   ]);
+  const t = (key: string, params?: Record<string, string | number>) => translate(locale, key, params);
 
   const blockedTotal = blocked?.reduce((a, b) => a + b.attempt_count, 0) ?? 0;
   const uniqueIps    = blocked?.length ?? 0;
@@ -93,10 +97,10 @@ export default async function AdminSecurityPage({
             color: 'var(--primary-bright)',
           }}
         >
-          Security
+          {t('page.security.title')}
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: 4 }}>
-          Auth events, blocked IPs, audit trail. Server-side gates: AdminAuthFilter + LoginThrottleService.
+          {t('page.security.subtitle')}
         </p>
       </header>
 
@@ -160,7 +164,7 @@ export default async function AdminSecurityPage({
           views by clicking, save the current filter combo with "+ Save current". */}
       <AuditSavedViews currentQuery={query} currentPage={page} />
 
-      <AuditTable entries={audit?.entries ?? []} summary={audit?.summary ?? {}} page={page} query={query} />
+      <AuditTable entries={audit?.entries ?? []} summary={audit?.summary ?? {}} query={query} />
     </div>
   );
 }

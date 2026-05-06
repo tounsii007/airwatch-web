@@ -5,6 +5,8 @@ import { fetchJson, fetchCsrfToken } from '@/app/(admin)/admin/dashboard/fetcher
 import { KpiCard } from '@/app/(admin)/admin/shared/components/KpiCard';
 import { HelpPanel } from '@/app/(admin)/admin/shared/components/HelpPanel';
 import { ProbesClient } from '@/app/(admin)/admin/probes/ProbesClient';
+import { getLocale } from '@/app/(admin)/i18n/getLocale';
+import { translate } from '@/app/(admin)/i18n/messages';
 
 interface Probe {
   id: number;
@@ -38,10 +40,12 @@ A probe fires an alert (kind = \`synthetic_probe\`) once it accumulates **failTh
 `;
 
 export default async function ProbesPage() {
-  const [data, csrfToken] = await Promise.all([
+  const [data, csrfToken, locale] = await Promise.all([
     fetchJson<{ probes: Probe[] }>('/admin/api/probes'),
     fetchCsrfToken(),
+    getLocale(),
   ]);
+  const t = (key: string) => translate(locale, key);
 
   const probes  = data?.probes ?? [];
   const failing = probes.filter(p => p.consecFailures > 0).length;
@@ -50,16 +54,16 @@ export default async function ProbesPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <header>
-        <h1 style={headingStyle}>Synthetic probes</h1>
-        <p style={subtitleStyle}>Operator-defined HTTP checks. Threshold breaches fire through the standard alert pipeline.</p>
+        <h1 style={headingStyle}>{t('page.probes.title')}</h1>
+        <p style={subtitleStyle}>{t('page.probes.subtitle')}</p>
       </header>
 
       <HelpPanel pageId="probes" markdown={RUNBOOK} />
 
       <div style={kpiGridStyle}>
-        <KpiCard label="REGISTERED" value={probes.length} hint="all probes" />
-        <KpiCard label="ENABLED"    value={enabled}       tone="info"    hint="actively polled" />
-        <KpiCard label="FAILING"    value={failing}       tone={failing > 0 ? 'error' : 'success'} hint={failing > 0 ? 'investigate' : 'all green'} />
+        <KpiCard label={t('page.probes.kpi.registered')} value={probes.length} hint={t('page.probes.kpi.registered_hint')} />
+        <KpiCard label={t('page.probes.kpi.enabled')}    value={enabled}       tone="info" hint={t('page.probes.kpi.enabled_hint')} />
+        <KpiCard label={t('page.probes.kpi.failing')}    value={failing}       tone={failing > 0 ? 'error' : 'success'} hint={failing > 0 ? t('page.probes.kpi.failing_hint_bad') : t('page.probes.kpi.failing_hint_ok')} />
       </div>
 
       <ProbesClient initialProbes={probes} csrfToken={csrfToken} />

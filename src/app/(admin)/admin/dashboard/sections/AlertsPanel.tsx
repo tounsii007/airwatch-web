@@ -18,9 +18,11 @@
  * are worth notifying on (instance failure, attack threshold,
  * critical error escalation).
  */
+import { Fragment, useState } from 'react';
 import { useToast } from '@/app/(admin)/Toast';
 import { useLiveData } from '@/app/(admin)/admin/shared/live/useLiveData';
 import { LiveWidgetHeader } from '@/app/(admin)/admin/shared/live/LiveWidgetHeader';
+import { useAdminEvents } from '@/app/(admin)/admin/shared/live/AdminEventStream';
 
 interface AlertRow {
   id: number;
@@ -37,6 +39,14 @@ interface AlertRow {
   snooze_until?: string | null;
   was_muted?: boolean;
   incident_id?: number | null;
+  // Phase 4 — fingerprint + grouping. When the panel is in grouped mode,
+  // this row represents the most-recent alert in the group; group_count
+  // is the total within the window. In flat mode group_count is absent
+  // and these rows are individual alerts.
+  fingerprint?: string | null;
+  group_count?: number;
+  first_in_group_at?: string;
+  last_in_group_at?: string;
 }
 
 const REFRESH_MS = 30_000;
@@ -57,34 +67,189 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
   // Live-data subscription (Phase 4 dynamic). Auto-refreshes every 30s,
   // pauses when tab hidden, listens to the global "Refresh all" event,
   // and exposes a per-widget refresh button via LiveWidgetHeader below.
-  const live = useLiveData<AlertRow[]>('/admin/api/monitoring/alerts?limit=20', {
+  // The optimistic `mutate()` lets row-level Ack/Snooze/Mute flip the
+  // badge instantly — no 100-300 ms "stale" gap waiting for the next
+  // poll. SWR rolls the cache back automatically if the writer throws.
+  // Phase 4 — grouped view (default) collapses repeats into one leader
+  // row per fingerprint. Operators can toggle to flat for forensic
+  // detail. The toggle persists for the page lifetime; we don't store
+  // it in localStorage because reload context (incident vs steady-state)
+  // changes which view is more useful.
+  const [groupedView, setGroupedView] = useState(true);
+  const alertsUrl = groupedView
+    ? '/admin/api/monitoring/alerts/grouped?limit=20'
+    : '/admin/api/monitoring/alerts?limit=20';
+  const live = useLiveData<AlertRow[]>(alertsUrl, {
     intervalMs: REFRESH_MS,
   });
   const rows = live.data;
   const refresh = live.refresh;
 
+  // Per-fingerprint expanded state — independent from selectMode. Maps
+  // fingerprint → fetched member array (null = loading; undefined = not
+  // expanded). Lazy fetch keeps the panel light when nothing is
+  // expanded.
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, AlertRow[] | null>>({});
+  async function toggleGroup(fp: string | null | undefined) {
+    if (!fp) return;
+    setExpandedGroups(prev => {
+      // Clicking again collapses.
+      if (fp in prev) {
+        const next = { ...prev };
+        delete next[fp];
+        return next;
+      }
+      return { ...prev, [fp]: null };
+    });
+    try {
+      const res = await fetch(`/admin/api/monitoring/alerts/group/${encodeURIComponent(fp)}?limit=50`,
+                              { credentials: 'include', cache: 'no-store' });
+      if (!res.ok) throw new Error('group fetch failed');
+      const body = (await res.json()) as AlertRow[];
+      setExpandedGroups(prev => (fp in prev ? { ...prev, [fp]: body } : prev));
+    } catch {
+      toast.error('Could not fetch group members');
+      setExpandedGroups(prev => {
+        const next = { ...prev };
+        delete next[fp];
+        return next;
+      });
+    }
+  }
+
+  // Phase 4 — SSE push. The 30 s polling stays as a safety net (in case
+  // the SSE connection drops or an alert lands during a brief reconnect)
+  // but the typical path is now: api inserts row → SSE event → here we
+  // call refresh() within ~50 ms instead of waiting up to 30 s.
+  useAdminEvents('alert.fired',   () => { void refresh(); });
+  useAdminEvents('alert.updated', () => { void refresh(); });
+
+  /** Build the optimistic next-state for one alert, leaving the rest. */
+  function patchRow(id: number, patch: Partial<AlertRow>): AlertRow[] {
+    return (rows ?? []).map(r => (r.id === id ? { ...r, ...patch } : r));
+  }
+
+  /** Build the optimistic next-state for many alerts in one shot. */
+  function patchRows(ids: ReadonlySet<number>, patch: Partial<AlertRow>): AlertRow[] {
+    return (rows ?? []).map(r => (ids.has(r.id) ? { ...r, ...patch } : r));
+  }
+
+  // Phase 3 — multi-row selection + bulk actions. Operators see this
+  // as a "Select" toggle next to the refresh button; clicking it
+  // reveals checkboxes per row and a bulk-action bar above the list.
+  const [selectMode, setSelectMode]   = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+  function toggleSelect(id: number) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+  function clearSelection() { setSelectedIds(new Set()); }
+  function selectAll() {
+    const ackable = (rows ?? []).filter(r => !r.ack_at).map(r => r.id);
+    setSelectedIds(new Set(ackable));
+  }
+
+  /**
+   * Bulk-ack: fire N parallel ack POSTs, single optimistic patch
+   * covering every selected row. SWR sees one mutate(), one cache
+   * patch, one revalidate — much cheaper than per-row sequential
+   * round-trips. On any failure the entire bar rolls back.
+   */
+  async function bulkAck() {
+    if (!csrfToken || selectedIds.size === 0) return;
+    const ids = new Set(selectedIds);
+    const optimistic = patchRows(ids, {
+      ack_at: new Date().toISOString(),
+      ack_by: 'you',
+    });
+    try {
+      await live.mutate(async () => {
+        await Promise.all([...ids].map(id => {
+          const params = new URLSearchParams({ _csrf: csrfToken });
+          return fetch(`/admin/api/alerts/${id}/ack?${params}`, { method: 'POST', credentials: 'include' });
+        }));
+      }, { optimisticData: optimistic });
+      toast.success(`Acknowledged ${ids.size}`);
+      setSelectedIds(new Set());
+    } catch {
+      toast.error('Bulk-ack failed — some alerts may have succeeded');
+    }
+  }
+
+  async function bulkSnooze(minutes: number) {
+    if (!csrfToken || selectedIds.size === 0) return;
+    const ids = new Set(selectedIds);
+    const optimistic = patchRows(ids, {
+      snooze_until: new Date(Date.now() + minutes * 60_000).toISOString(),
+    });
+    try {
+      await live.mutate(async () => {
+        await Promise.all([...ids].map(id => {
+          const params = new URLSearchParams({ _csrf: csrfToken, minutes: String(minutes) });
+          return fetch(`/admin/api/alerts/${id}/snooze?${params}`, { method: 'POST', credentials: 'include' });
+        }));
+      }, { optimisticData: optimistic });
+      toast.success(`Snoozed ${ids.size} for ${minutes}min`);
+      setSelectedIds(new Set());
+    } catch {
+      toast.error('Bulk-snooze failed');
+    }
+  }
+
   async function ack(id: number) {
     if (!csrfToken) return;
     const params = new URLSearchParams({ _csrf: csrfToken });
-    const res = await fetch(`/admin/api/alerts/${id}/ack?${params}`, { method: 'POST', credentials: 'include' });
-    if (res.ok) { toast.success('Acknowledged'); void refresh(); }
-    else        { toast.error('Could not acknowledge'); }
+    // Optimistic patch: set ack_at to now so `acked` flips true and the
+    // row dims + ACK badge appears the instant the operator clicks.
+    const optimistic = patchRow(id, {
+      ack_at: new Date().toISOString(),
+      ack_by: 'you',
+    });
+    try {
+      await live.mutate(async () => {
+        const res = await fetch(`/admin/api/alerts/${id}/ack?${params}`, { method: 'POST', credentials: 'include' });
+        if (!res.ok) throw new Error('ack failed');
+      }, { optimisticData: optimistic });
+      toast.success('Acknowledged');
+    } catch {
+      toast.error('Could not acknowledge');
+    }
   }
 
   async function snooze(id: number, minutes: number) {
     if (!csrfToken) return;
     const params = new URLSearchParams({ _csrf: csrfToken, minutes: String(minutes) });
-    const res = await fetch(`/admin/api/alerts/${id}/snooze?${params}`, { method: 'POST', credentials: 'include' });
-    if (res.ok) { toast.success(`Snoozed ${minutes}min`); void refresh(); }
-    else        { toast.error('Snooze failed'); }
+    const optimistic = patchRow(id, {
+      snooze_until: new Date(Date.now() + minutes * 60_000).toISOString(),
+    });
+    try {
+      await live.mutate(async () => {
+        const res = await fetch(`/admin/api/alerts/${id}/snooze?${params}`, { method: 'POST', credentials: 'include' });
+        if (!res.ok) throw new Error('snooze failed');
+      }, { optimisticData: optimistic });
+      toast.success(`Snoozed ${minutes}min`);
+    } catch {
+      toast.error('Snooze failed');
+    }
   }
 
   async function unsnooze(id: number) {
     if (!csrfToken) return;
     const params = new URLSearchParams({ _csrf: csrfToken });
-    const res = await fetch(`/admin/api/alerts/${id}/unsnooze?${params}`, { method: 'POST', credentials: 'include' });
-    if (res.ok) { toast.success('Snooze cleared'); void refresh(); }
-    else        { toast.error('Could not clear snooze'); }
+    const optimistic = patchRow(id, { snooze_until: null });
+    try {
+      await live.mutate(async () => {
+        const res = await fetch(`/admin/api/alerts/${id}/unsnooze?${params}`, { method: 'POST', credentials: 'include' });
+        if (!res.ok) throw new Error('unsnooze failed');
+      }, { optimisticData: optimistic });
+      toast.success('Snooze cleared');
+    } catch {
+      toast.error('Could not clear snooze');
+    }
   }
 
   async function mute(kind: string, target: string) {
@@ -92,9 +257,19 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
     const reason = prompt(`Mute reason for ${kind} (optional)`, '');
     if (reason === null) return;
     const params = new URLSearchParams({ _csrf: csrfToken, kind, target, reason });
-    const res = await fetch(`/admin/api/alerts/mutes?${params}`, { method: 'POST', credentials: 'include' });
-    if (res.ok) { toast.success('Muted'); void refresh(); }
-    else        { toast.error('Mute failed'); }
+    // Mark every matching kind+target row as muted right away.
+    const optimistic = (rows ?? []).map(r =>
+      r.kind === kind && r.target === target ? { ...r, was_muted: true } : r,
+    );
+    try {
+      await live.mutate(async () => {
+        const res = await fetch(`/admin/api/alerts/mutes?${params}`, { method: 'POST', credentials: 'include' });
+        if (!res.ok) throw new Error('mute failed');
+      }, { optimisticData: optimistic });
+      toast.success('Muted');
+    } catch {
+      toast.error('Mute failed');
+    }
   }
 
   return (
@@ -109,21 +284,96 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
         loading={live.loading}
         lastUpdatedMs={live.lastUpdatedMs}
         onRefresh={() => void refresh()}
+        right={
+          <span style={{ display: 'flex', gap: 4 }}>
+            <button
+              type="button"
+              onClick={() => setGroupedView(v => !v)}
+              style={selectToggleStyle(groupedView)}
+              title={groupedView
+                ? 'Showing one row per fingerprint group (click for flat view)'
+                : 'Showing every alert (click for grouped view)'}
+            >
+              {groupedView ? '⊞ Grouped' : '☰ Flat'}
+            </button>
+            {csrfToken && rows && rows.length > 0 && (
+              <button
+                type="button"
+                onClick={() => { setSelectMode(s => !s); clearSelection(); }}
+                style={selectToggleStyle(selectMode)}
+                title="Bulk-select alerts to ack/snooze in one operation"
+              >
+                {selectMode ? '✕ Cancel select' : '☑ Select'}
+              </button>
+            )}
+          </span>
+        }
       />
+
+      {selectMode && rows && rows.length > 0 && (
+        <div style={bulkBarStyle}>
+          <span><strong>{selectedIds.size}</strong> selected</span>
+          <button type="button" onClick={selectAll} style={bulkSecondaryButton}>Select all unacked</button>
+          <button type="button" onClick={clearSelection} style={bulkSecondaryButton}>Clear</button>
+          {selectedIds.size > 0 && (
+            <>
+              <button type="button" onClick={() => void bulkAck()} style={bulkPrimaryButton}>
+                ✓ Ack {selectedIds.size}
+              </button>
+              <button type="button" onClick={() => void bulkSnooze(60)} style={bulkPrimaryButton}>
+                ⏱ Snooze 1h
+              </button>
+              <button type="button" onClick={() => void bulkSnooze(60 * 24)} style={bulkPrimaryButton}>
+                ⏱ Snooze 24h
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {rows && rows.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 380, overflow: 'auto' }}>
-          {rows.map((a) => (
-            <AlertRow
-              key={a.id}
-              alert={a}
-              canAct={!!csrfToken}
-              onAck={() => void ack(a.id)}
-              onSnooze={(m) => void snooze(a.id, m)}
-              onUnsnooze={() => void unsnooze(a.id)}
-              onMute={() => void mute(a.kind, a.target)}
-            />
-          ))}
+          {rows.map((a) => {
+            const isExpanded = !!a.fingerprint && a.fingerprint in expandedGroups;
+            const members = a.fingerprint ? expandedGroups[a.fingerprint] : undefined;
+            const expandable = groupedView && (a.group_count ?? 1) > 1 && !!a.fingerprint;
+            return (
+              <Fragment key={a.id}>
+                <AlertRow
+                  alert={a}
+                  canAct={!!csrfToken}
+                  selectMode={selectMode}
+                  selected={selectedIds.has(a.id)}
+                  expandable={expandable}
+                  expanded={isExpanded}
+                  onToggleExpand={() => void toggleGroup(a.fingerprint)}
+                  onToggleSelect={() => toggleSelect(a.id)}
+                  onAck={() => void ack(a.id)}
+                  onSnooze={(m) => void snooze(a.id, m)}
+                  onUnsnooze={() => void unsnooze(a.id)}
+                  onMute={() => void mute(a.kind, a.target)}
+                />
+                {isExpanded && (
+                  <div style={groupExpandStyle}>
+                    {members === null
+                      ? <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Loading group…</span>
+                      : (members ?? []).slice(1).length === 0
+                        ? <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>(only one alert in group)</span>
+                        : (members ?? []).slice(1).map(m => (
+                            <div key={m.id} style={groupMemberStyle}>
+                              <span style={{ color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+                                {new Date(m.fired_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                              <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+                                {m.title}
+                              </span>
+                            </div>
+                          ))}
+                  </div>
+                )}
+              </Fragment>
+            );
+          })}
         </div>
       ) : (
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', padding: '0.5rem 0' }}>
@@ -134,9 +384,104 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
   );
 }
 
-function AlertRow({ alert, canAct, onAck, onSnooze, onUnsnooze, onMute }: {
+function selectToggleStyle(active: boolean): React.CSSProperties {
+  return {
+    fontFamily: 'var(--font-heading)',
+    fontSize: '0.625rem',
+    letterSpacing: '0.05em',
+    color: active ? 'var(--primary-bright)' : 'var(--text-secondary)',
+    background: active
+      ? 'color-mix(in srgb, var(--primary-bright) 14%, transparent)'
+      : 'var(--sunken)',
+    border: `1px solid ${active
+      ? 'color-mix(in srgb, var(--primary-bright) 32%, transparent)'
+      : 'var(--border)'}`,
+    padding: '0.25rem 0.6rem',
+    borderRadius: 3,
+    cursor: 'pointer',
+  };
+}
+
+const bulkBarStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  padding: '0.5rem 0.75rem',
+  marginBottom: '0.5rem',
+  background: 'color-mix(in srgb, var(--primary-bright) 8%, transparent)',
+  border: '1px solid color-mix(in srgb, var(--primary-bright) 22%, transparent)',
+  borderRadius: 4,
+  fontSize: '0.75rem',
+  flexWrap: 'wrap',
+};
+const bulkSecondaryButton: React.CSSProperties = {
+  fontFamily: 'var(--font-heading)',
+  fontSize: '0.6rem',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--text-secondary)',
+  background: 'transparent',
+  border: '1px solid var(--border)',
+  padding: '0.25rem 0.5rem',
+  borderRadius: 3,
+  cursor: 'pointer',
+};
+const bulkPrimaryButton: React.CSSProperties = {
+  ...bulkSecondaryButton,
+  color: 'var(--primary-bright)',
+  background: 'color-mix(in srgb, var(--primary-bright) 12%, transparent)',
+  borderColor: 'color-mix(in srgb, var(--primary-bright) 28%, transparent)',
+};
+
+/** Phase 4 — group-count pill rendered inline next to the title. */
+function groupCountBadge(expanded: boolean): React.CSSProperties {
+  return {
+    fontFamily: 'var(--font-heading)',
+    fontSize: '0.6rem',
+    letterSpacing: '0.08em',
+    color: expanded ? 'var(--primary-bright)' : 'var(--text-secondary)',
+    background: expanded
+      ? 'color-mix(in srgb, var(--primary-bright) 14%, transparent)'
+      : 'var(--sunken)',
+    border: `1px solid ${expanded
+      ? 'color-mix(in srgb, var(--primary-bright) 32%, transparent)'
+      : 'var(--border)'}`,
+    padding: '1px 6px',
+    borderRadius: 3,
+    cursor: 'pointer',
+    minWidth: 'fit-content',
+  };
+}
+
+/** Phase 4 — container for inline-expanded group members. */
+const groupExpandStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  padding: '4px 8px 8px 16px',
+  marginLeft: 12,
+  borderLeft: '2px solid color-mix(in srgb, var(--primary-bright) 24%, transparent)',
+};
+
+const groupMemberStyle: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: '70px 1fr',
+  gap: 8,
+  fontSize: '0.7rem',
+  padding: '2px 4px',
+};
+
+function AlertRow({ alert, canAct, selectMode, selected, expandable, expanded, onToggleExpand, onToggleSelect, onAck, onSnooze, onUnsnooze, onMute }: {
   alert: AlertRow;
   canAct: boolean;
+  selectMode: boolean;
+  selected: boolean;
+  /** Phase 4 — true when this is a grouped leader and the group has > 1 alerts. */
+  expandable: boolean;
+  /** True when the group is currently expanded inline. */
+  expanded: boolean;
+  onToggleExpand: () => void;
+  onToggleSelect: () => void;
   onAck: () => void;
   onSnooze: (minutes: number) => void;
   onUnsnooze: () => void;
@@ -152,18 +497,31 @@ function AlertRow({ alert, canAct, onAck, onSnooze, onUnsnooze, onMute }: {
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '70px 80px 1fr auto auto',
+        // In select-mode an extra checkbox column is prepended.
+        gridTemplateColumns: selectMode ? '24px 70px 80px 1fr auto auto' : '70px 80px 1fr auto auto',
         alignItems: 'center',
         gap: 8,
         padding: '6px 8px',
         borderRadius: 4,
         borderLeft: `3px solid ${tone}`,
-        background: 'var(--sunken)',
+        background: selected
+          ? 'color-mix(in srgb, var(--primary-bright) 8%, var(--sunken))'
+          : 'var(--sunken)',
         fontSize: '0.75rem',
         fontFamily: 'var(--font-heading)',
         opacity: acked ? 0.55 : 1,
       }}
     >
+      {selectMode && (
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={onToggleSelect}
+          disabled={acked}
+          aria-label={`Select alert ${alert.id}`}
+          title={acked ? 'Already acknowledged' : 'Select for bulk action'}
+        />
+      )}
       <span style={{ color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
         {new Date(alert.fired_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </span>
@@ -193,9 +551,19 @@ function AlertRow({ alert, canAct, onAck, onSnooze, onUnsnooze, onMute }: {
           alignItems: 'center',
           gap: 6,
         }}
-        title={`${alert.kind} · ${alert.target}`}
+        title={`${alert.kind} · ${alert.target}${alert.fingerprint ? ` · fp=${alert.fingerprint}` : ''}`}
       >
         {alert.title}
+        {expandable && (
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            title={expanded ? 'Collapse group' : `${alert.group_count} alerts in this group — click to expand`}
+            style={groupCountBadge(expanded)}
+          >
+            {expanded ? '▾' : '▸'} ×{alert.group_count}
+          </button>
+        )}
         {acked && <Badge tone="muted" label={`ACK ${alert.ack_by ?? ''}`} title={`Acked at ${alert.ack_at}`} />}
         {snoozed && <Badge tone="info" label="SNOOZED" title={`Until ${snoozedUntil!.toLocaleString()}`} />}
         {muted && <Badge tone="muted" label="MUTED" />}

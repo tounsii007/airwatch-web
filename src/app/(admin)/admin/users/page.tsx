@@ -14,6 +14,8 @@ import { EmptyState } from '@/app/(admin)/admin/shared/components/EmptyState';
 import { ExportButton } from '@/app/(admin)/admin/shared/components/ExportButton';
 import { ActionResultToast } from '@/app/(admin)/ActionResultToast';
 import { HelpPanel } from '@/app/(admin)/admin/shared/components/HelpPanel';
+import { getLocale } from '@/app/(admin)/i18n/getLocale';
+import { translate } from '@/app/(admin)/i18n/messages';
 
 const USERS_RUNBOOK = `
 # What's tracked here
@@ -68,14 +70,16 @@ interface AnnotationsPayload {
 }
 
 export default async function AdminUsersPage() {
-  const [data, csrfToken, annPayload] = await Promise.all([
+  const [data, csrfToken, annPayload, locale] = await Promise.all([
     fetchJson<UsersPayload>('/admin/api/users'),
     fetchCsrfToken(),
     // Phase 3.2 — pull the last 24h of operator events to overlay the
     // sessions chart with deploy / incident / maintenance markers.
     fetchJson<AnnotationsPayload>(
       `/admin/api/chart-annotations?fromMs=${Date.now() - 24 * 60 * 60 * 1000}&toMs=${Date.now()}`),
+    getLocale(),
   ]);
+  const t = (key: string, params?: Record<string, string | number>) => translate(locale, key, params);
 
   const httpSessions  = data?.httpSessions ?? 0;
   const wsSessions    = data?.wsSessions ?? 0;
@@ -102,20 +106,20 @@ export default async function AdminUsersPage() {
         kicked_stale:      'Stale sessions cleared.',
       }} />
       <header>
-        <h1 style={headingStyle}>Users &amp; sessions</h1>
-        <p style={subtitleStyle}>Active connections across both api replicas, plus authenticated admin sessions.</p>
+        <h1 style={headingStyle}>{t('page.users.title')}</h1>
+        <p style={subtitleStyle}>{t('page.users.subtitle')}</p>
       </header>
 
       <HelpPanel pageId="users" markdown={USERS_RUNBOOK} />
 
       <div style={kpiGridStyle}>
-        <KpiCard label="HTTP SESSIONS" value={httpSessions} tone="info" hint={`peak ${peakHttp}`} />
-        <KpiCard label="WS SESSIONS"   value={wsSessions}   tone="info" hint={`peak ${peakWs}`} />
-        <KpiCard label="ADMIN SESSIONS" value={adminSessions.length} tone={adminSessions.length > 1 ? 'warning' : 'default'} hint="authenticated operators" />
+        <KpiCard label={t('page.users.kpi.http')}  value={httpSessions} tone="info" hint={`${t('page.users.kpi.peak')} ${peakHttp}`} />
+        <KpiCard label={t('page.users.kpi.ws')}    value={wsSessions}   tone="info" hint={`${t('page.users.kpi.peak')} ${peakWs}`} />
+        <KpiCard label={t('page.users.kpi.admin')} value={adminSessions.length} tone={adminSessions.length > 1 ? 'warning' : 'default'} hint={t('page.users.kpi.admin_hint')} />
       </div>
 
       <section className="admin-card">
-        <h2>Sessions · last {history.length} minutes</h2>
+        <h2>{t('page.users.section.chart')} · {t('time.duration.minutes', { count: history.length })}</h2>
         {/* xFormat is a STRING preset (not a function) so this server
             component can pass it to the client-side RechartsLineChart
             across the React Server Components boundary. */}
@@ -134,7 +138,7 @@ export default async function AdminUsersPage() {
 
       <section className="admin-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <h2 style={{ margin: 0 }}>Authenticated admin sessions</h2>
+          <h2 style={{ margin: 0 }}>{t('page.users.section.admin')}</h2>
           {csrfToken && adminSessions.length > 1 && (
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               {/* Phase 2.11 — bulk-kick affordances. "Kick all but me" is
