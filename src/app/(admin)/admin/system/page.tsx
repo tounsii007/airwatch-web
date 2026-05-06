@@ -8,6 +8,7 @@ import { KpiCard } from '@/app/(admin)/admin/shared/components/KpiCard';
 import { getLocale } from '@/app/(admin)/i18n/getLocale';
 import { translate } from '@/app/(admin)/i18n/messages';
 import { BackupSection } from '@/app/(admin)/admin/system/BackupSection';
+import { ReplicationPanel } from '@/app/(admin)/admin/system/ReplicationPanel';
 
 interface SystemPayload {
   availableProcessors: number;
@@ -69,6 +70,8 @@ export default async function AdminSystemPage() {
           <li>{t('page.system.note.threads')}</li>
         </ul>
       </section>
+
+      <ReplicationPanel />
 
       <BackupSection csrfToken={csrfToken} />
     </div>
