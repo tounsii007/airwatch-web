@@ -8,8 +8,8 @@
  * raw buffer so an operator can see "what's actually throwing".
  *
  * Each row collapses the throwable into the first stack frame so the
- * panel stays scannable. Click → expand (deferred to a future polish
- * pass; today the throwable shows in the title attribute on hover).
+ * panel stays scannable. Click expands the row inline to show the
+ * full throwable.
  */
 import { useEffect, useState } from 'react';
 
@@ -77,9 +77,24 @@ export function CriticalErrorPanel() {
 }
 
 function ErrorRow({ entry }: { entry: ErrorEntry }) {
+  const [expanded, setExpanded] = useState(false);
   const firstStackLine = entry.throwable?.split('\n')[0]?.trim() ?? '';
+  const hasDetail = Boolean(entry.throwable && entry.throwable.length > 0);
+
   return (
     <div
+      role={hasDetail ? 'button' : undefined}
+      tabIndex={hasDetail ? 0 : undefined}
+      aria-expanded={hasDetail ? expanded : undefined}
+      aria-label={hasDetail ? (expanded ? 'Collapse stack trace' : 'Expand stack trace') : undefined}
+      onClick={() => { if (hasDetail) setExpanded((v) => !v); }}
+      onKeyDown={(e) => {
+        if (!hasDetail) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setExpanded((v) => !v);
+        }
+      }}
       style={{
         display: 'grid',
         gridTemplateColumns: '70px 1fr',
@@ -90,14 +105,23 @@ function ErrorRow({ entry }: { entry: ErrorEntry }) {
         background: 'color-mix(in srgb, var(--error) 5%, transparent)',
         fontSize: '0.75rem',
         fontFamily: 'var(--font-heading)',
+        cursor: hasDetail ? 'pointer' : 'default',
       }}
-      title={entry.throwable ?? ''}
     >
       <span style={{ color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
         {new Date(entry.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
       </span>
       <div style={{ minWidth: 0 }}>
-        <div style={{ color: 'var(--error)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div
+          style={{
+            color: 'var(--error)',
+            fontWeight: 700,
+            overflow: expanded ? 'visible' : 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: expanded ? 'normal' : 'nowrap',
+            wordBreak: expanded ? 'break-word' : 'normal',
+          }}
+        >
           {entry.message}
         </div>
         <div
@@ -105,14 +129,34 @@ function ErrorRow({ entry }: { entry: ErrorEntry }) {
             color: 'var(--text-muted)',
             fontFamily: 'var(--font-body)',
             fontSize: '0.6875rem',
-            overflow: 'hidden',
+            overflow: expanded ? 'visible' : 'hidden',
             textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            whiteSpace: expanded ? 'normal' : 'nowrap',
           }}
         >
           <code>{entry.logger}</code>
-          {firstStackLine && <span style={{ marginLeft: 8 }}>· {firstStackLine}</span>}
+          {firstStackLine && !expanded && <span style={{ marginLeft: 8 }}>· {firstStackLine}</span>}
         </div>
+        {expanded && entry.throwable && (
+          <pre
+            style={{
+              marginTop: 6,
+              padding: '6px 8px',
+              background: 'color-mix(in srgb, var(--error) 8%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--error) 30%, transparent)',
+              borderRadius: 3,
+              fontSize: '0.6875rem',
+              lineHeight: 1.45,
+              maxHeight: 280,
+              overflow: 'auto',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            {entry.throwable}
+          </pre>
+        )}
       </div>
     </div>
   );
