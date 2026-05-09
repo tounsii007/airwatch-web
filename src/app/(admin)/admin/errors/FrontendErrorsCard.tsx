@@ -12,7 +12,9 @@
  *
  * Each row is an aggregated signature: same exception bumped via the
  * dedup logic in FrontendErrorBuffer.record(). Expanding a row reveals:
- *   * Stack trace (raw — TODO source-map de-min)
+ *   * Stack trace — the raw stack is rendered immediately and a "Resolve"
+ *     button kicks off client-side source-map de-minification via
+ *     resolveStackTrace(). Resolved frames replace the raw view inline.
  *   * URL, user-agent, username
  *   * <b>Release tag</b> — which build the error came from
  *   * <b>Session id</b> — joinable with admin_audit_log
@@ -21,9 +23,10 @@
  */
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ClientTime } from '@/app/(admin)/ClientTime';
 import { useLiveData } from '@/app/(admin)/admin/shared/live/useLiveData';
+import { resolveStackTrace } from '@/app/(admin)/sourceMapResolver';
 
 interface FrontendErrorEntry {
   id: number;
@@ -150,23 +153,7 @@ export function FrontendErrorsCard() {
                     {e.sessionId   && <Field label="Session id"  value={e.sessionId} mono small />}
                     {firstSeen && <Field label="First seen" value={new Date(firstSeen).toLocaleString('de-DE')} small />}
                     {e.breadcrumbs && <BreadcrumbList raw={e.breadcrumbs} />}
-                    {e.stack && (
-                      <div>
-                        <div style={fieldLabelStyle}>Stack</div>
-                        <pre style={{
-                          margin: 0,
-                          padding: '0.5rem 0.75rem',
-                          background: 'rgba(0,0,0,0.3)',
-                          border: '1px solid var(--border)',
-                          borderRadius: 4,
-                          fontSize: '0.7rem',
-                          color: 'var(--text-secondary)',
-                          fontFamily: 'monospace',
-                          overflowX: 'auto',
-                          whiteSpace: 'pre-wrap',
-                        }}>{e.stack}</pre>
-                      </div>
-                    )}
+                    {e.stack && <StackBlock raw={e.stack} />}
                   </div>
                 )}
               </div>
@@ -177,6 +164,82 @@ export function FrontendErrorsCard() {
     </section>
   );
 }
+
+function StackBlock({ raw }: { raw: string }) {
+  type State =
+    | { kind: 'raw' }
+    | { kind: 'resolving' }
+    | { kind: 'resolved'; resolved: string; raw: string }
+    | { kind: 'failed'; error: string };
+  const [state, setState] = useState<State>({ kind: 'raw' });
+
+  const onResolve = useCallback(async () => {
+    setState({ kind: 'resolving' });
+    try {
+      const resolved = await resolveStackTrace(raw);
+      setState({ kind: 'resolved', resolved: resolved ?? raw, raw });
+    } catch (err) {
+      setState({ kind: 'failed', error: (err as Error).message });
+    }
+  }, [raw]);
+
+  const showRaw = useCallback(() => setState({ kind: 'raw' }), []);
+
+  const isResolved = state.kind === 'resolved';
+  const display = state.kind === 'resolved' ? state.resolved : raw;
+  const busy = state.kind === 'resolving';
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+        <div style={fieldLabelStyle}>
+          Stack {isResolved ? '· resolved' : '· raw'}
+        </div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button
+            type="button"
+            onClick={isResolved ? showRaw : onResolve}
+            disabled={busy}
+            aria-label={isResolved ? 'Show raw stack' : 'Resolve stack via source maps'}
+            style={resolveBtnStyle(busy)}
+          >
+            {busy ? 'Resolving…' : isResolved ? 'Show raw' : 'Resolve'}
+          </button>
+        </div>
+      </div>
+      {state.kind === 'failed' && (
+        <div style={{ color: 'var(--error)', fontSize: '0.7rem', marginBottom: 4 }}>
+          Resolution failed: {state.error}. Showing raw frames.
+        </div>
+      )}
+      <pre style={{
+        margin: 0,
+        padding: '0.5rem 0.75rem',
+        background: 'rgba(0,0,0,0.3)',
+        border: '1px solid var(--border)',
+        borderRadius: 4,
+        fontSize: '0.7rem',
+        color: 'var(--text-secondary)',
+        fontFamily: 'monospace',
+        overflowX: 'auto',
+        whiteSpace: 'pre-wrap',
+      }}>{display}</pre>
+    </div>
+  );
+}
+
+const resolveBtnStyle = (busy: boolean) => ({
+  fontFamily: 'var(--font-heading)',
+  fontSize: '0.625rem',
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase' as const,
+  color: busy ? 'var(--text-muted)' : 'var(--primary-bright)',
+  background: 'transparent',
+  border: '1px solid color-mix(in srgb, var(--primary-bright) 35%, transparent)',
+  borderRadius: 3,
+  padding: '2px 8px',
+  cursor: busy ? 'wait' : 'pointer',
+});
 
 function ModeToggle({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => void }) {
   return (
