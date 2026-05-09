@@ -71,38 +71,37 @@ export interface DashboardData {
 }
 
 /**
- * Fetch every payload the dashboard needs in parallel, then enrich each
- * port row with its 60-minute latency history (one extra round-trip per
- * port — chatty but each response is tiny). A future Phase-3 endpoint
- * will batch the histories into a single response if this becomes the
- * slow part of the render.
+ * Fetch every payload the dashboard needs in parallel.
+ *
+ * <p>Per-port history used to be one fetch per port (chatty: 12+
+ * round-trips on cold render). It's now a single batched call to
+ * {@code /monitoring/ports/history}. The endpoint returns a map keyed
+ * by port name; we splice it back onto the port rows here so the
+ * shape consumed by the dashboard sections doesn't change.
  */
 export async function fetchDashboardData(): Promise<DashboardData> {
-  const [ports, blocked, recent] = await Promise.all([
+  const [ports, histories, blocked, recent] = await Promise.all([
     fetchJson<PortRow[]>('/admin/api/monitoring/ports'),
+    fetchJson<Record<string, PortHistoryPoint[]>>('/admin/api/monitoring/ports/history?minutes=60'),
     fetchJson<BlockedIp[]>('/admin/api/monitoring/unauthorized-ips?limit=10'),
     fetchJson<RejectEvent[]>('/admin/api/monitoring/unauthorized-events?limit=30'),
   ]);
 
   let portsWithHistory: PortRowWithHistory[] = [];
   if (ports) {
-    portsWithHistory = await Promise.all(
-      ports.map(async (p) => {
-        const hist = await fetchJson<PortHistoryPoint[]>(
-          `/admin/api/monitoring/ports/${encodeURIComponent(p.port_name)}/history?minutes=60`,
-        );
-        const points = (hist ?? []).map((h) => ({
-          t: new Date(h.probed_at).getTime(),
-          v: h.latency_ms ?? 0,
-          up: h.up,
-        }));
-        return {
-          ...p,
-          history: points.map((pt) => pt.v),
-          historyPoints: points,
-        };
-      }),
-    );
+    portsWithHistory = ports.map((p) => {
+      const hist = histories?.[p.port_name] ?? [];
+      const points = hist.map((h) => ({
+        t: new Date(h.probed_at).getTime(),
+        v: h.latency_ms ?? 0,
+        up: h.up,
+      }));
+      return {
+        ...p,
+        history: points.map((pt) => pt.v),
+        historyPoints: points,
+      };
+    });
   }
 
   return { ports, portsWithHistory, blocked, recent };
