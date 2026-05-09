@@ -8,6 +8,14 @@
  */
 
 import { cookies } from 'next/headers';
+import { safeParse, safeParseArray } from '@/lib/schemas';
+import {
+  BlockedIpSchema,
+  CsrfTokenSchema,
+  PortHistoryBatchSchema,
+  PortRowSchema,
+  RejectEventSchema,
+} from '@/app/(admin)/adminSchemas';
 import type {
   BlockedIp,
   PortHistoryPoint,
@@ -58,8 +66,9 @@ export async function fetchJson<T>(path: string): Promise<T | null> {
  * disable submit buttons in that case rather than render a broken form.
  */
 export async function fetchCsrfToken(): Promise<string> {
-  const payload = await fetchJson<{ token: string; available: boolean }>('/admin/api/csrf');
-  return payload?.token ?? '';
+  const raw = await fetchJson<unknown>('/admin/api/csrf');
+  const parsed = safeParse(CsrfTokenSchema, raw, 'csrf');
+  return parsed?.token ?? '';
 }
 
 /** Aggregate bundle returned to the page-level orchestrator. */
@@ -80,17 +89,31 @@ export interface DashboardData {
  * shape consumed by the dashboard sections doesn't change.
  */
 export async function fetchDashboardData(): Promise<DashboardData> {
-  const [ports, histories, blocked, recent] = await Promise.all([
-    fetchJson<PortRow[]>('/admin/api/monitoring/ports'),
-    fetchJson<Record<string, PortHistoryPoint[]>>('/admin/api/monitoring/ports/history?minutes=60'),
-    fetchJson<BlockedIp[]>('/admin/api/monitoring/unauthorized-ips?limit=10'),
-    fetchJson<RejectEvent[]>('/admin/api/monitoring/unauthorized-events?limit=30'),
+  const [rawPorts, rawHistories, rawBlocked, rawRecent] = await Promise.all([
+    fetchJson<unknown>('/admin/api/monitoring/ports'),
+    fetchJson<unknown>('/admin/api/monitoring/ports/history?minutes=60'),
+    fetchJson<unknown>('/admin/api/monitoring/unauthorized-ips?limit=10'),
+    fetchJson<unknown>('/admin/api/monitoring/unauthorized-events?limit=30'),
   ]);
+
+  // Schema validation at the boundary. Bad rows get dropped with a console
+  // warning; the page still renders for the rest. Returning null on
+  // unreachable / 401 (fetchJson convention) is preserved.
+  const ports: PortRow[] | null = rawPorts == null
+    ? null
+    : safeParseArray(PortRowSchema, rawPorts, 'monitoring/ports').items;
+  const histories = safeParse(PortHistoryBatchSchema, rawHistories ?? {}, 'monitoring/ports/history');
+  const blocked: BlockedIp[] | null = rawBlocked == null
+    ? null
+    : safeParseArray(BlockedIpSchema, rawBlocked, 'monitoring/unauthorized-ips').items;
+  const recent: RejectEvent[] | null = rawRecent == null
+    ? null
+    : safeParseArray(RejectEventSchema, rawRecent, 'monitoring/unauthorized-events').items;
 
   let portsWithHistory: PortRowWithHistory[] = [];
   if (ports) {
     portsWithHistory = ports.map((p) => {
-      const hist = histories?.[p.port_name] ?? [];
+      const hist: PortHistoryPoint[] = histories?.[p.port_name] ?? [];
       const points = hist.map((h) => ({
         t: new Date(h.probed_at).getTime(),
         v: h.latency_ms ?? 0,
