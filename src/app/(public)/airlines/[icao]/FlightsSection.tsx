@@ -18,11 +18,11 @@ function isLiveStatus(status: string): boolean {
   return status === 'en-route' || status === 'active';
 }
 
-function EmptyBox({ loading }: { loading: boolean }) {
+function EmptyBox({ loading, language }: { loading: boolean; language: AppLanguage }) {
   return (
     <GlassPanel className="p-6 text-center">
       <p className="text-[var(--text-muted)] text-sm font-[var(--font-body)]">
-        {loading ? 'Flugdaten werden geladen...' : 'Keine Flüge gefunden'}
+        {loading ? t('loading_flight_data', language) : t('no_flights_found', language)}
       </p>
     </GlassPanel>
   );
@@ -48,7 +48,7 @@ export function FlightsSection({ flights, language, noDataLoading }: Props) {
         {t('flights_upper', language)} ({flights.length})
       </h3>
       {flights.length === 0 ? (
-        <EmptyBox loading={noDataLoading} />
+        <EmptyBox loading={noDataLoading} language={language} />
       ) : (
         <div className="space-y-2">
           {flights.map((f, i) => (

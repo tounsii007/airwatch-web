@@ -196,4 +196,8 @@ Contract drift is caught by:
 * No user accounts — `clientId` comes from `localStorage`.
 * No offline-first — relies on backend for live data. Cached airports and
   i18n bundles are the only persistent assets.
-* No native mobile apps — web only, no PWA manifest yet.
+* No native mobile apps. PWA install is supported (manifest at
+  `/manifest.json`, service worker registered via
+  [`ServiceWorkerRegistrar.tsx`](src/components/layout/ServiceWorkerRegistrar.tsx))
+  but offline browsing is intentionally not implemented — the app degrades
+  to "no live data" when the backend is unreachable.

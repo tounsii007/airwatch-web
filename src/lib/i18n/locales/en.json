@@ -223,5 +223,6 @@
   "co2_per_pax": "per pax",
   "co2_unavailable": "Route unknown",
   "share": "SHARE",
-  "copied": "COPIED"
+  "copied": "COPIED",
+  "clear": "Clear"
 }

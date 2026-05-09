@@ -61,10 +61,18 @@ Override the backend URL via `NEXT_PUBLIC_PROXY_URL` (see [`.env.example`](./.en
 | `npm run dev` | Dev server on `0.0.0.0:3000` |
 | `npm run dev:local` | Dev server on `localhost:3000` |
 | `npm run dev:https` | Dev server with self-signed HTTPS |
-| `npm run build` | Production build |
+| `npm run build` | Production build (Next.js + Turbopack) |
 | `npm run start` | Serve the built app |
-| `npm run lint` | ESLint |
-| `npm test` | Vitest (Node env, threads pool) |
+| `npm run lint` | ESLint (flat config) |
+| `npm test` | Vitest (multi-env: jsdom for components, node for libs) |
+| `npm run test:watch` | Vitest in watch mode |
+| `npm run test:e2e` | Playwright end-to-end suite (`e2e/`) |
+| `npm run size` | Bundle budget check — `core` vs `lazy 3D` buckets |
+| `npm run size:admin` | Perf budget check for admin shell |
+| `npm run i18n:check` | Verify EN/DE/FR locale parity |
+| `npm run analyze` | Build with bundle analyzer (`ANALYZE=true`) |
+| `npm run generate:api-types` | Regenerate OpenAPI types from running `airwatch-api` |
+| `npm run build:city-i18n` | Pre-compute city translation map |
 
 ## Project structure
 
