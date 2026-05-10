@@ -21,7 +21,7 @@ interface Props {
  * with a 1 px border + rounded corners so it reads as a proper flag
  * even when the chip background is dark.
  */
-function FlagIcon({ country, alt }: { country: 'gb' | 'de' | 'fr'; alt: string }) {
+function FlagIcon({ country, alt }: { country: 'gb' | 'de' | 'fr' | 'es' | 'it'; alt: string }) {
   return (
     <Image
       src={`/flags/${country}.svg`}
@@ -41,6 +41,8 @@ const LANGUAGES: ChipOption<AppLanguage>[] = [
   { value: 'en', label: 'EN', icon: <FlagIcon country="gb" alt="English" /> },
   { value: 'de', label: 'DE', icon: <FlagIcon country="de" alt="Deutsch" /> },
   { value: 'fr', label: 'FR', icon: <FlagIcon country="fr" alt="Français" /> },
+  { value: 'es', label: 'ES', icon: <FlagIcon country="es" alt="Español" /> },
+  { value: 'it', label: 'IT', icon: <FlagIcon country="it" alt="Italiano" /> },
 ];
 
 function themeOptions(language: AppLanguage): ChipOption<AppTheme>[] {
