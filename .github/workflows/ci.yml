@@ -61,6 +61,46 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  # ────────────────────────────────────────────────────────────────────
+  # Dependency vulnerability gate — npm audit for known CVEs in the
+  # transitive tree. Fails on HIGH or CRITICAL findings; moderate
+  # is reported as a comment in the job log but doesn't break CI
+  # (every dep tree has noise at moderate level).
+  # ────────────────────────────────────────────────────────────────────
+  npm-audit:
+    name: npm audit (deps CVE scan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit (fail on high+)
+        run: npm audit --audit-level=high
+
+      # Even when the audit passes, surface the full report as an
+      # artifact so the moderate-level noise can be reviewed without
+      # re-running the job. --json output is parseable by Dependabot
+      # comparison scripts.
+      - name: Audit report (full, including moderate)
+        if: always()
+        run: npm audit --json > npm-audit-report.json || true
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+          if-no-files-found: ignore
+          retention-days: 30
+
   e2e:
     name: Playwright E2E
     runs-on: ubuntu-latest
