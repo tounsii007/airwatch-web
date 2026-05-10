@@ -268,5 +268,14 @@
   "install_prompt_title": "Installer AirWatch",
   "install_prompt_hint": "Ajouter à l'écran d'accueil — lancement en un tap + coque hors-ligne.",
   "install_prompt_action": "INSTALLER",
-  "install_prompt_dismiss": "Fermer l'invitation d'installation"
+  "install_prompt_dismiss": "Fermer l'invitation d'installation",
+  "metar_taf": "Météo aéronautique",
+  "metar_raw": "METAR brut",
+  "taf_raw": "TAF brut",
+  "metar_unavailable": "METAR indisponible",
+  "taf_unavailable": "TAF indisponible",
+  "observed_at": "Observé",
+  "issued_at": "Émis",
+  "valid": "Validité",
+  "loading": "Chargement"
 }

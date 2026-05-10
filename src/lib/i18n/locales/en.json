@@ -268,5 +268,14 @@
   "install_prompt_title": "Install AirWatch",
   "install_prompt_hint": "Add to your home screen for one-tap launch + offline shell.",
   "install_prompt_action": "INSTALL",
-  "install_prompt_dismiss": "Dismiss install prompt"
+  "install_prompt_dismiss": "Dismiss install prompt",
+  "metar_taf": "Aviation weather",
+  "metar_raw": "Raw METAR",
+  "taf_raw": "Raw TAF",
+  "metar_unavailable": "METAR unavailable",
+  "taf_unavailable": "TAF unavailable",
+  "observed_at": "Observed",
+  "issued_at": "Issued",
+  "valid": "Valid",
+  "loading": "Loading"
 }

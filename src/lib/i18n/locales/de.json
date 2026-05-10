@@ -268,5 +268,14 @@
   "install_prompt_title": "AirWatch installieren",
   "install_prompt_hint": "Zum Homescreen hinzufügen — Ein-Tipp-Start + Offline-Hülle.",
   "install_prompt_action": "INSTALLIEREN",
-  "install_prompt_dismiss": "Install-Hinweis schließen"
+  "install_prompt_dismiss": "Install-Hinweis schließen",
+  "metar_taf": "Luftfahrt-Wetter",
+  "metar_raw": "METAR-Rohtext",
+  "taf_raw": "TAF-Rohtext",
+  "metar_unavailable": "METAR nicht verfügbar",
+  "taf_unavailable": "TAF nicht verfügbar",
+  "observed_at": "Beobachtet",
+  "issued_at": "Ausgegeben",
+  "valid": "Gültig",
+  "loading": "Lädt"
 }
