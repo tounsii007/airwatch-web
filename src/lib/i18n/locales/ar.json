@@ -295,5 +295,7 @@
   "fleet_total_sightings": "الإجمالي",
   "route_today_flights": "اليوم",
   "route_week_flights": "هذا الأسبوع",
-  "route_month_flights": "خلال 30 يوم"
+  "route_month_flights": "خلال 30 يوم",
+  "atc_audio_title": "بث المراقبة الجوية",
+  "atc_audio_no_feeds": "لا يوجد بث مراقبة جوية مسجّل لهذا المطار."
 }

@@ -295,5 +295,7 @@
   "fleet_total_sightings": "Total",
   "route_today_flights": "aujourd'hui",
   "route_week_flights": "cette semaine",
-  "route_month_flights": "en 30 j"
+  "route_month_flights": "en 30 j",
+  "atc_audio_title": "ATC en direct",
+  "atc_audio_no_feeds": "Aucun flux ATC en direct répertorié pour cet aéroport."
 }

@@ -295,5 +295,7 @@
   "fleet_total_sightings": "Totale",
   "route_today_flights": "oggi",
   "route_week_flights": "questa settimana",
-  "route_month_flights": "in 30 g"
+  "route_month_flights": "in 30 g",
+  "atc_audio_title": "ATC live",
+  "atc_audio_no_feeds": "Nessun feed ATC live catalogato per questo aeroporto."
 }
