@@ -15,11 +15,11 @@ describe('translations dictionary', () => {
     baselineKeys = new Set(Object.keys(all.en));
   });
 
-  it('has EN/DE/FR/ES/IT dictionaries', () => {
-    expect(Object.keys(all).sort()).toEqual(['de', 'en', 'es', 'fr', 'it']);
+  it('has EN/DE/FR/ES/IT/AR dictionaries', () => {
+    expect(Object.keys(all).sort()).toEqual(['ar', 'de', 'en', 'es', 'fr', 'it']);
   });
 
-  it.each(['de', 'fr', 'es', 'it'] as const)(
+  it.each(['de', 'fr', 'es', 'it', 'ar'] as const)(
     'language "%s" covers every key from the baseline (en)',
     (lang) => {
       const missing = [...baselineKeys].filter((k) => !(k in all[lang]));
@@ -27,7 +27,7 @@ describe('translations dictionary', () => {
     },
   );
 
-  it.each(['de', 'fr', 'es', 'it'] as const)(
+  it.each(['de', 'fr', 'es', 'it', 'ar'] as const)(
     'language "%s" introduces no keys the baseline lacks',
     (lang) => {
       const extras = Object.keys(all[lang]).filter((k) => !baselineKeys.has(k));
@@ -35,7 +35,7 @@ describe('translations dictionary', () => {
     },
   );
 
-  it.each(['en', 'de', 'fr', 'es', 'it'] as const)(
+  it.each(['en', 'de', 'fr', 'es', 'it', 'ar'] as const)(
     'language "%s" has no empty string values',
     (lang) => {
       const empty = Object.entries(all[lang])
@@ -52,6 +52,7 @@ describe('t()', () => {
     await loadLocale('fr');
     await loadLocale('es');
     await loadLocale('it');
+    await loadLocale('ar');
   });
 
   it('returns the translated string for a known key', () => {
