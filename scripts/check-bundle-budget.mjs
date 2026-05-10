@@ -54,55 +54,25 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
+import {
+  DEFAULT_BUDGETS,
+  LAZY_3D_MARKERS,
+  classify as classifyLib,
+  fmt as fmtLib,
+} from './bundle-budget-lib.mjs';
 
 const CHUNK_DIR = '.next/static/chunks';
 const CSS_DIR = '.next/static/chunks';
 
-// Sentinel strings that, if present in a chunk, classify it as LAZY-3D.
-// Each entry is paired with a human label so the report explains *why*
-// a chunk landed in the lazy bucket.
-const LAZY_3D_MARKERS = [
-  { needle: 'Cesium', reason: 'Cesium 3D globe runtime (/globe)' },
-  { needle: '@deck.gl', reason: 'deck.gl WebGL replay (/replay/3d)' },
-  { needle: 'deck.gl', reason: 'deck.gl WebGL replay (/replay/3d)' },
-];
-
-// Budgets (gzipped, bytes). See file header for rationale.
-//
-// Each budget is sized to give meaningful headroom over the *current*
-// reality so a routine library update doesn't trip CI, but tight
-// enough that a doubling-class regression definitely does.
-//
-//   Current numbers (record at 2026-04-30, recompute after major dep
-//   bumps so the budgets stay calibrated):
-//     core         586 KB → budget 1000 KB → 41 % headroom
-//     lazy3d      1.39 MB → budget 1.80 MB → 23 % headroom
-//     perChunkMax 1.22 MB → budget 1.50 MB → 19 % headroom
-//     cssRaw       86 KB → budget  150 KB → 43 % headroom
-const BUDGETS = {
-  core: 1_000 * 1024,        // 1.0 MB — every-user code path
-  lazy3d: 1_800 * 1024,      // 1.8 MB — Cesium + deck.gl, only on /globe + /replay/3d
-  perChunkMax: 1_500 * 1024, // 1.5 MB — Cesium runtime is the legitimate ceiling; anything bigger is a regression
-  cssRaw: 150 * 1024,        // 150 KB — Tailwind doesn't compress much, raw is the honest measure
-};
-
-// ── Helpers ────────────────────────────────────────────────────────────
-
-function fmt(bytes) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
-}
-
-function classify(chunkBytes) {
-  // Stream the chunk through a small set of substring checks. We only
-  // need the first match — sentinel strings are deliberately unique.
-  const text = chunkBytes.toString('utf8');
-  for (const { needle, reason } of LAZY_3D_MARKERS) {
-    if (text.includes(needle)) return { bucket: 'lazy3d', reason };
-  }
-  return { bucket: 'core', reason: 'shared / per-route runtime' };
-}
+// Sentinel markers and budgets live in bundle-budget-lib.mjs so they're
+// importable from tests. CLI body stays focused on file I/O and pretty
+// printing.
+const BUDGETS = DEFAULT_BUDGETS;
+const fmt = fmtLib;
+const classify = classifyLib;
+// Re-export the shared marker list to a local symbol so the file's own
+// "Per-chunk breakdown" pretty-print can still log the reason text.
+void LAZY_3D_MARKERS;
 
 function listChunks(dir, ext) {
   return readdirSync(dir)

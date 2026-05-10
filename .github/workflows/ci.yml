@@ -40,8 +40,26 @@ jobs:
       # (Cesium / deck.gl, gated behind /globe and /replay/3d) so a
       # routine Cesium update doesn't trip CI but a regression in the
       # shared shell or a accidental static import of a heavy lib does.
-      - name: Bundle size check
+      - name: Bundle size check (core + lazy-3D)
         run: npm run size
+
+      # Per-route admin perf budget — separate from the global core/lazy
+      # split because the admin shell has its own page-size ceilings (an
+      # admin page that ships an unintended map library should fail CI
+      # even if the global core budget still has headroom).
+      - name: Admin perf budget
+        run: npm run size:admin -- --json > admin-perf-budget.json
+
+      # Surface the admin perf JSON as a CI artifact so reviewers can
+      # diff bundle sizes across PRs without re-running the build.
+      - name: Upload admin perf report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-perf-report
+          path: admin-perf-budget.json
+          if-no-files-found: ignore
+          retention-days: 14
 
   e2e:
     name: Playwright E2E
