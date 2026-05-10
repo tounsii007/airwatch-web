@@ -227,5 +227,12 @@
   "clear": "Leeren",
   "page_not_found": "Seite nicht gefunden",
   "invalid_icao24_address": "„{0}\" ist keine gültige ICAO24-Adresse. Gültige Adressen bestehen aus 6 Hex-Zeichen (z.B. 0d0d24).",
-  "back_to_map": "Zur Karte"
+  "back_to_map": "Zur Karte",
+  "notifications": "Benachrichtigungen",
+  "notifications_on": "AKTIVIEREN",
+  "notifications_off": "DEAKTIVIEREN",
+  "notifications_status_on": "Push-Benachrichtigungen aktiv",
+  "notifications_status_off": "Aus — Alerts nur in diesem Tab sichtbar",
+  "notifications_hint": "Erhalte eine System-Benachrichtigung, wenn einer deiner {0} markierten Flüge einen Geofence oder Squawk-Alert auslöst.",
+  "notifications_denied_hint": "In den Browser-Einstellungen blockiert. Erlaube die Seite, um Alerts zu empfangen."
 }

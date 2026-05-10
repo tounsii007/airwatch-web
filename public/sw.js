@@ -29,7 +29,7 @@
 // the SW intercepts. Old SW deletes its own caches in `activate` when
 // the version no longer matches — that's how we evict stale HTML/JS
 // referencing the old map-tile URLs (`/tiles/...`) that no longer exist.
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const SHELL_CACHE = `airwatch-shell-${CACHE_VERSION}`;
 const ASSET_CACHE = `airwatch-assets-${CACHE_VERSION}`;
 
@@ -80,6 +80,66 @@ self.addEventListener('activate', (event) => {
       )
     ).then(() => self.clients.claim())
   );
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// Push notifications.
+//
+// The page (via lib/push/usePushSubscription.ts) calls
+// pushManager.subscribe(...) with a VAPID public key. The api stores
+// the subscription. When AlertRecorder fires an alert that matches a
+// user's geofence/squawk filter the api POSTs to the subscription
+// endpoint with a JSON payload; the browser wakes the SW with the
+// 'push' event below and we render an OS notification.
+//
+// Click handler routes the user to the relevant page so a
+// "geofence LH456 in Frankfurt-Riedberg" notification opens the
+// saved-fence view, not a dead tab.
+// ─────────────────────────────────────────────────────────────────────
+self.addEventListener('push', (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { title: 'AirWatch alert', body: event.data ? event.data.text() : '' };
+  }
+  const title = payload.title || 'AirWatch alert';
+  const opts = {
+    body:    payload.body || '',
+    icon:    payload.icon || '/icon-192.png',
+    badge:   payload.badge || '/icon-192.png',
+    tag:     payload.tag || 'airwatch',     // collapse repeats
+    renotify: Boolean(payload.renotify),
+    data:    { url: payload.url || '/' },   // routed by notificationclick
+  };
+  event.waitUntil(self.registration.showNotification(title, opts));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = event.notification.data?.url || '/';
+  event.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    // Reuse an existing AirWatch tab if present so we don't pile up
+    // duplicates each time the operator dismisses + reopens.
+    for (const c of all) {
+      try {
+        const url = new URL(c.url);
+        if (url.origin === self.location.origin) {
+          await c.focus();
+          // navigate() may not exist on older Firefox; fall back to
+          // posting a "navigate" message the page can listen for.
+          if (typeof c.navigate === 'function') {
+            await c.navigate(target);
+          } else {
+            c.postMessage({ type: 'sw-navigate', url: target });
+          }
+          return;
+        }
+      } catch { /* ignore malformed urls */ }
+    }
+    await self.clients.openWindow(target);
+  })());
 });
 
 self.addEventListener('fetch', (event) => {

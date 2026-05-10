@@ -7,6 +7,7 @@ import { AppearanceSection } from '@/app/(public)/settings/AppearanceSection';
 import { IntervalSection } from '@/app/(public)/settings/IntervalSection';
 import { MapSection } from '@/app/(public)/settings/MapSection';
 import { MyStatsSection } from '@/app/(public)/settings/MyStatsSection';
+import { NotificationsSection } from '@/app/(public)/settings/NotificationsSection';
 import { UnitsSection } from '@/app/(public)/settings/UnitsSection';
 import { PageContainer, FadeIn } from '@/components/ui';
 
@@ -67,9 +68,12 @@ export default function SettingsPage() {
           />
         </FadeIn>
         <FadeIn delay={240}>
-          <MyStatsSection language={language} />
+          <NotificationsSection language={language} />
         </FadeIn>
         <FadeIn delay={300}>
+          <MyStatsSection language={language} />
+        </FadeIn>
+        <FadeIn delay={360}>
           <VersionFooter />
         </FadeIn>
       </div>

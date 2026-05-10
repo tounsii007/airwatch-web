@@ -227,5 +227,12 @@
   "clear": "Effacer",
   "page_not_found": "Page introuvable",
   "invalid_icao24_address": "« {0} » n'est pas une adresse ICAO24 valide. Les adresses valides comportent 6 caractères hexadécimaux (ex. 0d0d24).",
-  "back_to_map": "Retour à la carte"
+  "back_to_map": "Retour à la carte",
+  "notifications": "Notifications",
+  "notifications_on": "ACTIVER",
+  "notifications_off": "DÉSACTIVER",
+  "notifications_status_on": "Notifications push actives",
+  "notifications_status_off": "Désactivées — alertes uniquement dans cet onglet",
+  "notifications_hint": "Reçois une notification système quand un de tes {0} vols favoris déclenche une zone géographique ou une alerte squawk.",
+  "notifications_denied_hint": "Bloquées dans les paramètres du navigateur. Réautorise le site pour recevoir les alertes."
 }

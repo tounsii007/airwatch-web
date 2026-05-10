@@ -227,5 +227,12 @@
   "clear": "Clear",
   "page_not_found": "Page not found",
   "invalid_icao24_address": "\"{0}\" is not a valid ICAO24 address. Valid addresses are 6 hex characters (e.g. 0d0d24).",
-  "back_to_map": "Back to map"
+  "back_to_map": "Back to map",
+  "notifications": "Notifications",
+  "notifications_on": "ENABLE",
+  "notifications_off": "DISABLE",
+  "notifications_status_on": "Push notifications active",
+  "notifications_status_off": "Off — alerts stay in this tab only",
+  "notifications_hint": "Get an OS notification when one of your {0} starred flights triggers a geofence or squawk alert.",
+  "notifications_denied_hint": "Blocked in browser settings. Re-enable for this site to receive alerts."
 }
