@@ -8,6 +8,7 @@ import { DesktopStats } from '@/components/flight/details/DesktopStats';
 import { FleetInfoCard } from '@/components/flight/details/FleetInfoCard';
 import { MetadataSection } from '@/components/flight/details/MetadataSection';
 import { RouteSection } from '@/components/flight/details/RouteSection';
+import { RouteStatsBadge } from '@/components/flight/details/RouteStatsBadge';
 import { TimesRow } from '@/components/flight/details/primitives';
 import { PhotoGallery } from '@/components/flight/PhotoGallery';
 import { PredictionCard } from '@/components/flight/PredictionCard';
@@ -48,6 +49,7 @@ export function DesktopDetailsPanel({ aircraft, viewModel, language, altitudeUni
           arrIata={viewModel.arrIata} arrCity={viewModel.arrCity} arrCountry={viewModel.arrCountry} arrCode={viewModel.arrCode}
           compact={false} isLoading={false}
         />
+        <RouteStatsBadge depIata={viewModel.depIata} arrIata={viewModel.arrIata} language={language} />
       </div>
 
       {viewModel.routeInfo?.scheduledDep && <TimesRow routeInfo={viewModel.routeInfo} flightStatus={aircraft.flightStatus} />}

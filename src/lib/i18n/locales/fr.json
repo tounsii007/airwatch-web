@@ -292,5 +292,8 @@
   "fleet_sightings": "Observations",
   "fleet_first_seen": "Première fois",
   "fleet_last_seen": "Dernière fois",
-  "fleet_total_sightings": "Total"
+  "fleet_total_sightings": "Total",
+  "route_today_flights": "aujourd'hui",
+  "route_week_flights": "cette semaine",
+  "route_month_flights": "en 30 j"
 }
