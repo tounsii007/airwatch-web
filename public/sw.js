@@ -29,14 +29,31 @@
 // the SW intercepts. Old SW deletes its own caches in `activate` when
 // the version no longer matches — that's how we evict stale HTML/JS
 // referencing the old map-tile URLs (`/tiles/...`) that no longer exist.
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const SHELL_CACHE = `airwatch-shell-${CACHE_VERSION}`;
 const ASSET_CACHE = `airwatch-assets-${CACHE_VERSION}`;
+
+// Static offline fallback served when network is gone AND the
+// requested page isn't already in SHELL_CACHE. Distinct from the
+// generic "/" home — that returns the live map shell, which doesn't
+// degrade gracefully on cold offline. /offline.html is a hand-rolled
+// static doc that explains the state + offers a Retry button.
+const OFFLINE_FALLBACK = '/offline.html';
 
 // Pages we want available offline. Next.js's hashed _next/static
 // chunks are intentionally NOT in this list — they're picked up
 // opportunistically by the runtime cache.
-const SHELL_URLS = ['/', '/airports', '/search', '/saved', '/settings'];
+const SHELL_URLS = [
+  '/',
+  '/airports',
+  '/airlines',
+  '/search',
+  '/saved',
+  '/stats',
+  '/settings',
+  '/spotting',
+  OFFLINE_FALLBACK,
+];
 
 self.addEventListener('install', (event) => {
   // Pre-cache the app shell so first-offline load works.
@@ -145,11 +162,21 @@ async function networkFirstWithShellFallback(request) {
     return res;
   } catch {
     const cache = await caches.open(SHELL_CACHE);
+    // First try: exact-match the request the user asked for.
     const cached = await cache.match(request);
     if (cached) return cached;
-    // Last resort: serve the home page so the user has SOMETHING.
+    // Second try: dedicated offline fallback page (hand-rolled HTML
+    // that explains the state and surfaces a Retry button).
+    const offline = await cache.match(OFFLINE_FALLBACK);
+    if (offline) return offline;
+    // Third try: home — at least the user sees the shell layout.
     const home = await cache.match('/');
     if (home) return home;
-    return new Response('Offline', { status: 503, statusText: 'Offline' });
+    // Last resort: bare-bones HTML so the browser doesn't show a
+    // browser-chrome "no internet" splash.
+    return new Response(
+      '<!DOCTYPE html><html><body style="font-family:sans-serif;padding:2rem;text-align:center"><h1>Offline</h1><p>No cached version of this page.</p></body></html>',
+      { status: 503, statusText: 'Offline', headers: { 'content-type': 'text/html' } },
+    );
   }
 }
