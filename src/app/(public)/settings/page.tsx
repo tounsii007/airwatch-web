@@ -1,8 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect } from 'react';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { t } from '@/lib/i18n/translations';
+import type { AppLanguage } from '@/lib/types';
 import { AppearanceSection } from '@/app/(public)/settings/AppearanceSection';
 import { IntervalSection } from '@/app/(public)/settings/IntervalSection';
 import { MapSection } from '@/app/(public)/settings/MapSection';
@@ -11,12 +13,18 @@ import { NotificationsSection } from '@/app/(public)/settings/NotificationsSecti
 import { UnitsSection } from '@/app/(public)/settings/UnitsSection';
 import { PageContainer, FadeIn } from '@/components/ui';
 
-function VersionFooter() {
+function VersionFooter({ language }: { language: AppLanguage }) {
   return (
-    <div className="text-center pt-4 pb-2">
+    <div className="text-center pt-4 pb-2 space-y-1">
       <p className="text-[10px] font-[var(--font-heading)] text-[var(--text-muted)] tracking-widest">
         AIRWATCH WEB v1.0.0
       </p>
+      <Link
+        href="/privacy"
+        className="text-[10px] font-[var(--font-heading)] text-[var(--text-muted)] tracking-widest underline hover:text-[var(--primary)]"
+      >
+        {t('privacy_title', language)}
+      </Link>
     </div>
   );
 }
@@ -74,7 +82,7 @@ export default function SettingsPage() {
           <MyStatsSection language={language} />
         </FadeIn>
         <FadeIn delay={360}>
-          <VersionFooter />
+          <VersionFooter language={language} />
         </FadeIn>
       </div>
     </PageContainer>
