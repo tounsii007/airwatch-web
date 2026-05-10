@@ -224,5 +224,8 @@
   "co2_unavailable": "Route unknown",
   "share": "SHARE",
   "copied": "COPIED",
-  "clear": "Clear"
+  "clear": "Clear",
+  "page_not_found": "Page not found",
+  "invalid_icao24_address": "\"{0}\" is not a valid ICAO24 address. Valid addresses are 6 hex characters (e.g. 0d0d24).",
+  "back_to_map": "Back to map"
 }
