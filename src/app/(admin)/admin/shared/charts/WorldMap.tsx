@@ -19,6 +19,9 @@
  * (still happens during cold-start or when the .mmdb isn't loaded).
  */
 
+'use client';
+import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
+
 interface Props {
   /** countryCode → count. Empty object renders the placeholder state. */
   data: Readonly<Record<string, number>>;
@@ -64,6 +67,10 @@ function project(lat: number, lon: number, w: number, h: number): [number, numbe
 export function WorldMap({ data, height = 320 }: Props) {
   const VIEW_W = 720;
   const VIEW_H = 360;
+  // SVG SMIL <animate> elements run on their own timer and aren't
+  // affected by the global @media (prefers-reduced-motion) CSS gate.
+  // Skip rendering them when the user opts out.
+  const reduced = usePrefersReducedMotion();
 
   const max = Math.max(0, ...Object.values(data));
   const total = Object.values(data).reduce((a, b) => a + b, 0);
@@ -151,12 +158,14 @@ export function WorldMap({ data, height = 320 }: Props) {
                   fill="url(#wm-glow)"
                   style={{ pointerEvents: 'none' }}
                 >
-                  <animate
-                    attributeName="r"
-                    values={`${3 + intensity * 6};${5 + intensity * 6};${3 + intensity * 6}`}
-                    dur="2.4s"
-                    repeatCount="indefinite"
-                  />
+                  {!reduced && (
+                    <animate
+                      attributeName="r"
+                      values={`${3 + intensity * 6};${5 + intensity * 6};${3 + intensity * 6}`}
+                      dur="2.4s"
+                      repeatCount="indefinite"
+                    />
+                  )}
                 </circle>
               )}
             </g>
