@@ -264,5 +264,9 @@
   "privacy_third_radar": "Wetterradar-Overlay-Kacheln.",
   "privacy_rights_title": "Deine Rechte (EU / EWR / UK)",
   "privacy_rights_body": "Weil wir keine identifizierbaren Nutzerdaten auf dem Server speichern, gibt es kein Profil zum Einsehen, Korrigieren oder Löschen. Die localStorage-Einträge oben kontrollierst du komplett über die Einstellungen-Seite oder die Browser-Sitedaten-Tools.",
-  "privacy_last_updated": "Zuletzt aktualisiert"
+  "privacy_last_updated": "Zuletzt aktualisiert",
+  "install_prompt_title": "AirWatch installieren",
+  "install_prompt_hint": "Zum Homescreen hinzufügen — Ein-Tipp-Start + Offline-Hülle.",
+  "install_prompt_action": "INSTALLIEREN",
+  "install_prompt_dismiss": "Install-Hinweis schließen"
 }

@@ -264,5 +264,9 @@
   "privacy_third_radar": "Weather-radar overlay tiles.",
   "privacy_rights_title": "Your rights (EU / EEA / UK)",
   "privacy_rights_body": "Because we don't store identifiable per-user data on the server, there is no profile to access, correct, or delete. The localStorage entries above are entirely under your control via the Settings page or the browser's site-data tools.",
-  "privacy_last_updated": "Last updated"
+  "privacy_last_updated": "Last updated",
+  "install_prompt_title": "Install AirWatch",
+  "install_prompt_hint": "Add to your home screen for one-tap launch + offline shell.",
+  "install_prompt_action": "INSTALL",
+  "install_prompt_dismiss": "Dismiss install prompt"
 }

@@ -264,5 +264,9 @@
   "privacy_third_radar": "Tuiles de superposition radar.",
   "privacy_rights_title": "Tes droits (UE / EEE / UK)",
   "privacy_rights_body": "Comme aucune donnée identifiable n'est stockée côté serveur, il n'y a pas de profil à consulter, corriger ou supprimer. Les entrées localStorage ci-dessus restent entièrement sous ton contrôle via la page Paramètres ou les outils du navigateur.",
-  "privacy_last_updated": "Dernière mise à jour"
+  "privacy_last_updated": "Dernière mise à jour",
+  "install_prompt_title": "Installer AirWatch",
+  "install_prompt_hint": "Ajouter à l'écran d'accueil — lancement en un tap + coque hors-ligne.",
+  "install_prompt_action": "INSTALLER",
+  "install_prompt_dismiss": "Fermer l'invitation d'installation"
 }
