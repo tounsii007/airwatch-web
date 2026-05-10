@@ -277,5 +277,9 @@
   "observed_at": "Observed",
   "issued_at": "Issued",
   "valid": "Valid",
-  "loading": "Loading"
+  "loading": "Loading",
+  "notams": "NOTAMs",
+  "notams_none": "No NOTAMs reported.",
+  "notams_unavailable": "NOTAM service unavailable. Try again later.",
+  "notams_more": "+{0} more not shown."
 }

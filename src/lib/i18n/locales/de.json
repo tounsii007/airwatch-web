@@ -277,5 +277,9 @@
   "observed_at": "Beobachtet",
   "issued_at": "Ausgegeben",
   "valid": "Gültig",
-  "loading": "Lädt"
+  "loading": "Lädt",
+  "notams": "NOTAMs",
+  "notams_none": "Keine NOTAMs gemeldet.",
+  "notams_unavailable": "NOTAM-Dienst nicht erreichbar. Später erneut versuchen.",
+  "notams_more": "+{0} weitere ausgeblendet."
 }

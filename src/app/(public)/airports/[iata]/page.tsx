@@ -11,6 +11,7 @@ import { ScheduleList, type SortBy } from '@/app/(public)/airports/[iata]/Schedu
 import { ScheduleTabs, type TabType } from '@/app/(public)/airports/[iata]/ScheduleTabs';
 import { WeatherPanel } from '@/app/(public)/airports/[iata]/WeatherPanel';
 import { MetarPanel } from '@/app/(public)/airports/[iata]/MetarPanel';
+import { NotamPanel } from '@/app/(public)/airports/[iata]/NotamPanel';
 import { useAirportClock } from '@/app/(public)/airports/[iata]/useAirportClock';
 import { useAirportDetail } from '@/app/(public)/airports/[iata]/useAirportDetail';
 import type { AirportScheduleFlight } from '@/lib/types';
@@ -61,6 +62,7 @@ export default function AirportDetailPage() {
         <ClockPanel clock={clock} language={language} />
       </div>
       <MetarPanel icao={airport?.icao ?? null} language={language} />
+      <NotamPanel icao={airport?.icao ?? null} language={language} />
       <ScheduleTabs active={activeTab} onChange={setActiveTab} language={language} />
       <ScheduleList
         flights={flights}

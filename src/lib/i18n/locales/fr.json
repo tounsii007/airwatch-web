@@ -277,5 +277,9 @@
   "observed_at": "Observé",
   "issued_at": "Émis",
   "valid": "Validité",
-  "loading": "Chargement"
+  "loading": "Chargement",
+  "notams": "NOTAMs",
+  "notams_none": "Aucun NOTAM signalé.",
+  "notams_unavailable": "Service NOTAM indisponible. Réessaie plus tard.",
+  "notams_more": "+{0} autres masqués."
 }
