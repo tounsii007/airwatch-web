@@ -161,6 +161,20 @@ export function AuditTable({ entries, summary, query = '' }: Props) {
         // Newest-first by default.
         initialSorting={[{ id: 'ts', desc: true }]}
         toolbar={toolbar}
+        // Audit data is the most-asked-for export — operators want
+        // to ship it to legal / SIEM. Filename includes the day so
+        // multiple exports across a day don't clobber each other.
+        csvExport={{
+          filename: `audit-${new Date().toISOString().slice(0, 10)}.csv`,
+          mapper: (row) => ({
+            id:       row.id,
+            ts:       row.ts,
+            action:   row.action,
+            username: row.username,
+            ip:       row.ip,
+            detail:   row.detail ?? '',
+          }),
+        }}
         emptyState={
           <EmptyState
             icon="🔍"
