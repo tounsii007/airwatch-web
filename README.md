@@ -76,35 +76,50 @@ Override the backend URL via `NEXT_PUBLIC_PROXY_URL` (see [`.env.example`](./.en
 
 ## Project structure
 
+The App Router splits into two route groups so the public bundle
+drops every admin payload via Next.js code-splitting. See
+[`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full layout, schema
+boundary contracts, and source-map / CSP / PWA notes.
+
 ```
 src/
-├── app/                    # Next.js App Router pages
-│   ├── airports/           # Airport list + detail
-│   ├── airlines/[icao]/    # Airline detail
-│   ├── cargo/              # Cargo tracking
-│   ├── dashboard/          # Multi-airport dashboard
-│   ├── saved/              # Favorites (persisted)
-│   ├── search/             # Search airports/airlines/flights
-│   ├── settings/           # Theme, units, language, interval
-│   ├── spotting/           # Planespotting (geolocation)
-│   └── stats/              # Personal flight stats
+├── proxy.ts                 # Per-request CSP nonce + admin-host gate
+├── app/
+│   ├── (public)/            # Anonymous-visitor surface
+│   │   ├── /, airports/, airlines/, cargo/, compare/, dashboard/,
+│   │   ├── flight/, geofences/, globe/ (Cesium, lazy chunk),
+│   │   ├── replay/, replay/3d/ (deck.gl, lazy chunk),
+│   │   ├── saved/, search/, settings/, spotting/, stats/
+│   │   └── error.tsx        # Public route-group error boundary
+│   ├── (admin)/             # Operator dashboard — gated to admin host
+│   │   ├── adminSchemas.ts  # Zod schemas for /admin/api/*
+│   │   ├── sourceMapResolver.ts # Client-side stack-trace de-min
+│   │   └── admin/
+│   │       ├── dashboard/, alerts/, errors/, incidents/, webhooks/, …
+│   │       ├── shared/      # AdminDataTable (TanStack), Live SSE consumer
+│   │       └── error.tsx    # Admin route-group error boundary
+│   ├── api/                 # Next-side API handlers (web-vitals, client-error)
+│   ├── global-error.tsx
+│   └── layout.tsx
 ├── components/
-│   ├── common/             # FlagImage, LogoImage, ManagedImage
-│   ├── flight/             # FlightDetailsPanel + details view-model
-│   ├── layout/             # BottomNav, ThemeProvider
-│   ├── map/                # MapView + hooks (markers, labels, layers, radar, routes)
-│   ├── search/             # SearchInput, ResultTile
-│   └── ui/                 # GlassPanel, NeonText, StatusBadge
+│   ├── common/, flight/, geofence/, layout/, map/, replay/, search/, ui/
 └── lib/
-    ├── apiFetch.ts         # fetch wrapper with error logging
-    ├── constants.ts        # API URL builder, colors, config
-    ├── data/               # Airports, airlines, i18n maps
-    ├── flights/            # Airlabs types, polling, API calls
-    ├── hooks/              # useSquawkAlerts, useWeatherRadar, useFlightFeed
-    ├── i18n/               # Translations (EN/DE/FR)
-    ├── stores/             # Zustand stores (persisted)
-    ├── types/              # Shared types
-    └── utils/              # Formatting, math, conversion
+    ├── apiFetch.ts, constants.ts, data/, flights/, hooks/, i18n/,
+    ├── schemas.ts           # Zod validators for the public API boundary
+    └── stores/, types/, utils/
+
+public/
+├── manifest.json            # PWA manifest
+├── sw.js                    # Service worker (4-tier offline fallback)
+└── offline.html             # Static fallback served when nothing is cached
+
+scripts/
+├── bundle-budget-lib.mjs    # Pure classify/computeVerdict (unit-testable)
+├── check-bundle-budget.mjs  # CLI: core vs lazy-3D + per-chunk ceiling
+├── check-perf-budget.mjs    # CLI: per-route admin perf budget
+└── check-i18n-coverage.mjs  # i18n parity + hardcoded-string scan
+
+.lighthouserc.json           # CI: a11y ≥ 0.90 + CLS < 0.10 are hard asserts
 ```
 
 ## Docker
