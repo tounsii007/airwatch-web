@@ -282,5 +282,15 @@
   "notams_none": "Keine NOTAMs gemeldet.",
   "notams_unavailable": "NOTAM-Dienst nicht erreichbar. Später erneut versuchen.",
   "notams_more": "+{0} weitere ausgeblendet.",
-  "export_ics": "Als .ics exportieren"
+  "export_ics": "Als .ics exportieren",
+  "fleet_info_title": "Flotteninfo",
+  "fleet_registry": "Register",
+  "fleet_owner": "Halter",
+  "fleet_built": "Baujahr",
+  "fleet_years_old": "Jahre",
+  "fleet_flag": "Land",
+  "fleet_sightings": "Sichtungen",
+  "fleet_first_seen": "Erstmals gesichtet",
+  "fleet_last_seen": "Zuletzt gesichtet",
+  "fleet_total_sightings": "Gesamt"
 }

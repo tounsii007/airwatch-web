@@ -282,5 +282,15 @@
   "notams_none": "No NOTAMs reported.",
   "notams_unavailable": "NOTAM service unavailable. Try again later.",
   "notams_more": "+{0} more not shown.",
-  "export_ics": "Export .ics"
+  "export_ics": "Export .ics",
+  "fleet_info_title": "Fleet info",
+  "fleet_registry": "Registry",
+  "fleet_owner": "Owner",
+  "fleet_built": "Built",
+  "fleet_years_old": "yrs",
+  "fleet_flag": "Flag",
+  "fleet_sightings": "Sightings",
+  "fleet_first_seen": "First seen",
+  "fleet_last_seen": "Last seen",
+  "fleet_total_sightings": "Total"
 }
