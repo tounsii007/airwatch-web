@@ -281,5 +281,6 @@
   "notams": "NOTAMs",
   "notams_none": "Aucun NOTAM signalé.",
   "notams_unavailable": "Service NOTAM indisponible. Réessaie plus tard.",
-  "notams_more": "+{0} autres masqués."
+  "notams_more": "+{0} autres masqués.",
+  "export_ics": "Exporter .ics"
 }

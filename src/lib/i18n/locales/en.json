@@ -281,5 +281,6 @@
   "notams": "NOTAMs",
   "notams_none": "No NOTAMs reported.",
   "notams_unavailable": "NOTAM service unavailable. Try again later.",
-  "notams_more": "+{0} more not shown."
+  "notams_more": "+{0} more not shown.",
+  "export_ics": "Export .ics"
 }
