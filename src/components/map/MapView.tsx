@@ -77,6 +77,21 @@ export function MapView() {
     if (routeLayer && !map.hasLayer(routeLayer)) routeLayer.addTo(map);
   }, [mapRef, markersLayerRef, routeLayerRef]);
 
+  // Re-measure on language change. GlobalEffects flips <html dir> when the
+  // user switches between LTR and RTL locales (en/de/fr/es/it ↔ ar). The
+  // page reflow can desynchronise Leaflet's container size from its
+  // internal pane positions; without an explicit invalidateSize the bbox
+  // filter in useAircraftMarkers reads stale bounds and rejects every
+  // aircraft until the next zoom or pan event. Run on the next frame so
+  // the browser has finished the dir-flip reflow before we read back the
+  // new size.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const id = requestAnimationFrame(() => map.invalidateSize({ animate: false }));
+    return () => cancelAnimationFrame(id);
+  }, [mapRef, language]);
+
   const handleZoomIn = useCallback(() => mapRef.current?.zoomIn(), [mapRef]);
   const handleZoomOut = useCallback(() => mapRef.current?.zoomOut(), [mapRef]);
   const handleCenter = useCallback(() => {
@@ -236,7 +251,16 @@ export function MapView() {
 
       <VoiceButton />
 
-      <div ref={mapContainerRef} className="absolute inset-0" />
+      {/*
+        dir="ltr" pins the Leaflet container's directionality regardless of
+        what <html dir> looks like. Without this, switching the app to Arabic
+        (RTL) flips the page direction, which reflows the body and a few
+        absolute-positioned panes inside .leaflet-container — the cached
+        bounds in useAircraftMarkers's bbox filter then clip every aircraft
+        out of the visible set. The map itself is always cartesian and not a
+        candidate for RTL layout, so isolating it is correct, not a hack.
+      */}
+      <div ref={mapContainerRef} dir="ltr" className="absolute inset-0" />
     </div>
   );
 }
