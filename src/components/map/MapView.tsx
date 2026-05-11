@@ -35,6 +35,7 @@ export function MapView() {
   const showTrails = useSettingsStore((s) => s.showTrails);
   const showLabels = useSettingsStore((s) => s.showLabels);
   const showTurbulence = useSettingsStore((s) => s.showTurbulence);
+  const showAirportWeather = useSettingsStore((s) => s.showAirportWeather);
   const setShowRadar = useSettingsStore((s) => s.setShowRadar);
   const mapStyle = useSettingsStore((s) => s.mapStyle);
   const setMapStyle = useSettingsStore((s) => s.setMapStyle);
@@ -56,7 +57,7 @@ export function MapView() {
   });
 
   useBaseLayer({ baseLayerRef, mapRef, mapStyle });
-  useAirportLabels({ mapRef, mapStyle, zoom });
+  useAirportLabels({ mapRef, mapStyle, zoom, weatherEnabled: showAirportWeather });
 
   useEffect(() => {
     stopPolling();

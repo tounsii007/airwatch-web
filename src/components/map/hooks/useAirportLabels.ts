@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import type { MapStyle } from '@/lib/types';
 import { AIRPORTS } from '@/lib/data/airports';
+import { getCachedWeather, prefetchAirportWeather, useWeatherCacheTick } from '@/components/map/hooks/useAirportWeather';
+import { getWeatherEmoji } from '@/lib/utils/weather';
 
 /**
  * Tiered airport coverage. Each tier governs the minimum zoom at which
@@ -360,12 +362,21 @@ export function useAirportLabels({
   mapRef,
   mapStyle,
   zoom,
+  weatherEnabled = true,
 }: {
   mapRef: React.MutableRefObject<L.Map | null>;
   mapStyle: MapStyle;
   zoom: number;
+  /** When true, prefetch weather for visible airports and append a
+   *  weather emoji to each label. When false, never touches the
+   *  Open-Meteo proxy and labels stay text-only. */
+  weatherEnabled?: boolean;
 }) {
   const layerRef = useRef<L.LayerGroup | null>(null);
+  // Subscribe to the weather cache so labels re-render once the first
+  // batch of fetches lands. Without this the icons never appear until
+  // the user pans / zooms (which re-runs the effect for unrelated reasons).
+  const weatherTick = useWeatherCacheTick();
 
   useEffect(() => {
     if (!layerRef.current) {
@@ -435,6 +446,22 @@ export function useAirportLabels({
       });
 
       const fontSize = zoom >= 9 ? 10 : zoom >= 7 ? 9 : 8;
+
+      // Optional weather emoji — looked up from the module-scope cache
+      // and prefetched fire-and-forget so the next pan / zoom or the
+      // weatherTick subscription re-renders the label with the icon.
+      // Emoji renders at the same size as the IATA text so the row
+      // stays vertically aligned regardless of which icon comes back.
+      let weatherSpan = '';
+      if (weatherEnabled) {
+        prefetchAirportWeather(apt.iata, apt.lat, apt.lon, true);
+        const w = getCachedWeather(apt.iata);
+        if (w && w.code != null) {
+          const emoji = getWeatherEmoji(w.code, w.isDay);
+          weatherSpan = `<span style="font-size:${fontSize + 2}px;margin-left:3px;vertical-align:middle;">${emoji}</span>`;
+        }
+      }
+
       // direction:'auto' lets Leaflet pick left/right/top/bottom based on
       // which side has room — at the right edge of the viewport the label
       // flips to 'left' instead of getting clipped, fixing the "dot but
@@ -447,12 +474,17 @@ export function useAirportLabels({
           offset: [5, 0],
           className: 'airport-label',
         }).setContent(
-          `<span style="font-family:var(--font-heading);font-size:${fontSize}px;font-weight:700;letter-spacing:0.8px;color:${labelColor};text-shadow:${textShadow};pointer-events:none;">${apt.iata}</span>`
+          `<span style="font-family:var(--font-heading);font-size:${fontSize}px;font-weight:700;letter-spacing:0.8px;color:${labelColor};text-shadow:${textShadow};pointer-events:none;">${apt.iata}${weatherSpan}</span>`
         )
       );
       dot.addTo(layer);
     }
-  }, [mapRef, mapStyle, zoom]);
+    // weatherTick is in the deps so the effect re-runs when a freshly-
+    // fetched weather code lands. weatherEnabled gates the prefetch
+    // path; toggling it off won't tear down already-rendered icons
+    // until the next pan/zoom, which is acceptable for a settings
+    // change (labels are cheap to recompute on the next interaction).
+  }, [mapRef, mapStyle, zoom, weatherEnabled, weatherTick]);
 
   return layerRef;
 }
