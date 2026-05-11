@@ -63,7 +63,14 @@ const securityHeaders = [
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   {
     key: 'Permissions-Policy',
-    value: 'accelerometer=(), camera=(), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()',
+    // accelerometer + gyroscope are (self), not (), because /ar uses the
+    // DeviceOrientation API (useDeviceOrientation hook) for the live AR
+    // sky-view. Both events are blocked by the browser otherwise — the
+    // console fills with "Permissions policy violation: accelerometer is
+    // not allowed in this document". microphone=(self) covers the /voice
+    // command parser's getUserMedia({audio:true}) call. camera stays ()
+    // until the AR viewfinder ships in stage 2.
+    value: 'accelerometer=(self), camera=(), geolocation=(self), gyroscope=(self), magnetometer=(), microphone=(self), payment=(), usb=()',
   },
   // HSTS pins the browser to HTTPS for the configured max-age. CRITICAL:
   // never emit it from a plain-HTTP deploy — the browser caches the pin for

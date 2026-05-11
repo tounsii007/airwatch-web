@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Star } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { formatAltitude } from '@/lib/utils';
@@ -56,21 +57,38 @@ function AltDistance({ entry, altitudeUnit }: { entry: SpottingEntry; altitudeUn
 
 /** One row in the /spotting nearby-rares list. */
 export function SpottingCard({ entry, altitudeUnit, language, onTrack }: Props) {
+  // Card body links to the flight detail page — typical "tap-anywhere"
+  // expectation. The TRACK button shadows-stops propagation and runs
+  // its own action (select on map + bounce home).
+  const detailHref = `/flight/${entry.aircraft.icao24}`;
   return (
-    <GlassPanel className="p-3 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <TierBadge tier={entry.rareInfo.tier} />
-        <Info entry={entry} />
-      </div>
-      <div className="flex items-center gap-2.5">
-        <AltDistance entry={entry} altitudeUnit={altitudeUnit} />
-        <button
-          onClick={onTrack}
-          className="px-2 py-1 rounded-lg text-[9px] font-[var(--font-heading)] font-bold tracking-wider bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--primary)]/30 hover:bg-[var(--primary)]/25 transition-colors cursor-pointer"
-        >
-          {t('track', language)}
-        </button>
-      </div>
+    <GlassPanel className="p-0">
+      <Link
+        href={detailHref}
+        className="p-3 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer rounded-xl"
+        aria-label={`${entry.aircraft.callsign ?? entry.aircraft.icao24} details`}
+      >
+        <div className="flex items-center gap-3">
+          <TierBadge tier={entry.rareInfo.tier} />
+          <Info entry={entry} />
+        </div>
+        <div className="flex items-center gap-2.5">
+          <AltDistance entry={entry} altitudeUnit={altitudeUnit} />
+          <button
+            onClick={(e) => {
+              // Keep the TRACK action distinct from "open detail page".
+              // stopPropagation prevents the wrapping <Link> from also
+              // firing when the operator hits TRACK.
+              e.preventDefault();
+              e.stopPropagation();
+              onTrack();
+            }}
+            className="px-2 py-1 rounded-lg text-[9px] font-[var(--font-heading)] font-bold tracking-wider bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--primary)]/30 hover:bg-[var(--primary)]/25 transition-colors cursor-pointer"
+          >
+            {t('track', language)}
+          </button>
+        </div>
+      </Link>
     </GlassPanel>
   );
 }
