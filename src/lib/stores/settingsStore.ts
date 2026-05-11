@@ -12,6 +12,12 @@ interface SettingsStoreState {
   showRadar: boolean;
   showLabels: boolean;
   showTurbulence: boolean;
+  /** Show airline + aircraft photographs in the details panel. Default on.
+   *  Off = saves bandwidth (planespotters images are 30–80 KB each) and
+   *  hides upstream-CDN requests to pics.avs.io / planespotters.net. */
+  showAircraftPhotos: boolean;
+  /** Show a tiny weather icon next to airport labels on the map. Default on. */
+  showAirportWeather: boolean;
   updateInterval: number; // seconds
   mapStyle: MapStyle;
 }
@@ -25,6 +31,8 @@ interface SettingsStoreActions {
   setShowRadar: (show: boolean) => void;
   setShowLabels: (show: boolean) => void;
   setShowTurbulence: (show: boolean) => void;
+  setShowAircraftPhotos: (show: boolean) => void;
+  setShowAirportWeather: (show: boolean) => void;
   setUpdateInterval: (seconds: number) => void;
   setMapStyle: (style: MapStyle) => void;
 }
@@ -42,6 +50,8 @@ export const useSettingsStore = create<SettingsStore>()(
       showRadar: true,
       showLabels: true,
       showTurbulence: false,
+      showAircraftPhotos: true,
+      showAirportWeather: true,
       updateInterval: 300, // 5 minutes default
       mapStyle: 'dark' as MapStyle,
 
@@ -59,6 +69,8 @@ export const useSettingsStore = create<SettingsStore>()(
       setShowRadar: (show: boolean) => set({ showRadar: show }),
       setShowLabels: (show: boolean) => set({ showLabels: show }),
       setShowTurbulence: (show: boolean) => set({ showTurbulence: show }),
+      setShowAircraftPhotos: (show: boolean) => set({ showAircraftPhotos: show }),
+      setShowAirportWeather: (show: boolean) => set({ showAirportWeather: show }),
       setUpdateInterval: (seconds: number) => set({ updateInterval: seconds }),
       setMapStyle: (style: MapStyle) => set({ mapStyle: style }),
     }),

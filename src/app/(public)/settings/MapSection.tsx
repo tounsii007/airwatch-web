@@ -1,6 +1,6 @@
 'use client';
 
-import { Globe, Radar, Route, Tag } from 'lucide-react';
+import { CloudSun, Globe, Image as ImageIcon, Radar, Route, Tag } from 'lucide-react';
 import { t } from '@/lib/i18n/translations';
 import { SectionPanel } from '@/app/(public)/settings/SectionPanel';
 import { SettingRow, Toggle } from '@/app/(public)/settings/SettingPrimitives';
@@ -10,14 +10,21 @@ interface Props {
   showTrails: boolean;
   showRadar: boolean;
   showLabels: boolean;
+  showAircraftPhotos: boolean;
+  showAirportWeather: boolean;
   language: AppLanguage;
   onTrails: (v: boolean) => void;
   onRadar: (v: boolean) => void;
   onLabels: (v: boolean) => void;
+  onAircraftPhotos: (v: boolean) => void;
+  onAirportWeather: (v: boolean) => void;
 }
 
 /** Map section: trails / radar overlay / labels toggles. */
-export function MapSection({ showTrails, showRadar, showLabels, language, onTrails, onRadar, onLabels }: Props) {
+export function MapSection({
+  showTrails, showRadar, showLabels, showAircraftPhotos, showAirportWeather,
+  language, onTrails, onRadar, onLabels, onAircraftPhotos, onAirportWeather,
+}: Props) {
   return (
     <SectionPanel icon={<Globe size={12} />} title={t('map_settings', language)}>
       <div className="divide-y divide-[var(--glass-border)]">
@@ -29,6 +36,20 @@ export function MapSection({ showTrails, showRadar, showLabels, language, onTrai
         </SettingRow>
         <SettingRow icon={<Tag size={16} className="text-[var(--accent)]" />} label={t('labels', language)}>
           <Toggle enabled={showLabels} onToggle={onLabels} />
+        </SettingRow>
+        <SettingRow
+          icon={<CloudSun size={16} className="text-[var(--info)]" />}
+          label={t('show_airport_weather', language)}
+          hint={t('show_airport_weather_hint', language)}
+        >
+          <Toggle enabled={showAirportWeather} onToggle={onAirportWeather} />
+        </SettingRow>
+        <SettingRow
+          icon={<ImageIcon size={16} className="text-[var(--accent)]" />}
+          label={t('show_aircraft_photos', language)}
+          hint={t('show_aircraft_photos_hint', language)}
+        >
+          <Toggle enabled={showAircraftPhotos} onToggle={onAircraftPhotos} />
         </SettingRow>
       </div>
     </SectionPanel>

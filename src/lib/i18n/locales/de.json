@@ -324,5 +324,9 @@
   "ar_spotting_title": "AR-SPOTTING",
   "ar_intro": "Halte dein Gerät zum Himmel — wir blenden Flüge in Echtzeit ein.",
   "ar_start_button": "AR STARTEN",
-  "ar_starting": "WIRD GESTARTET…"
+  "ar_starting": "WIRD GESTARTET…",
+  "show_aircraft_photos": "Flugzeugfotos",
+  "show_aircraft_photos_hint": "Bilder von planespotters.net im Flugdetail-Panel laden.",
+  "show_airport_weather": "Wetter-Icons an Flughäfen",
+  "show_airport_weather_hint": "Kleines ☀ ☁ ⛈ ❄ Icon neben Flughafen-Labels auf der Karte einblenden."
 }

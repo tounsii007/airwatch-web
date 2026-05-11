@@ -1,4 +1,5 @@
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { TickingValue } from '@/components/flight/details/TickingValue';
 import type { FlightRouteInfo } from '@/lib/types';
 
 export function TimesRow({ routeInfo, flightStatus }: { routeInfo: FlightRouteInfo; flightStatus?: string }) {
@@ -58,8 +59,12 @@ export function DataCell({ icon, label, value, color }: { color?: string; icon: 
         <span className="text-[var(--text-muted)]">{icon}</span>
         <span className="text-[var(--text-muted)] text-[9px] font-[var(--font-heading)] tracking-wider">{label}</span>
       </div>
+      {/* TickingValue keeps the DOM identity stable when the WS push
+          re-emits the same number (no flash), and briefly highlights
+          the value on a real change so the user can spot which stat
+          actually moved between two updates. */}
       <p className="font-[var(--font-heading)] font-bold text-sm tracking-wide" style={color ? { color } : undefined}>
-        {value}
+        <TickingValue value={value} />
       </p>
     </div>
   );
@@ -70,7 +75,7 @@ export function MiniCell({ label, value, color, highlight }: { color?: string; h
     <div className={`glass-panel px-2 py-1.5 text-center ${highlight ? 'border-[var(--error)]/30' : ''}`}>
       <span className="text-[7px] font-[var(--font-heading)] text-[var(--text-muted)] tracking-wider block">{label}</span>
       <span className={`text-[11px] font-[var(--font-heading)] font-bold ${highlight ? 'text-[var(--error)]' : ''}`} style={color ? { color } : undefined}>
-        {value}
+        <TickingValue value={value} />
       </span>
     </div>
   );

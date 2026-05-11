@@ -31,8 +31,12 @@ function VersionFooter({ language }: { language: AppLanguage }) {
 
 export default function SettingsPage() {
   const {
-    theme, language, altitudeUnit, speedUnit, showTrails, showRadar, showLabels, updateInterval,
-    setTheme, setLanguage, setAltitudeUnit, setSpeedUnit, setShowTrails, setShowRadar, setShowLabels, setUpdateInterval,
+    theme, language, altitudeUnit, speedUnit,
+    showTrails, showRadar, showLabels, showAircraftPhotos, showAirportWeather,
+    updateInterval,
+    setTheme, setLanguage, setAltitudeUnit, setSpeedUnit,
+    setShowTrails, setShowRadar, setShowLabels, setShowAircraftPhotos, setShowAirportWeather,
+    setUpdateInterval,
   } = useSettingsStore();
 
   useEffect(() => { document.documentElement.lang = language; }, [language]);
@@ -62,10 +66,14 @@ export default function SettingsPage() {
             showTrails={showTrails}
             showRadar={showRadar}
             showLabels={showLabels}
+            showAircraftPhotos={showAircraftPhotos}
+            showAirportWeather={showAirportWeather}
             language={language}
             onTrails={setShowTrails}
             onRadar={setShowRadar}
             onLabels={setShowLabels}
+            onAircraftPhotos={setShowAircraftPhotos}
+            onAirportWeather={setShowAirportWeather}
           />
         </FadeIn>
         <FadeIn delay={180}>

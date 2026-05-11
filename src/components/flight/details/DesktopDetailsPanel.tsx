@@ -12,6 +12,7 @@ import { RouteStatsBadge } from '@/components/flight/details/RouteStatsBadge';
 import { TimesRow } from '@/components/flight/details/primitives';
 import { PhotoGallery } from '@/components/flight/PhotoGallery';
 import { PredictionCard } from '@/components/flight/PredictionCard';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 import type { AircraftState, AltitudeUnit, AppLanguage, SpeedUnit } from '@/lib/types';
 import type { FlightDetailsVM } from '@/components/flight/details/useFlightDetailsViewModel';
 
@@ -30,6 +31,7 @@ interface Props {
 /** Desktop right-side layout for the flight details panel. */
 export function DesktopDetailsPanel({ aircraft, viewModel, language, altitudeUnit, speedUnit, altColor, actions, copied, onShare }: Props) {
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const showPhotos = useSettingsStore((s) => s.showAircraftPhotos);
 
   return (
     <div className="hidden lg:block glass-panel rounded-l-2xl h-full overflow-y-auto">
@@ -67,7 +69,11 @@ export function DesktopDetailsPanel({ aircraft, viewModel, language, altitudeUni
 
       <Co2Footer language={language} co2Estimate={viewModel.co2Estimate} copied={copied} onShare={onShare} />
 
-      {viewModel.photoUrl && (
+      {/* Photos are gated by the user's `showAircraftPhotos` setting —
+          see Settings → Map → Aircraft photos. Gating both the inline
+          card AND the modal trigger keeps a privacy-conscious user from
+          accidentally pulling an upstream image via the gallery. */}
+      {showPhotos && viewModel.photoUrl && (
         <AircraftPhoto
           photoUrl={viewModel.photoUrl}
           registration={viewModel.metadata?.registration}
@@ -75,7 +81,7 @@ export function DesktopDetailsPanel({ aircraft, viewModel, language, altitudeUni
         />
       )}
 
-      {galleryOpen && (
+      {showPhotos && galleryOpen && (
         <PhotoGallery icao24={aircraft.icao24} onClose={() => setGalleryOpen(false)} />
       )}
     </div>

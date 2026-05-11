@@ -324,5 +324,9 @@
   "ar_intro": "وجّه جهازك نحو السماء — سنعرض الرحلات بشكل مباشر.",
   "ar_start_button": "بدء الواقع المعزز",
   "ar_starting": "جارٍ البدء…",
+  "show_aircraft_photos": "صور الطائرات",
+  "show_aircraft_photos_hint": "تحميل صور planespotters.net في لوحة تفاصيل الرحلة.",
+  "show_airport_weather": "أيقونات طقس المطارات",
+  "show_airport_weather_hint": "إظهار أيقونة صغيرة ☀ ☁ ⛈ ❄ بجانب أسماء المطارات على الخريطة.",
   "atc_audio_no_feeds": "لا يوجد بث مراقبة جوية مسجّل لهذا المطار."
 }

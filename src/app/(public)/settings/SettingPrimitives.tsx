@@ -13,15 +13,33 @@ export function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: (v: 
   );
 }
 
-/** One labelled setting row with a control on the right. */
-export function SettingRow({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
+/** One labelled setting row with a control on the right.
+ *  Optional `hint` renders a small explanatory line under the label —
+ *  useful for the privacy/data toggles where the user wants to know
+ *  what they're actually opting in/out of. */
+export function SettingRow({
+  icon,
+  label,
+  hint,
+  children,
+}: {
+  icon: ReactNode;
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
   return (
-    <div className="flex items-center justify-between py-3">
-      <div className="flex items-center gap-2.5">
-        {icon}
-        <span className="text-sm font-[var(--font-body)] text-[var(--text-primary)]">{label}</span>
+    <div className="flex items-center justify-between gap-3 py-3">
+      <div className="flex items-start gap-2.5 min-w-0">
+        <span className="mt-0.5 shrink-0">{icon}</span>
+        <div className="min-w-0">
+          <div className="text-sm font-[var(--font-body)] text-[var(--text-primary)]">{label}</div>
+          {hint && (
+            <div className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-snug">{hint}</div>
+          )}
+        </div>
       </div>
-      {children}
+      <div className="shrink-0">{children}</div>
     </div>
   );
 }

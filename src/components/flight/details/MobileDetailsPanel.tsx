@@ -6,6 +6,7 @@ import { MobileHeader } from '@/components/flight/details/MobileHeader';
 import { MobileMoreSection } from '@/components/flight/details/MobileMoreSection';
 import { MobileStatsGrid } from '@/components/flight/details/MobileStatsGrid';
 import { RouteSection } from '@/components/flight/details/RouteSection';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 import type { AircraftState, AltitudeUnit, AppLanguage, SpeedUnit } from '@/lib/types';
 import type { FlightDetailsVM } from '@/components/flight/details/useFlightDetailsViewModel';
 
@@ -31,6 +32,12 @@ function DragHandle() {
 /** Mobile bottom-sheet layout for the flight details panel. */
 export function MobileDetailsPanel({ aircraft, viewModel, language, altitudeUnit, speedUnit, altColor, isLoading, actions }: Props) {
   const [showMore, setShowMore] = useState(false);
+  const showPhotos = useSettingsStore((s) => s.showAircraftPhotos);
+  // When the user has photos disabled, mask the URL out before passing
+  // it down so every subcomponent (header thumbnail, compact times
+  // strip, more-section large image) skips its photo render path. One
+  // gating site instead of three keeps the privacy contract simple.
+  const photoUrl = showPhotos ? viewModel.photoUrl : null;
 
   return (
     <div className="lg:hidden glass-panel rounded-t-2xl md:rounded-t-3xl max-h-[75vh] md:max-h-[80vh] overflow-y-auto pb-16">
@@ -41,7 +48,7 @@ export function MobileDetailsPanel({ aircraft, viewModel, language, altitudeUnit
           airlineName={viewModel.airlineInfo?.name}
           displayCallsign={viewModel.displayCallsign ?? aircraft.icao24}
           flightStatus={aircraft.flightStatus}
-          photoUrl={viewModel.photoUrl}
+          photoUrl={photoUrl}
           actions={actions}
         />
         <RouteSection
@@ -49,7 +56,7 @@ export function MobileDetailsPanel({ aircraft, viewModel, language, altitudeUnit
           arrIata={viewModel.arrIata} arrCity={viewModel.arrCity} arrCountry={viewModel.arrCountry} arrCode={viewModel.arrCode}
           compact isLoading={isLoading}
         />
-        <CompactTimesRow language={language} routeInfo={viewModel.routeInfo} photoUrl={viewModel.photoUrl} />
+        <CompactTimesRow language={language} routeInfo={viewModel.routeInfo} photoUrl={photoUrl} />
         <MobileStatsGrid
           language={language}
           altitudeUnit={altitudeUnit}
@@ -67,7 +74,7 @@ export function MobileDetailsPanel({ aircraft, viewModel, language, altitudeUnit
           language={language}
           selectedAircraft={aircraft}
           metadata={viewModel.metadata}
-          photoUrl={viewModel.photoUrl}
+          photoUrl={photoUrl}
           routeInfo={viewModel.routeInfo}
           flightStatus={aircraft.flightStatus}
         />

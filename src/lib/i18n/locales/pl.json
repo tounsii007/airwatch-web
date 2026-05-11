@@ -323,5 +323,9 @@
   "ar_intro": "Skieruj urządzenie ku niebu — nakładamy loty w czasie rzeczywistym.",
   "ar_start_button": "URUCHOM AR",
   "ar_starting": "URUCHAMIANIE…",
+  "show_aircraft_photos": "Zdjęcia samolotów",
+  "show_aircraft_photos_hint": "Wczytuj obrazy z planespotters.net w panelu szczegółów lotu.",
+  "show_airport_weather": "Ikony pogody przy lotniskach",
+  "show_airport_weather_hint": "Pokaż małą ikonę ☀ ☁ ⛈ ❄ obok etykiet lotnisk na mapie.",
   "atc_audio_no_feeds": "Brak skatalogowanego strumienia ATC dla tego lotniska."
 }

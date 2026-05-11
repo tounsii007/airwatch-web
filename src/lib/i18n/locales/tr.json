@@ -323,5 +323,9 @@
   "ar_intro": "Cihazınızı gökyüzüne tutun — uçuşları gerçek zamanlı olarak görüntüleriz.",
   "ar_start_button": "AR BAŞLAT",
   "ar_starting": "BAŞLATILIYOR…",
+  "show_aircraft_photos": "Uçak fotoğrafları",
+  "show_aircraft_photos_hint": "Uçuş detay panelinde planespotters.net görsellerini yükle.",
+  "show_airport_weather": "Havalimanı hava durumu simgeleri",
+  "show_airport_weather_hint": "Haritadaki havalimanı etiketlerinin yanında küçük bir ☀ ☁ ⛈ ❄ simgesi göster.",
   "atc_audio_no_feeds": "Bu havalimanı için kataloglanmış canlı ATC yayını yok."
 }

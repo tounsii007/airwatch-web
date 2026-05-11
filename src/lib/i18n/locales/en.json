@@ -324,5 +324,9 @@
   "ar_spotting_title": "AR SPOTTING",
   "ar_intro": "Hold your device to the sky — we overlay flights in real time.",
   "ar_start_button": "START AR",
-  "ar_starting": "STARTING…"
+  "ar_starting": "STARTING…",
+  "show_aircraft_photos": "Aircraft photos",
+  "show_aircraft_photos_hint": "Load planespotters.net images in the flight detail panel.",
+  "show_airport_weather": "Airport weather icons",
+  "show_airport_weather_hint": "Show a tiny ☀ ☁ ⛈ ❄ icon next to airport labels on the map."
 }

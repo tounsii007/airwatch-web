@@ -324,5 +324,9 @@
   "ar_spotting_title": "SPOTTING AR",
   "ar_intro": "Pointez votre appareil vers le ciel — nous superposons les vols en temps réel.",
   "ar_start_button": "DÉMARRER AR",
-  "ar_starting": "DÉMARRAGE…"
+  "ar_starting": "DÉMARRAGE…",
+  "show_aircraft_photos": "Photos d'avion",
+  "show_aircraft_photos_hint": "Charger les images planespotters.net dans le panneau de détails du vol.",
+  "show_airport_weather": "Icônes météo des aéroports",
+  "show_airport_weather_hint": "Afficher une petite icône ☀ ☁ ⛈ ❄ à côté des étiquettes d'aéroport sur la carte."
 }

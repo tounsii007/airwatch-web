@@ -323,5 +323,9 @@
   "ar_intro": "Houd je apparaat naar de lucht — we leggen vluchten in real-time over.",
   "ar_start_button": "START AR",
   "ar_starting": "STARTEN…",
+  "show_aircraft_photos": "Vliegtuigfoto's",
+  "show_aircraft_photos_hint": "Laad planespotters.net-afbeeldingen in het vluchtdetail-paneel.",
+  "show_airport_weather": "Weericoontjes bij luchthavens",
+  "show_airport_weather_hint": "Toon een klein ☀ ☁ ⛈ ❄-icoontje naast luchthavenlabels op de kaart.",
   "atc_audio_no_feeds": "Geen live ATC-stream gecatalogiseerd voor deze luchthaven."
 }

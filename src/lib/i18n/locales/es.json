@@ -324,5 +324,9 @@
   "ar_spotting_title": "SPOTTING AR",
   "ar_intro": "Apunta tu dispositivo al cielo — superponemos los vuelos en tiempo real.",
   "ar_start_button": "INICIAR AR",
-  "ar_starting": "INICIANDO…"
+  "ar_starting": "INICIANDO…",
+  "show_aircraft_photos": "Fotos de aviones",
+  "show_aircraft_photos_hint": "Cargar imágenes de planespotters.net en el panel de detalles del vuelo.",
+  "show_airport_weather": "Iconos meteorológicos de aeropuertos",
+  "show_airport_weather_hint": "Mostrar un pequeño icono ☀ ☁ ⛈ ❄ junto a las etiquetas de aeropuerto en el mapa."
 }
