@@ -33,6 +33,9 @@ const loaders: Record<Exclude<AppLanguage, 'en'>, () => Promise<{ default: Dicti
   es: () => import('@/lib/i18n/locales/es.json') as Promise<{ default: Dictionary }>,
   it: () => import('@/lib/i18n/locales/it.json') as Promise<{ default: Dictionary }>,
   ar: () => import('@/lib/i18n/locales/ar.json') as Promise<{ default: Dictionary }>,
+  pl: () => import('@/lib/i18n/locales/pl.json') as Promise<{ default: Dictionary }>,
+  nl: () => import('@/lib/i18n/locales/nl.json') as Promise<{ default: Dictionary }>,
+  tr: () => import('@/lib/i18n/locales/tr.json') as Promise<{ default: Dictionary }>,
 };
 
 /**
@@ -67,12 +70,15 @@ export function t(key: TranslationKey, locale: AppLanguage): string {
  * @internal
  */
 export async function loadAllForTesting(): Promise<Record<AppLanguage, Dictionary>> {
-  const [de, fr, es, it, ar] = await Promise.all([
+  const [de, fr, es, it, ar, pl, nl, tr] = await Promise.all([
     loaders.de(),
     loaders.fr(),
     loaders.es(),
     loaders.it(),
     loaders.ar(),
+    loaders.pl(),
+    loaders.nl(),
+    loaders.tr(),
   ]);
   return {
     en: enDictionary as Dictionary,
@@ -81,5 +87,8 @@ export async function loadAllForTesting(): Promise<Record<AppLanguage, Dictionar
     es: es.default,
     it: it.default,
     ar: ar.default,
+    pl: pl.default,
+    nl: nl.default,
+    tr: tr.default,
   };
 }

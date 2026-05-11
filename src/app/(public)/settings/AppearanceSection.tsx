@@ -21,7 +21,7 @@ interface Props {
  * with a 1 px border + rounded corners so it reads as a proper flag
  * even when the chip background is dark.
  */
-function FlagIcon({ country, alt }: { country: 'gb' | 'de' | 'fr' | 'es' | 'it' | 'sa'; alt: string }) {
+function FlagIcon({ country, alt }: { country: 'gb' | 'de' | 'fr' | 'es' | 'it' | 'sa' | 'pl' | 'nl' | 'tr'; alt: string }) {
   return (
     <Image
       src={`/flags/${country}.svg`}
@@ -43,6 +43,9 @@ const LANGUAGES: ChipOption<AppLanguage>[] = [
   { value: 'fr', label: 'FR', icon: <FlagIcon country="fr" alt="Français" /> },
   { value: 'es', label: 'ES', icon: <FlagIcon country="es" alt="Español" /> },
   { value: 'it', label: 'IT', icon: <FlagIcon country="it" alt="Italiano" /> },
+  { value: 'pl', label: 'PL', icon: <FlagIcon country="pl" alt="Polski" /> },
+  { value: 'nl', label: 'NL', icon: <FlagIcon country="nl" alt="Nederlands" /> },
+  { value: 'tr', label: 'TR', icon: <FlagIcon country="tr" alt="Türkçe" /> },
   // Saudi flag stands in for the global Arabic locale — pan-Arab usage
   // typically defaults to it; users in MA/EG/AE/etc. will recognise it
   // as "Arabic" rather than country-specific.
