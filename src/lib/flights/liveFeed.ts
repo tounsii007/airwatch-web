@@ -14,6 +14,33 @@ import type { AirlabsFlightResponse } from '@/lib/flights/airlabs';
 
 export type FeedTransport = 'websocket' | 'polling';
 
+/**
+ * Outbound WebSocket frame the api emits on `/ws/flights`.
+ *
+ * Mirrors the Java {@code WsFlightFrame} record at
+ * `airwatch-api/src/main/java/com/airwatch/websocket/WsFlightFrame.java`.
+ * Keep the two in sync — the wire is the contract.
+ *
+ * `subscribed` is only present when the api filtered the data by this
+ * session's icao24 subscription list (see `handleSubscribe` on the
+ * backend); the unfiltered broadcast omits the field entirely.
+ */
+export interface WsFlightFrame {
+  type: 'flights';
+  count: number;
+  /** ms since epoch — matches Java's System.currentTimeMillis(). */
+  timestamp: number;
+  subscribed?: boolean;
+  data: AirlabsFlightResponse[];
+}
+
+/** Type-guard: shape-check a JSON-parsed payload against {@link WsFlightFrame}. */
+function isFlightFrame(value: unknown): value is WsFlightFrame {
+  if (value === null || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  return v.type === 'flights' && Array.isArray(v.data);
+}
+
 export interface LiveFeedCallbacks {
   /** Called for every successful frame. */
   onFlights: (flights: AirlabsFlightResponse[], transport: FeedTransport) => void;
@@ -105,8 +132,8 @@ export function startLiveFeed(options: LiveFeedOptions, callbacks: LiveFeedCallb
 
     ws.onmessage = (event) => {
       try {
-        const msg = JSON.parse(event.data) as { type?: string; data?: AirlabsFlightResponse[] };
-        if (msg.type === 'flights' && Array.isArray(msg.data)) {
+        const msg: unknown = JSON.parse(event.data);
+        if (isFlightFrame(msg)) {
           callbacks.onFlights(msg.data, 'websocket');
         }
       } catch {
