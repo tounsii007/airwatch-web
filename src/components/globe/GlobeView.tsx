@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
-import { t } from '@/lib/i18n/translations';
 import { MAP_STYLES } from '@/components/map/mapStyles';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -18,10 +17,8 @@ export function GlobeView() {
   const viewerRef = useRef<any>(null);
   const aircraftMap = useFlightStore((s) => s.aircraftMap);
   const startPolling = useFlightStore((s) => s.startPolling);
-  const selectAircraft = useFlightStore((s) => s.selectAircraft);
   const selectedAircraft = useFlightStore((s) => s.selectedAircraft);
   const mapStyle = useSettingsStore((s) => s.mapStyle);
-  const language = useSettingsStore((s) => s.language);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -151,6 +148,10 @@ export function GlobeView() {
       ),
       duration: 1.5,
     });
+    // Intentionally only re-fly on selection CHANGE (icao24), not on every
+    // position update — otherwise the camera would chase the aircraft and
+    // wouldn't let the user pan/zoom freely.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAircraft?.icao24]);
 
   return (

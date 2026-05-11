@@ -286,6 +286,11 @@ export function AdminDataTable<T>({
     ? { pageIndex: serverSide.pageIndex, pageSize: serverSide.pageSize }
     : pagination;
 
+  // TanStack Table's useReactTable returns an instance bag where many
+  // members are recreated each render; React Compiler can't safely
+  // memoise it. This is the documented escape-hatch — see TanStack
+  // docs §"React Compiler compatibility".
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: data as T[],
     columns: tableColumns,

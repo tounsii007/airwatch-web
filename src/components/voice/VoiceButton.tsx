@@ -30,7 +30,7 @@ export function VoiceButton() {
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SR = (window as any).webkitSpeechRecognition ?? (window as any).SpeechRecognition;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setIsSupported(Boolean(SR));
   }, []);
 

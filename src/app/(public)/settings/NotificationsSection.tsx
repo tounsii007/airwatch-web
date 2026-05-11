@@ -54,7 +54,7 @@ export function NotificationsSection({ language }: { language: AppLanguage }) {
           <Icon size={16} className={subscribed ? 'text-[var(--success)]' : 'text-[var(--text-muted)]'} />
           <div className="min-w-0">
             <div className="text-sm font-[var(--font-body)] text-[var(--text-primary)]">
-              {t('notifications_status_' + (subscribed ? 'on' : 'off'), language)}
+              {t(subscribed ? 'notifications_status_on' : 'notifications_status_off', language)}
             </div>
             <div className="text-[11px] text-[var(--text-muted)]">
               {denied

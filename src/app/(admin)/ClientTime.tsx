@@ -76,7 +76,7 @@ export function ClientTime({ iso, mode = 'relative', suffix = ' ago', style, cla
   );
 }
 
-function initialFor(mode: Props['mode'], iso: string, suffix: string): string {
+function initialFor(mode: Props['mode'], iso: string, _suffix: string): string {
   // SSR: absolute time always (clock-stable across server & client).
   // The effect on mount swaps in relative if requested.
   if (mode === 'relative') return formatDeDateTime(iso);

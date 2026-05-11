@@ -336,4 +336,3 @@ function sum(xs: readonly number[]): number {
 const headingStyle    = { fontFamily: 'var(--font-heading)', fontSize: '1.5rem', letterSpacing: '0.04em', color: 'var(--primary-bright)' };
 const subtitleStyle   = { color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: 4, maxWidth: 640 };
 const headerRowStyle  = { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: '0.75rem' };
-const kpiGridStyle    = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' };

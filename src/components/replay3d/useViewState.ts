@@ -50,7 +50,7 @@ export function useViewState({ mode, snapshotPosition, snapshotHeading }: Params
   useEffect(() => {
     if (!preset.follow || !snapshotPosition) return;
     const [lon, lat] = snapshotPosition;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setViewState((s) => ({
       ...s,
       longitude: lon,

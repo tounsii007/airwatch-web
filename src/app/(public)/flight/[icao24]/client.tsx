@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useStatsStore } from '@/lib/stores/statsStore';
@@ -23,7 +23,6 @@ const SquawkAlertBanner = dynamic(() => import('@/components/map/SquawkAlertBann
 
 export default function FlightDeepLinkPage() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const rawIcao24 = params.icao24 as string;
   const icao24 = rawIcao24.toLowerCase();
 

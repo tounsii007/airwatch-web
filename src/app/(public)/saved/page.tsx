@@ -49,8 +49,11 @@ export default function SavedPage() {
     // user's calendar; for airports / airlines we use "now".
     const now = new Date();
     const events: IcsEvent[] = items.map((item) => {
-      const live = item.type === 'flight' ? liveOf(item) : undefined;
-      const start = live?.lastSeen ? new Date(live.lastSeen) : now;
+      // Inline the aircraftMap lookup so this useCallback only depends on
+      // [items, aircraftMap] — including liveOf would re-create the
+      // callback every render since it's a fresh closure each time.
+      const live = item.type === 'flight' ? aircraftMap.get(item.id) : undefined;
+      const start = live?.lastUpdate ? new Date(live.lastUpdate) : now;
       return {
         id: item.id,
         start,
@@ -62,7 +65,7 @@ export default function SavedPage() {
     downloadIcs(events, `airwatch-saved-${now.toISOString().slice(0, 10)}`, {
       calName: 'AirWatch — saved',
     });
-  }, [items, aircraftMap]); // re-create when liveOf semantics change
+  }, [items, aircraftMap]);
 
   const renderItem = (item: FavoriteItem) => (
     <div key={item.id} className="animate-fade-up">

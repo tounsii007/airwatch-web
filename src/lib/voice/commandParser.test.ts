@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseVoiceCommand, type VoiceCommand } from './commandParser';
+import { parseVoiceCommand } from './commandParser';
 import type { AppLanguage } from '@/lib/types';
 
 // ─────────────────────────────────────

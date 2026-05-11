@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Brain, TrendingUp } from 'lucide-react';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Brain } from 'lucide-react';
 import type { AircraftState } from '@/lib/types';
 interface FlightPrediction {
   delayProbability: number;
@@ -20,7 +19,7 @@ export function PredictionCard({ aircraft }: { aircraft: AircraftState }) {
 
   useEffect(() => {
     if (!aircraft.callsign || !aircraft.depIata || !aircraft.arrIata) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setLoading(true);
      
     setError(false);

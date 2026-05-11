@@ -25,7 +25,7 @@ export function OfflineBadge({ aircraft, nowMs }: Props) {
   // Default computed inside the component body. Date.now() is intentionally
   // called at render time — the badge label is a read-only staleness glance,
   // not something that feeds state.
-  // eslint-disable-next-line react-hooks/purity
+   
   const now = nowMs ?? Date.now();
   if (!isCached(aircraft, now)) return null;
   return (

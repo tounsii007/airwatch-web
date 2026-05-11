@@ -56,7 +56,7 @@ export function ExportButton({ href, filename, label = 'Export CSV', compact = f
       a.remove();
       URL.revokeObjectURL(url);
       toast.success(`Downloaded ${a.download}`);
-    } catch (e) {
+    } catch {
       toast.error(`Network error during export`);
     } finally {
       setBusy(false);

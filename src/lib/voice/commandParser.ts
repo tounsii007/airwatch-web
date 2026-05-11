@@ -55,7 +55,9 @@ const PATTERNS_FR: Pattern[] = [
   { regex: /turbulence/i, build: () => ({ type: 'toggleTurbulence' }) },
 ];
 
-const PATTERNS: Record<AppLanguage, Pattern[]> = {
+// Voice command patterns are only authored for en/de/fr today. Speakers of
+// es/it/ar fall through to the English fallback below — see parseVoiceCommand.
+const PATTERNS: Partial<Record<AppLanguage, Pattern[]>> = {
   en: PATTERNS_EN,
   de: PATTERNS_DE,
   fr: PATTERNS_FR,

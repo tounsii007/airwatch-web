@@ -36,6 +36,18 @@ const eslintConfig = defineConfig([
       // long German UI strings makes them unreadable in source. The
       // browser handles them fine without escapes.
       'react/no-unescaped-entities': 'off',
+      // Allow underscore-prefixed identifiers as a deliberate "I know this
+      // is unused but it's positionally required" marker — common in
+      // callback signatures where the runtime hands you args you don't
+      // need (e.g. `(_event, value) => ...`). caughtErrors handles
+      // `catch (_e)`.
+      '@typescript-eslint/no-unused-vars': ['warn', {
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+      }],
     },
   },
   // Override default ignores of eslint-config-next.

@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Browser } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /**
  * Admin dashboard E2E suite.
@@ -79,13 +79,6 @@ async function login(page: Page, user = ADMIN_USER, pass = ADMIN_PASS): Promise<
   });
   // 302 = success → /admin/dashboard (or wherever sanitizeNext landed us).
   expect(res.status(), 'login should redirect on success').toBe(302);
-}
-
-async function newLoggedInContext(browser: Browser) {
-  const ctx = await browser.newContext();
-  const page = await ctx.newPage();
-  await login(page);
-  return { ctx, page };
 }
 
 /** Collect uncaught browser-side errors during a page load. */
@@ -217,10 +210,8 @@ test.describe('Admin · content integrity', () => {
       await expect(card, `${label} card present`).toBeVisible();
     }
     // The big-number container next to each label should contain at
-    // least one digit. CountUp animates 0 → value, so even an idle
-    // dashboard renders a "0" rather than empty space.
-    const numbers = await page.locator('.admin-card .tabular, [class*="tabular"]').allTextContents().catch(() => []);
-    // The dashboard has multiple KPI strips; we just want SOME number.
+    // least one digit. The dashboard has multiple KPI strips; we just
+    // want SOME number to appear.
     expect(
       page.locator('main').textContent(),
       'dashboard renders at least one numeric KPI value',

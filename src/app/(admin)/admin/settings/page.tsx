@@ -176,6 +176,10 @@ export default async function AdminSettingsPage(_props: {
             </p>
             <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
               {qrCodeDataUrl ? (
+                // next/image is for remote/optimised assets; this is a tiny
+                // inline `data:` URL generated client-side and shown once
+                // — Image's optimisation pipeline cannot help here.
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={qrCodeDataUrl}
                   alt="2FA QR code"

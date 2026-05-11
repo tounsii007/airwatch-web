@@ -33,6 +33,9 @@ type LocalizedNames = {
   en: string;
   de?: string;
   fr?: string;
+  es?: string;
+  it?: string;
+  ar?: string;
 };
 
 // ── Layer 1: Curated overrides for top-tier airport cities ──────────────────

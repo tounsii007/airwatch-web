@@ -99,9 +99,3 @@ export function UserCurves() {
   );
 }
 
-function formatTick(t: number, minutes: number): string {
-  const d = new Date(t);
-  if (minutes <= 1440) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  if (minutes <= 44_640) return d.toLocaleDateString([], { day: '2-digit', month: 'short' });
-  return d.toLocaleDateString([], { month: 'short', year: '2-digit' });
-}

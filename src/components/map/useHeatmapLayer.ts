@@ -150,6 +150,10 @@ export function useHeatmapLayer(map: any | null, points: HeatPoint[], enabled: b
         layerRef.current = null;
       }
     };
+    // `points` is read once for the initial layer fill; subsequent point
+    // updates flow through the dedicated effect below so we don't tear
+    // down + recreate the layer on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, enabled, radius]);
 
   // Push fresh points without re-creating the layer.

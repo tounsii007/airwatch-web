@@ -24,7 +24,7 @@ const sample = {
   timeoutSec: 10,
   failThreshold: 3,
   enabled: true,
-  consecutiveFailures: 0,
+  consecFailures: 0,
   lastRunAt: '2026-05-09T12:00:00Z',
   lastStatus: 200,
   lastLatencyMs: 142,

@@ -33,8 +33,8 @@
  *   --quiet               suppress per-file detail
  */
 
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join, sep, posix } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
+import { join, sep } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
 const args = process.argv.slice(2);

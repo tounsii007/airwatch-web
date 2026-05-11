@@ -7,7 +7,6 @@
  */
 import { fetchJson, fetchCsrfToken } from '@/app/(admin)/admin/dashboard/fetcher';
 import { KpiCard } from '@/app/(admin)/admin/shared/components/KpiCard';
-import { ClientTime } from '@/app/(admin)/ClientTime';
 import { ActionResultToast } from '@/app/(admin)/ActionResultToast';
 import { HelpPanel } from '@/app/(admin)/admin/shared/components/HelpPanel';
 import { IncidentsClient } from '@/app/(admin)/admin/incidents/IncidentsClient';

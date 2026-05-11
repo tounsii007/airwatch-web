@@ -6,7 +6,6 @@
 
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useToast } from '@/app/(admin)/Toast';
-import { ClientTime } from '@/app/(admin)/ClientTime';
 import { useAdminEvents } from '@/app/(admin)/admin/shared/live/AdminEventStream';
 
 interface Probe {

@@ -197,15 +197,3 @@ const errorBoxStyle = {
   overflow: 'auto',
   maxHeight: 160,
 };
-const primaryButtonStyle = {
-  fontFamily: 'var(--font-heading)',
-  fontSize: '0.6875rem',
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase' as const,
-  color: 'var(--primary-bright)',
-  background: 'color-mix(in srgb, var(--primary-bright) 12%, transparent)',
-  border: '1px solid color-mix(in srgb, var(--primary-bright) 28%, transparent)',
-  padding: '0.4rem 0.85rem',
-  borderRadius: 4,
-  cursor: 'pointer',
-};

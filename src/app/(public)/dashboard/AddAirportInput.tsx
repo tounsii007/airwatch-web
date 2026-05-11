@@ -88,6 +88,7 @@ export function AddAirportInput({ language, value, onChange, onAdd, existing }: 
         <input
           ref={inputRef}
           type="text"
+          role="combobox"
           value={value}
           onChange={(e) => { onChange(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}

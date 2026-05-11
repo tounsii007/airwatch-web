@@ -60,7 +60,7 @@ export function useTurbulenceOverlay({
 
   useEffect(() => {
     if (!enabled) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setZones([]);
       return;
     }

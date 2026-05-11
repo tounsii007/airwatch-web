@@ -1,9 +1,12 @@
 import type { AppLanguage } from '@/lib/types';
 
-const LOCALE_MAP: Record<AppLanguage, string> = {
+const LOCALE_MAP: Partial<Record<AppLanguage, string>> = {
   en: 'en-GB',
   de: 'de-DE',
   fr: 'fr-FR',
+  es: 'es-ES',
+  it: 'it-IT',
+  ar: 'ar',
 };
 
 /**
