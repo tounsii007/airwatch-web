@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { LogoImage } from '@/components/common/LogoImage';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { API } from '@/lib/constants';
 import { airportCity } from '@/lib/data/airports';
@@ -73,10 +73,16 @@ function TimeColumn({ flight, tab, language }: Props) {
 function AirlineLogoLink({ flight }: { flight: AirportScheduleFlight }) {
   if (!flight.airlineIata) return null;
   const href = `/airlines/${flight.flightIcao?.slice(0, 3) || flight.airlineIata}`;
+  // pics.avs.io has gaps for less-trafficked carriers; fall back to the
+  // IATA text inside the same pill so the row layout stays stable instead
+  // of collapsing to a broken-image icon.
+  const fallback = (
+    <span className="font-[var(--font-heading)] text-[10px] font-bold text-slate-700 px-1">{flight.airlineIata}</span>
+  );
   return (
     <Link href={href}>
       <div className="bg-white rounded px-1.5 py-0.5 shrink-0 shadow-sm hover:shadow transition-shadow">
-        <Image src={API.airlineLogo(flight.airlineIata)} alt={flight.airlineIata} width={60} height={22} className="object-contain" unoptimized />
+        <LogoImage src={API.airlineLogo(flight.airlineIata)} alt={flight.airlineIata} width={60} height={22} className="object-contain" fallback={fallback} />
       </div>
     </Link>
   );

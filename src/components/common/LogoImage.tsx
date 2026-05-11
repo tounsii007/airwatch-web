@@ -5,6 +5,7 @@ import { ManagedImage } from '@/components/common/ManagedImage';
 export function LogoImage({
   alt = '',
   className,
+  fallback,
   fill = false,
   height,
   sizes,
@@ -13,6 +14,8 @@ export function LogoImage({
 }: {
   alt?: string;
   className?: string;
+  /** Rendered when the underlying <img> fires onError (e.g. logo CDN 404). */
+  fallback?: React.ReactNode;
   fill?: boolean;
   height?: number;
   sizes?: string;
@@ -23,6 +26,7 @@ export function LogoImage({
     <ManagedImage
       src={src}
       alt={alt}
+      fallback={fallback}
       fill={fill}
       width={width}
       height={height}

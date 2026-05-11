@@ -1,10 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import { ArrowLeft, Star } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { NeonText } from '@/components/ui/NeonText';
 import { FlagImage } from '@/components/common/FlagImage';
+import { LogoImage } from '@/components/common/LogoImage';
 import { API } from '@/lib/constants';
 import { t } from '@/lib/i18n/translations';
 import { countryToCode } from '@/lib/data/country-translations';
@@ -32,9 +32,14 @@ function Back({ language, onBack }: { language: AppLanguage; onBack: () => void 
 
 function Logo({ icao, airline }: { icao: string; airline: AirlineData | null }) {
   const logoIata = airline?.iata || icao;
+  // pics.avs.io has gaps for less-trafficked carriers; show the code as a
+  // dignified fallback instead of a broken-image icon.
+  const fallback = (
+    <span className="font-[var(--font-heading)] text-xs font-bold text-slate-700 px-1">{logoIata}</span>
+  );
   return (
     <GlassPanel className="p-2 bg-white/90 rounded-xl">
-      <Image src={API.airlineLogo(logoIata)} alt={airline?.name ?? icao} width={60} height={24} className="object-contain" unoptimized />
+      <LogoImage src={API.airlineLogo(logoIata)} alt={airline?.name ?? icao} width={60} height={24} className="object-contain" fallback={fallback} />
     </GlassPanel>
   );
 }
