@@ -112,7 +112,12 @@ export function parseAirlabsFlight(flight: AirlabsFlightResponse): AircraftState
     squawk: flight.squawk ?? undefined,
     category: guessCategory(flight.aircraft_icao),
     flightStatus: status,
-    lastUpdate: flight.updated ?? Date.now(),
+    // Airlabs `updated` is Unix SECONDS; AircraftState.lastUpdate is in
+    // milliseconds (matched by isFresh / Date.now()). Without the *1000
+    // conversion every aircraft reads as ~50 years stale and the map's
+    // freshness filter drops everything except the selected/emergency
+    // flights that get force-pushed downstream.
+    lastUpdate: flight.updated != null ? flight.updated * 1000 : Date.now(),
     depIata: flight.dep_iata ?? undefined,
     arrIata: flight.arr_iata ?? undefined,
     airlineIcao: flight.airline_icao ?? undefined,

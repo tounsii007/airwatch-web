@@ -27,6 +27,18 @@ describe('airlabs helpers', () => {
     expect(aircraft.verticalRate).toBeCloseTo(5);
     expect(aircraft.depIata).toBe('FRA');
     expect(aircraft.arrIata).toBe('JFK');
+    // Airlabs `updated` is Unix seconds; we convert to ms so isFresh
+    // (which compares against Date.now()) doesn't see every frame as
+    // ~50 years stale and drop everything from the live map.
+    expect(aircraft.lastUpdate).toBe(123_000);
+  });
+
+  it('falls back to Date.now() when Airlabs omits `updated` (also in ms)', () => {
+    const before = Date.now();
+    const aircraft = parseAirlabsFlight({ hex: 'abc', lat: 0, lng: 0 });
+    const after = Date.now();
+    expect(aircraft.lastUpdate).toBeGreaterThanOrEqual(before);
+    expect(aircraft.lastUpdate).toBeLessThanOrEqual(after);
   });
 
   it('builds a map and ignores entries without valid coordinates', () => {
