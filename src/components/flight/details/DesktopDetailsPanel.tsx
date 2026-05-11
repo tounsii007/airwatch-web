@@ -5,8 +5,10 @@ import { AircraftPhoto } from '@/components/flight/details/AircraftPhoto';
 import { Co2Footer } from '@/components/flight/details/Co2Footer';
 import { DesktopHeader } from '@/components/flight/details/DesktopHeader';
 import { DesktopStats } from '@/components/flight/details/DesktopStats';
+import { FleetInfoCard } from '@/components/flight/details/FleetInfoCard';
 import { MetadataSection } from '@/components/flight/details/MetadataSection';
 import { RouteSection } from '@/components/flight/details/RouteSection';
+import { RouteStatsBadge } from '@/components/flight/details/RouteStatsBadge';
 import { TimesRow } from '@/components/flight/details/primitives';
 import { PhotoGallery } from '@/components/flight/PhotoGallery';
 import { PredictionCard } from '@/components/flight/PredictionCard';
@@ -47,11 +49,17 @@ export function DesktopDetailsPanel({ aircraft, viewModel, language, altitudeUni
           arrIata={viewModel.arrIata} arrCity={viewModel.arrCity} arrCountry={viewModel.arrCountry} arrCode={viewModel.arrCode}
           compact={false} isLoading={false}
         />
+        <RouteStatsBadge depIata={viewModel.depIata} arrIata={viewModel.arrIata} language={language} />
       </div>
 
       {viewModel.routeInfo?.scheduledDep && <TimesRow routeInfo={viewModel.routeInfo} flightStatus={aircraft.flightStatus} />}
 
       {viewModel.metadata && <MetadataSection metadata={viewModel.metadata} icao24={aircraft.icao24} language={language} />}
+
+      {/* Sits below MetadataSection so the basic "what is this plane"
+          info renders first; the fleet card is enrichment that fades
+          in after a network round-trip. */}
+      <FleetInfoCard icao24={aircraft.icao24} language={language} />
 
       <PredictionCard aircraft={aircraft} />
 

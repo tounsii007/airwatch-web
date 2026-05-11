@@ -16,9 +16,10 @@ interface Props {
   portsUp: number;
   portsTotal: number;
   uptimePct: number;
-  /** Pre-aggregated country → blocked-attempt counts. Empty until
-   *  GeoIP enrichment is in place; the WorldMap renders its own
-   *  "no geo data" placeholder for that case. */
+  /** Pre-aggregated country → blocked-attempt counts. GeoIP enrichment
+   *  is wired through {@code UnauthorizedRequestRecorder} on the api
+   *  side. The WorldMap still renders an empty-state when the bucket
+   *  is empty (cold start or .mmdb not loaded). */
   countryCounts: Readonly<Record<string, number>>;
 }
 
@@ -66,7 +67,7 @@ export function StatusOverviewRow({ portsUp, portsTotal, uptimePct, countryCount
         </Donut>
       </section>
       <section className="admin-card">
-        <h2>Threat origins (Phase-1 placeholder)</h2>
+        <h2>Threat origins</h2>
         <WorldMap data={countryCounts} height={280} />
       </section>
     </div>

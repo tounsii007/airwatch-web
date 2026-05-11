@@ -58,4 +58,43 @@ describe('useFavoritesStore', () => {
   it('isFavorite returns false for unknown ids', () => {
     expect(useFavoritesStore.getState().isFavorite('nope')).toBe(false);
   });
+
+  // ─── 500-item cap (audit P1-8) ────────────────────────────────────
+
+  it('caps the items list at 500 — adding past the cap drops the oldest non-pinned', () => {
+    const { addFavorite } = useFavoritesStore.getState();
+    for (let i = 0; i < 500; i++) addFavorite(makeItem(`f${i}`));
+    expect(useFavoritesStore.getState().items).toHaveLength(500);
+
+    addFavorite(makeItem('f500'));
+    const items = useFavoritesStore.getState().items;
+    expect(items).toHaveLength(500);
+    expect(items.some((i) => i.id === 'f0')).toBe(false);   // dropped
+    expect(items.some((i) => i.id === 'f500')).toBe(true);  // added
+  });
+
+  it('pinned entries are NEVER evicted by the cap', () => {
+    const { addFavorite, togglePin } = useFavoritesStore.getState();
+    for (let i = 0; i < 500; i++) addFavorite(makeItem(`f${i}`));
+    togglePin('f0'); // pin the oldest
+
+    addFavorite(makeItem('f500'));
+    const items = useFavoritesStore.getState().items;
+    expect(items.some((i) => i.id === 'f0' && i.pinned)).toBe(true);
+    // The next-oldest non-pinned (f1) was evicted instead.
+    expect(items.some((i) => i.id === 'f1')).toBe(false);
+    expect(items.some((i) => i.id === 'f500')).toBe(true);
+  });
+
+  it('refuses to grow past the cap when every entry is pinned', () => {
+    const { addFavorite, togglePin } = useFavoritesStore.getState();
+    for (let i = 0; i < 500; i++) {
+      addFavorite(makeItem(`p${i}`));
+      togglePin(`p${i}`);
+    }
+    addFavorite(makeItem('newcomer'));
+    const items = useFavoritesStore.getState().items;
+    expect(items).toHaveLength(500);
+    expect(items.some((i) => i.id === 'newcomer')).toBe(false);
+  });
 });

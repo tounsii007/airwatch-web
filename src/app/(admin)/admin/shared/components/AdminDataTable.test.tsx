@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { type ColumnDef } from '@tanstack/react-table';
 import { AdminDataTable } from './AdminDataTable';
@@ -182,5 +182,133 @@ describe('<AdminDataTable />', () => {
       />,
     );
     expect(screen.getByTestId('empty')).toBeInTheDocument();
+  });
+
+  describe('drag-to-reorder columns (Phase 4)', () => {
+    function makeDataTransfer(): DataTransfer {
+      // happy-dom/jsdom don't fully implement DataTransfer; stub the surface
+      // we actually use: setData, getData, dropEffect, effectAllowed.
+      const store = new Map<string, string>();
+      return {
+        setData: (k: string, v: string) => { store.set(k, v); },
+        getData: (k: string) => store.get(k) ?? '',
+        dropEffect: 'none',
+        effectAllowed: 'all',
+      } as unknown as DataTransfer;
+    }
+
+    it('reorders columns when a header is dragged onto a sibling', () => {
+      const { container } = render(
+        <AdminDataTable<Row> data={rows} columns={cols} enableColumnReorder />,
+      );
+
+      const headers = container.querySelectorAll('th[data-column-id]');
+      expect(headers).toHaveLength(2);
+      const nameTh = headers[0] as HTMLTableCellElement;
+      const callsTh = headers[1] as HTMLTableCellElement;
+      expect(nameTh.getAttribute('data-column-id')).toBe('name');
+      expect(callsTh.getAttribute('data-column-id')).toBe('calls');
+      // happy-dom doesn't always reflect the React JSX attribute as a DOM
+      // property, so check the attribute string directly.
+      expect(nameTh.getAttribute('draggable')).toBe('true');
+
+      const dt = makeDataTransfer();
+      // Drag "calls" before "name". fireEvent goes through React's
+      // synthetic event system so the onDragStart/onDrop props fire.
+      fireEvent.dragStart(callsTh, { dataTransfer: dt });
+      fireEvent.dragOver(nameTh,  { dataTransfer: dt });
+      fireEvent.drop(nameTh,      { dataTransfer: dt });
+
+      const after = container.querySelectorAll('th[data-column-id]');
+      expect(after[0].getAttribute('data-column-id')).toBe('calls');
+      expect(after[1].getAttribute('data-column-id')).toBe('name');
+    });
+
+    it('keeps __select anchored — never drag-reorderable', () => {
+      const { container } = render(
+        <AdminDataTable<Row>
+          data={rows}
+          columns={cols}
+          enableRowSelection
+          enableColumnReorder
+        />,
+      );
+      const selectTh = container.querySelector('th[data-column-id="__select"]') as HTMLTableCellElement | null;
+      expect(selectTh).not.toBeNull();
+      // The React `draggable={undefined}` should NOT serialize a true attribute.
+      expect(selectTh?.getAttribute('draggable')).not.toBe('true');
+    });
+  });
+
+  describe('server-side pagination (Phase 4)', () => {
+    it('reads page/total from the parent and emits page-change events', async () => {
+      const user = userEvent.setup();
+      const onPaginationChange = vi.fn();
+
+      const { rerender } = render(
+        <AdminDataTable<Row>
+          data={rows.slice(0, 2)}
+          columns={cols}
+          serverSide={{
+            total: 200,
+            pageIndex: 0,
+            pageSize: 25,
+            onPaginationChange,
+          }}
+        />,
+      );
+
+      // 200 rows / 25 per page → 8 pages. Footer shows the parent's total.
+      expect(screen.getByText(/of 200/)).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: '›' }));
+      expect(onPaginationChange).toHaveBeenCalledWith({ pageIndex: 1, pageSize: 25 });
+
+      // Parent re-renders with the new page; the table re-uses the controlled values.
+      rerender(
+        <AdminDataTable<Row>
+          data={rows.slice(2, 4)}
+          columns={cols}
+          serverSide={{
+            total: 200,
+            pageIndex: 1,
+            pageSize: 25,
+            onPaginationChange,
+          }}
+        />,
+      );
+      // The "Showing X–Y of Z" text is broken across text nodes (the
+      // en-dash separator); query the <span> directly and match its
+      // concatenated textContent.
+      const showing = screen.getByText((_t, node) => {
+        if (!node) return false;
+        if (node.tagName?.toLowerCase() !== 'span') return false;
+        return /Showing\s*26\D+50\D+200/.test(node.textContent ?? '');
+      });
+      expect(showing).toBeInTheDocument();
+    });
+
+    it('does not slice rows locally when serverSide is set', () => {
+      // Pass exactly two rows (the "current page"). With local pagination
+      // and pageSize 25, all 4 rows would render — but the parent says
+      // there are only 2 rows on this page.
+      render(
+        <AdminDataTable<Row>
+          data={rows.slice(0, 2)}
+          columns={cols}
+          serverSide={{
+            total: 4,
+            pageIndex: 0,
+            pageSize: 25,
+            onPaginationChange: () => {},
+          }}
+        />,
+      );
+      // Only the first two names — local slicing would render all four.
+      expect(screen.getByText('alpha')).toBeInTheDocument();
+      expect(screen.getByText('bravo')).toBeInTheDocument();
+      expect(screen.queryByText('charlie')).toBeNull();
+      expect(screen.queryByText('delta')).toBeNull();
+    });
   });
 });

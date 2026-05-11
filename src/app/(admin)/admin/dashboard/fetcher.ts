@@ -8,6 +8,14 @@
  */
 
 import { cookies } from 'next/headers';
+import { safeParse, safeParseArray } from '@/lib/schemas';
+import {
+  BlockedIpSchema,
+  CsrfTokenSchema,
+  PortHistoryBatchSchema,
+  PortRowSchema,
+  RejectEventSchema,
+} from '@/app/(admin)/adminSchemas';
 import type {
   BlockedIp,
   PortHistoryPoint,
@@ -58,8 +66,9 @@ export async function fetchJson<T>(path: string): Promise<T | null> {
  * disable submit buttons in that case rather than render a broken form.
  */
 export async function fetchCsrfToken(): Promise<string> {
-  const payload = await fetchJson<{ token: string; available: boolean }>('/admin/api/csrf');
-  return payload?.token ?? '';
+  const raw = await fetchJson<unknown>('/admin/api/csrf');
+  const parsed = safeParse(CsrfTokenSchema, raw, 'csrf');
+  return parsed?.token ?? '';
 }
 
 /** Aggregate bundle returned to the page-level orchestrator. */
@@ -71,38 +80,51 @@ export interface DashboardData {
 }
 
 /**
- * Fetch every payload the dashboard needs in parallel, then enrich each
- * port row with its 60-minute latency history (one extra round-trip per
- * port — chatty but each response is tiny). A future Phase-3 endpoint
- * will batch the histories into a single response if this becomes the
- * slow part of the render.
+ * Fetch every payload the dashboard needs in parallel.
+ *
+ * <p>Per-port history used to be one fetch per port (chatty: 12+
+ * round-trips on cold render). It's now a single batched call to
+ * {@code /monitoring/ports/history}. The endpoint returns a map keyed
+ * by port name; we splice it back onto the port rows here so the
+ * shape consumed by the dashboard sections doesn't change.
  */
 export async function fetchDashboardData(): Promise<DashboardData> {
-  const [ports, blocked, recent] = await Promise.all([
-    fetchJson<PortRow[]>('/admin/api/monitoring/ports'),
-    fetchJson<BlockedIp[]>('/admin/api/monitoring/unauthorized-ips?limit=10'),
-    fetchJson<RejectEvent[]>('/admin/api/monitoring/unauthorized-events?limit=30'),
+  const [rawPorts, rawHistories, rawBlocked, rawRecent] = await Promise.all([
+    fetchJson<unknown>('/admin/api/monitoring/ports'),
+    fetchJson<unknown>('/admin/api/monitoring/ports/history?minutes=60'),
+    fetchJson<unknown>('/admin/api/monitoring/unauthorized-ips?limit=10'),
+    fetchJson<unknown>('/admin/api/monitoring/unauthorized-events?limit=30'),
   ]);
+
+  // Schema validation at the boundary. Bad rows get dropped with a console
+  // warning; the page still renders for the rest. Returning null on
+  // unreachable / 401 (fetchJson convention) is preserved.
+  const ports: PortRow[] | null = rawPorts == null
+    ? null
+    : safeParseArray(PortRowSchema, rawPorts, 'monitoring/ports').items;
+  const histories = safeParse(PortHistoryBatchSchema, rawHistories ?? {}, 'monitoring/ports/history');
+  const blocked: BlockedIp[] | null = rawBlocked == null
+    ? null
+    : safeParseArray(BlockedIpSchema, rawBlocked, 'monitoring/unauthorized-ips').items;
+  const recent: RejectEvent[] | null = rawRecent == null
+    ? null
+    : safeParseArray(RejectEventSchema, rawRecent, 'monitoring/unauthorized-events').items;
 
   let portsWithHistory: PortRowWithHistory[] = [];
   if (ports) {
-    portsWithHistory = await Promise.all(
-      ports.map(async (p) => {
-        const hist = await fetchJson<PortHistoryPoint[]>(
-          `/admin/api/monitoring/ports/${encodeURIComponent(p.port_name)}/history?minutes=60`,
-        );
-        const points = (hist ?? []).map((h) => ({
-          t: new Date(h.probed_at).getTime(),
-          v: h.latency_ms ?? 0,
-          up: h.up,
-        }));
-        return {
-          ...p,
-          history: points.map((pt) => pt.v),
-          historyPoints: points,
-        };
-      }),
-    );
+    portsWithHistory = ports.map((p) => {
+      const hist: PortHistoryPoint[] = histories?.[p.port_name] ?? [];
+      const points = hist.map((h) => ({
+        t: new Date(h.probed_at).getTime(),
+        v: h.latency_ms ?? 0,
+        up: h.up,
+      }));
+      return {
+        ...p,
+        history: points.map((pt) => pt.v),
+        historyPoints: points,
+      };
+    });
   }
 
   return { ports, portsWithHistory, blocked, recent };

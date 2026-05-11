@@ -21,15 +21,20 @@
  *     Persisted in localStorage per `pageId` if provided.
  *   * <b>Density</b> — compact / regular row height toggle.
  *
- * <h3>What's intentionally not here (yet)</h3>
- *   * Column pinning + drag-to-reorder — TanStack supports it; deferred until
- *     we have a use case that benefits.
- *   * Server-side filtering / pagination — the admin tables are bounded
- *     (≤ 2k rows) so client-side handling stays responsive. When a table
- *     grows past that, swap in `manualSorting` + `manualPagination` and
- *     wire to the API.
- *   * Inline edit — supported via per-cell render but not bundled here as a
- *     uniform affordance; each consumer wires their own input + writer.
+ * <h3>Phase 4 additions</h3>
+ *   * Column pinning + inline edit — see {@link AdminDataTableProps#columnPinning}
+ *     and {@link AdminDataTableProps#inlineEdit}.
+ *   * <b>Drag-to-reorder columns</b> — set {@link AdminDataTableProps#enableColumnReorder}.
+ *     Headers become drag handles; the order is persisted to localStorage
+ *     under the same key as density / visibility when {@code pageId} is set.
+ *   * <b>Server-side pagination</b> — pass {@link AdminDataTableProps#serverSide}
+ *     with the row total + a setter; the table flips into manual mode and
+ *     emits page-change events instead of slicing locally.
+ *
+ * <h3>What's still intentionally not here</h3>
+ *   * Server-side filtering — keep filters client-side; the admin tables that
+ *     exceed 2k rows already paginate server-side, so the filtered slice is
+ *     small enough to handle in the browser.
  *
  * <h3>Storage</h3>
  * If `pageId` is given, the table persists density + column-visibility
@@ -43,6 +48,8 @@
 import {
   type ColumnDef,
   type ColumnFiltersState,
+  type ColumnOrderState,
+  type PaginationState,
   type SortingState,
   type VisibilityState,
   type RowSelectionState,
@@ -54,7 +61,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export interface AdminDataTableProps<T> {
   /** Stable id for localStorage persistence — typically the page name. Optional. */
@@ -122,12 +129,47 @@ export interface AdminDataTableProps<T> {
     /** Defaults to `() => false` (nothing editable). */
     isEditable?: (row: T, columnId: string) => boolean;
   };
+
+  /**
+   * Phase 4 — Drag-to-reorder columns. Headers become drag handles
+   * (HTML5 native DnD); dropping over a sibling reorders. Order is
+   * persisted to localStorage when {@code pageId} is set.
+   *
+   * The selection column ({@code __select}) is anchored on the left and
+   * never participates in reorder.
+   */
+  enableColumnReorder?: boolean;
+
+  /**
+   * Phase 4 — Server-side pagination. When set, the table flips
+   * TanStack into {@code manualPagination} mode: it stops slicing
+   * rows locally, surfaces every page-state change to the parent via
+   * {@link ServerSidePaginationOptions#onPaginationChange}, and reads
+   * the total row count from {@link ServerSidePaginationOptions#total}.
+   *
+   * The {@code data} prop is treated as the current page only. Sorting
+   * + filtering remain client-side over that page; pass them to your
+   * fetcher if you want server-side sorting too.
+   */
+  serverSide?: ServerSidePaginationOptions;
+}
+
+export interface ServerSidePaginationOptions {
+  /** Total number of rows on the server (NOT the length of `data`). */
+  total: number;
+  /** Current page index — 0-based, mirrors TanStack's convention. */
+  pageIndex: number;
+  /** Current page size. */
+  pageSize: number;
+  /** Notified on page-change AND page-size-change. */
+  onPaginationChange: (next: { pageIndex: number; pageSize: number }) => void;
 }
 
 /** State persisted per pageId in localStorage. Sort + filter NOT persisted (those are share-via-URL). */
 interface PersistedState {
   density: 'compact' | 'regular';
   visibility: VisibilityState;
+  columnOrder?: ColumnOrderState;
 }
 
 export function AdminDataTable<T>({
@@ -147,6 +189,8 @@ export function AdminDataTable<T>({
   csvExport,
   columnPinning: initialColumnPinning,
   inlineEdit,
+  enableColumnReorder,
+  serverSide,
 }: AdminDataTableProps<T>) {
   const persistKey = pageId ? `airwatch.admin.table.${pageId}` : null;
 
@@ -163,12 +207,15 @@ export function AdminDataTable<T>({
   const [columnPinning, setColumnPinning] = useState<{ left?: string[]; right?: string[] }>(
     initialColumnPinning ?? {},
   );
+  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([]);
   /** Track which cell (row.id + column.id) is currently being edited inline. */
   const [editingCell, setEditingCell] = useState<{ rowId: string; columnId: string } | null>(null);
   const [editingValue, setEditingValue] = useState<string>('');
   const [editingBusy, setEditingBusy] = useState(false);
+  /** Source column for an in-flight HTML5 drag — null when no drag is active. */
+  const dragSourceRef = useRef<string | null>(null);
 
-  // Restore density + column visibility from localStorage.
+  // Restore density + column visibility + order from localStorage.
   useEffect(() => {
     if (!persistKey || typeof localStorage === 'undefined') return;
     try {
@@ -177,6 +224,7 @@ export function AdminDataTable<T>({
       const persisted = JSON.parse(raw) as Partial<PersistedState>;
       if (persisted.density) setDensity(persisted.density);
       if (persisted.visibility) setColumnVisibility(persisted.visibility);
+      if (Array.isArray(persisted.columnOrder)) setColumnOrder(persisted.columnOrder);
     } catch {
       /* malformed — drop and start fresh */
     }
@@ -186,11 +234,16 @@ export function AdminDataTable<T>({
   useEffect(() => {
     if (!persistKey || typeof localStorage === 'undefined') return;
     try {
-      localStorage.setItem(persistKey, JSON.stringify({ density, visibility: columnVisibility }));
+      const payload: PersistedState = {
+        density,
+        visibility: columnVisibility,
+        ...(columnOrder.length > 0 ? { columnOrder } : {}),
+      };
+      localStorage.setItem(persistKey, JSON.stringify(payload));
     } catch {
       /* quota / private — fine */
     }
-  }, [persistKey, density, columnVisibility]);
+  }, [persistKey, density, columnVisibility, columnOrder]);
 
   // Inject the select column when row selection is enabled.
   const tableColumns = useMemo<ColumnDef<T, unknown>[]>(() => {
@@ -226,6 +279,13 @@ export function AdminDataTable<T>({
     ];
   }, [columns, enableRowSelection]);
 
+  // Effective pagination state — server-side mode bypasses local state and
+  // mirrors the parent's controlled values. The setter still routes back
+  // through the parent so it stays the source of truth.
+  const effectivePagination: PaginationState = serverSide
+    ? { pageIndex: serverSide.pageIndex, pageSize: serverSide.pageSize }
+    : pagination;
+
   const table = useReactTable({
     data: data as T[],
     columns: tableColumns,
@@ -234,22 +294,38 @@ export function AdminDataTable<T>({
       columnFilters,
       columnVisibility,
       rowSelection,
-      pagination,
+      pagination: effectivePagination,
       globalFilter,
       columnPinning,
+      columnOrder,
     },
     enableRowSelection: enableRowSelection ?? false,
     enableColumnPinning: true,
+    manualPagination: Boolean(serverSide),
+    pageCount: serverSide
+      ? Math.max(1, Math.ceil(serverSide.total / Math.max(1, serverSide.pageSize)))
+      : undefined,
+    rowCount: serverSide?.total,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: (updater: Updater<RowSelectionState>) => setRowSelection(updater),
-    onPaginationChange: setPagination,
+    onPaginationChange: (updater: Updater<PaginationState>) => {
+      const next = typeof updater === 'function' ? updater(effectivePagination) : updater;
+      if (serverSide) {
+        // Bounce back to the parent — the table itself stays a thin view.
+        serverSide.onPaginationChange({ pageIndex: next.pageIndex, pageSize: next.pageSize });
+      } else {
+        setPagination(next);
+      }
+    },
     onColumnPinningChange: setColumnPinning,
+    onColumnOrderChange: setColumnOrder,
     getCoreRowModel:       getCoreRowModel(),
     getSortedRowModel:     getSortedRowModel(),
     getFilteredRowModel:   getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    // In manualPagination mode TanStack expects us to skip the local pager.
+    getPaginationRowModel: serverSide ? undefined : getPaginationRowModel(),
   });
 
   // Notify the parent of selected rows.
@@ -262,11 +338,31 @@ export function AdminDataTable<T>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rowSelection]);
 
-  const totalRows    = table.getFilteredRowModel().rows.length;
+  const totalRows    = serverSide?.total ?? table.getFilteredRowModel().rows.length;
   const visibleRows  = table.getRowModel().rows;
   const selectedRows = table.getSelectedRowModel().rows.map(r => r.original);
   const padding      = density === 'compact' ? '0.25rem 0.5rem' : '0.5rem 0.75rem';
   const fontSize     = density === 'compact' ? '0.75rem'        : '0.8125rem';
+
+  /**
+   * Reorder helper — moves the source column id immediately before the
+   * target column id, in the current column order. The leftmost
+   * "__select" column is anchored and cannot be moved or replaced.
+   */
+  function moveColumn(sourceId: string, targetId: string) {
+    if (sourceId === targetId) return;
+    if (sourceId === '__select' || targetId === '__select') return;
+    const current = columnOrder.length > 0
+      ? [...columnOrder]
+      : table.getAllLeafColumns().map((c) => c.id);
+    const from = current.indexOf(sourceId);
+    if (from === -1) return;
+    current.splice(from, 1);
+    const to = current.indexOf(targetId);
+    if (to === -1) return;
+    current.splice(to, 0, sourceId);
+    setColumnOrder(current);
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -327,14 +423,34 @@ export function AdminDataTable<T>({
                       const canSort = header.column.getCanSort();
                       const sortDir = header.column.getIsSorted();
                       const pinSide = header.column.getIsPinned() as 'left' | 'right' | false;
+                      const draggable = Boolean(enableColumnReorder) && header.column.id !== '__select';
                       return (
                         <th
                           key={header.id}
                           colSpan={header.colSpan}
+                          data-column-id={header.column.id}
+                          draggable={draggable || undefined}
+                          onDragStart={draggable ? (e) => {
+                            dragSourceRef.current = header.column.id;
+                            e.dataTransfer.effectAllowed = 'move';
+                            // Required by Firefox to actually start the drag.
+                            try { e.dataTransfer.setData('text/plain', header.column.id); } catch { /* ignore */ }
+                          } : undefined}
+                          onDragOver={draggable ? (e) => {
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = 'move';
+                          } : undefined}
+                          onDrop={draggable ? (e) => {
+                            e.preventDefault();
+                            const source = dragSourceRef.current;
+                            dragSourceRef.current = null;
+                            if (source) moveColumn(source, header.column.id);
+                          } : undefined}
+                          onDragEnd={draggable ? () => { dragSourceRef.current = null; } : undefined}
                           style={{
                             ...thBaseStyle,
                             ...pinnedCellStyle(pinSide, true),
-                            cursor: canSort ? 'pointer' : 'default',
+                            cursor: draggable ? 'grab' : canSort ? 'pointer' : 'default',
                             userSelect: 'none',
                             width: header.column.columnDef.size,
                           }}
@@ -423,9 +539,9 @@ export function AdminDataTable<T>({
           </div>
 
           <Pagination
-            page={pagination.pageIndex + 1}
+            page={effectivePagination.pageIndex + 1}
             pageCount={Math.max(1, table.getPageCount())}
-            pageSize={pagination.pageSize}
+            pageSize={effectivePagination.pageSize}
             total={totalRows}
             onPageChange={p => table.setPageIndex(p - 1)}
             onPageSizeChange={s => table.setPageSize(s)}

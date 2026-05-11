@@ -6,6 +6,8 @@ import { useParams, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useStatsStore } from '@/lib/stores/statsStore';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 const MapView = dynamic(() => import('@/components/map/MapView').then((m) => m.MapView), {
   ssr: false,
@@ -33,6 +35,7 @@ export default function FlightDeepLinkPage() {
   const startPolling = useFlightStore((s) => s.startPolling);
   const selectedAircraft = useFlightStore((s) => s.selectedAircraft);
   const recordView = useStatsStore((s) => s.recordView);
+  const language = useSettingsStore((s) => s.language);
 
   // Start polling if no data
   useEffect(() => {
@@ -55,15 +58,15 @@ export default function FlightDeepLinkPage() {
         <div className="w-16 h-16 rounded-full bg-[var(--error)]/10 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--error)]"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </div>
-        <h1 className="neon-text font-[var(--font-heading)] text-lg font-bold text-[var(--primary)]">Seite nicht gefunden</h1>
+        <h1 className="neon-text font-[var(--font-heading)] text-lg font-bold text-[var(--primary)]">{t('page_not_found', language)}</h1>
         <p className="text-[var(--text-muted)] text-sm font-[var(--font-body)] max-w-sm">
-          {`„${rawIcao24}" ist keine gültige ICAO24-Adresse. Gültige Adressen bestehen aus 6 Hex-Zeichen (z.B. 0d0d24).`}
+          {t('invalid_icao24_address', language).replace('{0}', rawIcao24)}
         </p>
         <Link
           href="/"
           className="mt-2 px-4 py-2 rounded-lg bg-[var(--primary)]/15 text-[var(--primary)] text-sm font-[var(--font-heading)] font-bold hover:bg-[var(--primary)]/25 transition-colors"
         >
-          Zur Karte
+          {t('back_to_map', language)}
         </Link>
       </div>
     );

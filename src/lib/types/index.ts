@@ -117,6 +117,6 @@ export type AltitudeFilter = 'all' | 'low' | 'medium' | 'high' | 'ground';
 export type CategoryFilter = 'all' | 'jets' | 'helicopters' | 'cargo' | 'light' | 'ground';
 export type SpeedUnit = 'knots' | 'kmh' | 'mph';
 export type AltitudeUnit = 'feet' | 'meters';
-export type AppLanguage = 'en' | 'de' | 'fr';
+export type AppLanguage = 'en' | 'de' | 'fr' | 'es' | 'it' | 'ar';
 export type AppTheme = 'dark' | 'light' | 'system';
 export type MapStyle = 'dark' | 'satellite' | 'streets' | 'terrain' | 'night' | 'toner';

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AirWatch — Offline</title>
+  <style>
+    :root {
+      --bg-deep: #0a0f1f;
+      --primary-bright: #4ad6ff;
+      --text-primary: #e6f1ff;
+      --text-muted: #6b8bb3;
+      --border: #1a2742;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-deep: #f4f7fc;
+        --primary-bright: #1c7eb0;
+        --text-primary: #0a0f1f;
+        --text-muted: #5a6c8a;
+        --border: #d3dded;
+      }
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Rajdhani', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      letter-spacing: 0.02em;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.2em;
+      color: var(--primary-bright);
+      margin: 0 0 0.5rem;
+      text-transform: uppercase;
+    }
+    p {
+      max-width: 32rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+      margin: 0.4rem 0;
+    }
+    .icon {
+      font-size: 3rem;
+      line-height: 1;
+      margin-bottom: 1rem;
+      opacity: 0.7;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.65rem 1.4rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--primary-bright);
+      background: transparent;
+      border: 1px solid var(--primary-bright);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 200ms;
+    }
+    button:hover, button:focus {
+      background: color-mix(in srgb, var(--primary-bright) 12%, transparent);
+      outline: none;
+    }
+    .divider {
+      width: 6rem;
+      height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
+    .checks {
+      text-align: left;
+      max-width: 22rem;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .checks li {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      padding: 0.3rem 0;
+    }
+    .checks li::before { content: "·  "; color: var(--primary-bright); }
+  </style>
+</head>
+<body>
+  <div class="icon" aria-hidden="true">📡</div>
+  <h1>You're offline</h1>
+  <p>AirWatch needs a network connection for live flight data.</p>
+  <p>Cached pages are still available from the menu.</p>
+
+  <div class="divider" role="presentation"></div>
+
+  <ul class="checks" aria-label="Things to try">
+    <li>Check your Wi-Fi or mobile data</li>
+    <li>Disable airplane mode if it's on</li>
+    <li>Switch to a different network if you're on a captive portal</li>
+  </ul>
+
+  <button type="button" onclick="window.location.reload()">Retry</button>
+
+  <script>
+    // Auto-retry once the browser regains connectivity.
+    window.addEventListener('online', () => window.location.reload());
+  </script>
+</body>
+</html>

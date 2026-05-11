@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Pin } from 'lucide-react';
+import { Pin, Calendar } from 'lucide-react';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { t } from '@/lib/i18n/translations';
+import { downloadIcs, type IcsEvent } from '@/lib/utils/icsExport';
 import { BackToTop } from '@/app/(public)/saved/BackToTop';
 import { EmptyState } from '@/app/(public)/saved/EmptyState';
 import { SavedCard } from '@/app/(public)/saved/SavedCard';
@@ -40,6 +41,29 @@ export default function SavedPage() {
     router.push('/');
   };
 
+  const handleExportIcs = useCallback(() => {
+    if (items.length === 0) return;
+    // Each saved item becomes a 1-h calendar block at "now" by default.
+    // For starred FLIGHTS we use the live position's last-seen time
+    // when available so the entry sits at a meaningful place in the
+    // user's calendar; for airports / airlines we use "now".
+    const now = new Date();
+    const events: IcsEvent[] = items.map((item) => {
+      const live = item.type === 'flight' ? liveOf(item) : undefined;
+      const start = live?.lastSeen ? new Date(live.lastSeen) : now;
+      return {
+        id: item.id,
+        start,
+        title: `[AirWatch] ${item.label}${item.subtitle ? ' — ' + item.subtitle : ''}`,
+        description: `Type: ${item.type}\nAirWatch URL: https://airwatch.example/${item.type === 'flight' ? `flight/${item.id.replace(/^flight-/, '')}` : item.type === 'airport' ? `airports/${item.label}` : `airlines/${item.label}`}`,
+        location: item.subtitle ?? '',
+      };
+    });
+    downloadIcs(events, `airwatch-saved-${now.toISOString().slice(0, 10)}`, {
+      calName: 'AirWatch — saved',
+    });
+  }, [items, aircraftMap]); // re-create when liveOf semantics change
+
   const renderItem = (item: FavoriteItem) => (
     <div key={item.id} className="animate-fade-up">
       <SavedCard
@@ -61,7 +85,21 @@ export default function SavedPage() {
       title={t('saved', language)}
       subtitle={
         items.length > 0 ? (
-          <span className="badge badge-info">{items.length} items</span>
+          <div className="flex items-center gap-2">
+            <span className="badge badge-info">{items.length} items</span>
+            <button
+              type="button"
+              onClick={handleExportIcs}
+              aria-label={t('export_ics', language)}
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-[var(--font-heading)]
+                         tracking-wide rounded border border-[var(--border)]
+                         text-[var(--text-secondary)] hover:text-[var(--primary)]
+                         hover:border-[var(--primary)] transition-colors"
+            >
+              <Calendar size={11} />
+              {t('export_ics', language)}
+            </button>
+          </div>
         ) : null
       }
     >

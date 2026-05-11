@@ -30,6 +30,9 @@ const cache: Partial<Record<AppLanguage, Dictionary>> = {
 const loaders: Record<Exclude<AppLanguage, 'en'>, () => Promise<{ default: Dictionary }>> = {
   de: () => import('@/lib/i18n/locales/de.json') as Promise<{ default: Dictionary }>,
   fr: () => import('@/lib/i18n/locales/fr.json') as Promise<{ default: Dictionary }>,
+  es: () => import('@/lib/i18n/locales/es.json') as Promise<{ default: Dictionary }>,
+  it: () => import('@/lib/i18n/locales/it.json') as Promise<{ default: Dictionary }>,
+  ar: () => import('@/lib/i18n/locales/ar.json') as Promise<{ default: Dictionary }>,
 };
 
 /**
@@ -64,6 +67,19 @@ export function t(key: TranslationKey, locale: AppLanguage): string {
  * @internal
  */
 export async function loadAllForTesting(): Promise<Record<AppLanguage, Dictionary>> {
-  const [de, fr] = await Promise.all([loaders.de(), loaders.fr()]);
-  return { en: enDictionary as Dictionary, de: de.default, fr: fr.default };
+  const [de, fr, es, it, ar] = await Promise.all([
+    loaders.de(),
+    loaders.fr(),
+    loaders.es(),
+    loaders.it(),
+    loaders.ar(),
+  ]);
+  return {
+    en: enDictionary as Dictionary,
+    de: de.default,
+    fr: fr.default,
+    es: es.default,
+    it: it.default,
+    ar: ar.default,
+  };
 }

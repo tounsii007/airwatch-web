@@ -31,13 +31,10 @@
   "_size_budget_note": "Bundle budget is enforced by scripts/check-bundle-budget.mjs which splits chunks into 'core' (every-user code) and 'lazy 3D' (Cesium for /globe, deck.gl for /replay/3d) buckets with separate budgets. Run `npm run size` after a build to validate. See the script header for the rationale.",
   "dependencies": {
     "@tanstack/react-table": "^8.21.3",
-    "@types/canvas-confetti": "^1.9.0",
     "@types/leaflet": "^1.9.21",
     "@types/leaflet-draw": "^1.0.13",
-    "canvas-confetti": "^1.9.4",
     "cesium": "^1.140.0",
     "deck.gl": "^9.3.1",
-    "framer-motion": "^12.38.0",
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
     "lucide-react": "^1.11.0",
@@ -51,6 +48,17 @@
     "swr": "^2.4.1",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
+  },
+  "_optional_deps_note": "lightningcss-* native bins are pulled by lightningcss itself via its own optionalDependencies; we mirror the per-platform list here so a fresh `npm ci` on any host gets a working build. Without this, Windows installs miss the win32-x64 native and the dev server bombs at first compile with 'Cannot find module ../lightningcss.win32-x64-msvc.node'.",
+  "optionalDependencies": {
+    "lightningcss-darwin-arm64":   "^1.32.0",
+    "lightningcss-darwin-x64":     "^1.32.0",
+    "lightningcss-linux-x64-gnu":  "^1.32.0",
+    "lightningcss-linux-x64-musl": "^1.32.0",
+    "lightningcss-linux-arm64-gnu":  "^1.32.0",
+    "lightningcss-linux-arm64-musl": "^1.32.0",
+    "lightningcss-win32-x64-msvc": "^1.32.0",
+    "lightningcss-win32-arm64-msvc": "^1.32.0"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.2.4",

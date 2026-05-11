@@ -40,8 +40,102 @@ jobs:
       # (Cesium / deck.gl, gated behind /globe and /replay/3d) so a
       # routine Cesium update doesn't trip CI but a regression in the
       # shared shell or a accidental static import of a heavy lib does.
-      - name: Bundle size check
+      - name: Bundle size check (core + lazy-3D)
         run: npm run size
+
+      # Per-route admin perf budget — separate from the global core/lazy
+      # split because the admin shell has its own page-size ceilings (an
+      # admin page that ships an unintended map library should fail CI
+      # even if the global core budget still has headroom).
+      - name: Admin perf budget
+        run: npm run size:admin -- --json > admin-perf-budget.json
+
+      # Surface the admin perf JSON as a CI artifact so reviewers can
+      # diff bundle sizes across PRs without re-running the build.
+      - name: Upload admin perf report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-perf-report
+          path: admin-perf-budget.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # ────────────────────────────────────────────────────────────────────
+  # Dependency vulnerability gate — npm audit for known CVEs in the
+  # transitive tree. Fails on HIGH or CRITICAL findings; moderate
+  # is reported as a comment in the job log but doesn't break CI
+  # (every dep tree has noise at moderate level).
+  # ────────────────────────────────────────────────────────────────────
+  npm-audit:
+    name: npm audit (deps CVE scan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit (fail on high+)
+        run: npm audit --audit-level=high
+
+      # Even when the audit passes, surface the full report as an
+      # artifact so the moderate-level noise can be reviewed without
+      # re-running the job. --json output is parseable by Dependabot
+      # comparison scripts.
+      - name: Audit report (full, including moderate)
+        if: always()
+        run: npm audit --json > npm-audit-report.json || true
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+  # ────────────────────────────────────────────────────────────────────
+  # Lighthouse CI — runtime perf + accessibility scoring on the public
+  # routes. Categories scored: performance / accessibility / best-
+  # practices / seo. Accessibility ≥ 0.90 + CLS < 0.10 are HARD
+  # ASSERTS (CI fails); the rest WARN so PRs aren't blocked on
+  # transient throttling noise.
+  #
+  # Pairs with the existing Bundle-budget step which gates the
+  # JS payload size; Lighthouse measures the runtime cost.
+  # ────────────────────────────────────────────────────────────────────
+  lighthouse:
+    name: Lighthouse CI (public routes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_PROXY_URL: http://localhost:18080
+          INTERNAL_API_URL: http://localhost:18080
+
+      - name: Run Lighthouse CI
+        run: npx --yes @lhci/cli@0.14.x autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        continue-on-error: true   # non-blocking for the first PR cycle
 
   e2e:
     name: Playwright E2E

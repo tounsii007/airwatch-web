@@ -1,6 +1,6 @@
 /**
- * Lightweight inline SVG world map — placeholder for a full
- * country-choropleth heatmap of blocked IPs.
+ * Lightweight inline SVG world map — country-bounding-box heatmap of
+ * blocked-IP origins.
  *
  * Why inline SVG instead of a real map library:
  *   The admin dashboard already uses Leaflet/MapLibre for the public
@@ -10,13 +10,17 @@
  *   from" story — pixel-perfect borders aren't the point.
  *
  *   The `data` prop maps ISO-3166 alpha-2 country codes to a count;
- *   bigger counts get a more saturated tint. Labels show the top 5
- *   contributors as floating chips.
+ *   bigger counts get a more saturated tint. Hovering a region shows
+ *   the country name + count. Labels show the top 5 contributors as
+ *   floating chips.
  *
- * For Phase 1 the geo-IP integration isn't wired up yet, so we render
- * the chart in "ready / awaiting data" mode with the world outline
- * + a subtle "Coming Phase 2" footnote.
+ * GeoIP enrichment is wired in {@code UnauthorizedRequestRecorder};
+ * an empty {@code data} bucket renders a "no geo data" empty state
+ * (still happens during cold-start or when the .mmdb isn't loaded).
  */
+
+'use client';
+import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 
 interface Props {
   /** countryCode → count. Empty object renders the placeholder state. */
@@ -63,6 +67,10 @@ function project(lat: number, lon: number, w: number, h: number): [number, numbe
 export function WorldMap({ data, height = 320 }: Props) {
   const VIEW_W = 720;
   const VIEW_H = 360;
+  // SVG SMIL <animate> elements run on their own timer and aren't
+  // affected by the global @media (prefers-reduced-motion) CSS gate.
+  // Skip rendering them when the user opts out.
+  const reduced = usePrefersReducedMotion();
 
   const max = Math.max(0, ...Object.values(data));
   const total = Object.values(data).reduce((a, b) => a + b, 0);
@@ -120,8 +128,12 @@ export function WorldMap({ data, height = 320 }: Props) {
           const [x2, y1] = project(region.latMax, region.lonMax, VIEW_W, VIEW_H);
           const w = x2 - x1;
           const h = y2 - y1;
+          const tooltip = count > 0
+            ? `${region.name} (${code}) · ${count.toLocaleString()} blocked`
+            : `${region.name} (${code})`;
           return (
             <g key={code}>
+              <title>{tooltip}</title>
               <rect
                 x={x1}
                 y={y1}
@@ -135,6 +147,8 @@ export function WorldMap({ data, height = 320 }: Props) {
                 }
                 stroke={count > 0 ? 'var(--error)' : 'rgba(122, 154, 191, 0.18)'}
                 strokeWidth={count > 0 ? 0.7 : 0.4}
+                data-country={code}
+                data-count={count}
               />
               {count > 0 && (
                 <circle
@@ -144,12 +158,14 @@ export function WorldMap({ data, height = 320 }: Props) {
                   fill="url(#wm-glow)"
                   style={{ pointerEvents: 'none' }}
                 >
-                  <animate
-                    attributeName="r"
-                    values={`${3 + intensity * 6};${5 + intensity * 6};${3 + intensity * 6}`}
-                    dur="2.4s"
-                    repeatCount="indefinite"
-                  />
+                  {!reduced && (
+                    <animate
+                      attributeName="r"
+                      values={`${3 + intensity * 6};${5 + intensity * 6};${3 + intensity * 6}`}
+                      dur="2.4s"
+                      repeatCount="indefinite"
+                    />
+                  )}
                 </circle>
               )}
             </g>
@@ -183,7 +199,7 @@ export function WorldMap({ data, height = 320 }: Props) {
           >
             <div>NO GEO DATA YET</div>
             <div style={{ fontSize: '0.625rem', marginTop: 4, color: 'var(--text-muted)', opacity: 0.7 }}>
-              Geo-IP enrichment lands in Phase 2
+              Either no blocked attempts in window, or .mmdb not loaded.
             </div>
           </div>
         </div>
@@ -200,24 +216,28 @@ export function WorldMap({ data, height = 320 }: Props) {
             pointerEvents: 'none',
           }}
         >
-          {top.map(([code, count]) => (
-            <div
-              key={code}
-              style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: '0.6875rem',
-                letterSpacing: '0.05em',
-                background: 'var(--sunken)',
-                border: '1px solid var(--border)',
-                borderRadius: 3,
-                padding: '2px 6px',
-                color: 'var(--text-primary)',
-              }}
-            >
-              <span style={{ color: 'var(--error)' }}>{code}</span>
-              <span style={{ marginLeft: 6, color: 'var(--text-muted)' }}>{count}</span>
-            </div>
-          ))}
+          {top.map(([code, count]) => {
+            const region = REGIONS[code];
+            return (
+              <div
+                key={code}
+                title={region ? `${region.name} · ${count.toLocaleString()} blocked` : `${code} · ${count}`}
+                style={{
+                  fontFamily: 'var(--font-heading)',
+                  fontSize: '0.6875rem',
+                  letterSpacing: '0.05em',
+                  background: 'var(--sunken)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 3,
+                  padding: '2px 6px',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                <span style={{ color: 'var(--error)' }}>{code}</span>
+                <span style={{ marginLeft: 6, color: 'var(--text-muted)' }}>{count.toLocaleString()}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

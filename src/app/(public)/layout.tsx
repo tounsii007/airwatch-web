@@ -8,6 +8,7 @@ import { GlobalEffects } from "@/components/layout/GlobalEffects";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { WebVitalsReporter } from "@/components/layout/WebVitalsReporter";
 import { ServiceWorkerRegistrar } from "@/components/layout/ServiceWorkerRegistrar";
+import { InstallPrompt } from "@/components/layout/InstallPrompt";
 import { CommandPaletteController } from "@/components/layout/CommandPaletteController";
 import { StatsBeacon } from "@/components/layout/StatsBeacon";
 import { DevTools } from "@/components/debug/DevTools";
@@ -121,6 +122,7 @@ export default async function RootLayout({
         <WebVitalsReporter />
         <StatsBeacon />
         <BottomNav />
+        <InstallPrompt />
         <CommandPaletteController />
         {/* Mobile: top-bar offset (pt-11) + bottom-bar offset (pb-20).
             Desktop: top-bar offset (lg:pt-12), no bottom bar. */}
