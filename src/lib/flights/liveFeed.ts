@@ -74,12 +74,36 @@ export function startLiveFeed(options: LiveFeedOptions, callbacks: LiveFeedCallb
   let ws: WebSocket | null = null;
   let pollTimer: ReturnType<typeof setInterval> | null = null;
   let currentTransport: FeedTransport | null = null;
+  /** Once the WS has pushed at least one frame, the initial REST snapshot
+   *  (whose response may still be in flight) becomes pure waste — drop
+   *  it on arrival to avoid a stale-overwrite race. */
+  let firstWsFrameArrived = false;
 
   const setTransport = (next: FeedTransport) => {
     if (currentTransport === next) return;
     currentTransport = next;
     callbacks.onTransportChange?.(next);
   };
+
+  // ── Instant snapshot ──────────────────────────────────────────
+  // The REST endpoint returns the full live aircraft map in ~500 ms.
+  // Without this, the user sees an empty map for up to one full WS
+  // push interval (5–180 s) on every page load — the WS handshake
+  // succeeds quickly but the next broadcast can be far away. Fire
+  // the REST call in parallel with the WS connect; whichever lands
+  // first populates the map. The merge-on-frame logic in
+  // flightStore preserves the freshest data when both arrive.
+  void (async () => {
+    try {
+      const result = await options.fetchPoll();
+      if (disposed || firstWsFrameArrived) return;
+      if (result.error) return;
+      callbacks.onFlights(result.flights, currentTransport ?? 'polling');
+    } catch {
+      // Fail-soft. The WS path will deliver data once it lands; if
+      // both fail the existing polling fallback below handles it.
+    }
+  })();
 
   const startPolling = () => {
     if (pollTimer || disposed) return;
@@ -134,6 +158,7 @@ export function startLiveFeed(options: LiveFeedOptions, callbacks: LiveFeedCallb
       try {
         const msg: unknown = JSON.parse(event.data);
         if (isFlightFrame(msg)) {
+          firstWsFrameArrived = true;
           callbacks.onFlights(msg.data, 'websocket');
         }
       } catch {

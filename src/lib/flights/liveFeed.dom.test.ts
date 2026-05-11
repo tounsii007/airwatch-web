@@ -126,6 +126,66 @@ describe('startLiveFeed', () => {
     handle.stop();
   });
 
+  it('fires an instant REST snapshot on mount before the WS frame lands', async () => {
+    const onFlights = vi.fn();
+    const snapshot: AirlabsFlightResponse[] = [
+      { hex: 'snap1', lat: 50.1, lng: 8.6 },
+      { hex: 'snap2', lat: 51.5, lng: -0.1 },
+    ];
+    const fetchPoll = vi.fn(async () => ({ flights: snapshot, error: null }));
+
+    const handle = startLiveFeed(
+      {
+        pollingIntervalMs: 60_000, // big enough not to fire the fallback timer
+        backendUrl: 'http://localhost:8080',
+        fetchPoll,
+      },
+      { onFlights },
+    );
+
+    // The REST snapshot resolves on a microtask tick — flush.
+    await new Promise((r) => setTimeout(r, 0));
+    expect(fetchPoll).toHaveBeenCalledTimes(1);
+    expect(onFlights).toHaveBeenCalledWith(snapshot, 'polling');
+
+    handle.stop();
+  });
+
+  it('drops the late REST snapshot if the WS already pushed a frame first', async () => {
+    const onFlights = vi.fn();
+    let resolvePoll: (v: { flights: AirlabsFlightResponse[]; error: null }) => void = () => {};
+    const fetchPoll = vi.fn(
+      () => new Promise<{ flights: AirlabsFlightResponse[]; error: null }>((res) => { resolvePoll = res; }),
+    );
+
+    const handle = startLiveFeed(
+      {
+        pollingIntervalMs: 60_000,
+        backendUrl: 'http://localhost:8080',
+        fetchPoll,
+      },
+      { onFlights },
+    );
+
+    // WS opens and pushes BEFORE the REST call resolves.
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    const wsFrame: AirlabsFlightResponse[] = [{ hex: 'ws1', lat: 0, lng: 0 }];
+    ws.emitMessage({ type: 'flights', data: wsFrame });
+
+    expect(onFlights).toHaveBeenCalledTimes(1);
+    expect(onFlights).toHaveBeenLastCalledWith(wsFrame, 'websocket');
+
+    // Now the slow REST resolves. The handler must drop it so it
+    // doesn't overwrite the fresher WS data.
+    resolvePoll({ flights: [{ hex: 'stale', lat: 1, lng: 1 }], error: null });
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(onFlights).toHaveBeenCalledTimes(1); // still just the WS one
+
+    handle.stop();
+  });
+
   it('surfaces polling errors via onError', async () => {
     // Remove WebSocket to force pure polling.
     // @ts-expect-error — intentional teardown
