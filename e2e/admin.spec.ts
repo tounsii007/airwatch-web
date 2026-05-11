@@ -1,4 +1,4 @@
-import { expect, test, type Page, type BrowserContext } from '@playwright/test';
+import { expect, test, type Page, type Browser } from '@playwright/test';
 
 /**
  * Admin dashboard E2E suite.
@@ -81,8 +81,8 @@ async function login(page: Page, user = ADMIN_USER, pass = ADMIN_PASS): Promise<
   expect(res.status(), 'login should redirect on success').toBe(302);
 }
 
-async function newLoggedInContext(browser: BrowserContext['browser']) {
-  const ctx = await browser!.newContext();
+async function newLoggedInContext(browser: Browser) {
+  const ctx = await browser.newContext();
   const page = await ctx.newPage();
   await login(page);
   return { ctx, page };

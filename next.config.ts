@@ -27,19 +27,19 @@ const INTERNAL_API_URL = process.env.INTERNAL_API_URL || PROXY_TARGET;
 // fail loudly in dev (browser console) — that's the point: fail closed.
 //
 // Why each non-default directive exists:
-//   • script-src 'wasm-unsafe-eval' — Cesium + maplibre ship WebAssembly
-//     (terrain + protomaps decoders). 'unsafe-eval' would be wider; the
-//     wasm-only relaxation is the modern, narrower equivalent.
+//   • script-src 'wasm-unsafe-eval' — Cesium ships WebAssembly (terrain
+//     decoders). 'unsafe-eval' would be wider; the wasm-only relaxation
+//     is the modern, narrower equivalent.
 //   • script-src 'unsafe-inline' (dev only) — Next dev injects inline HMR
 //     bootstrapping. Production builds drop it; the prod-only directive
 //     below uses a stricter set.
-//   • worker-src 'self' blob: — Cesium + maplibre instantiate workers from
-//     blob URLs (this is how their bundlers ship worker code).
+//   • worker-src 'self' blob: — Cesium instantiates workers from blob URLs
+//     (this is how its bundler ships worker code).
 //   • style-src 'unsafe-inline' — Tailwind's utility runtime + leaflet-draw
 //     write inline styles for marker positioning. Replacing this with hashes
 //     would mean shipping a hash for every utility variant the page touches.
-//   • img-src + blob: + data: — leaflet/maplibre raster decoders pipe
-//     decoded tiles through blob/data URLs.
+//   • img-src + blob: + data: — leaflet's raster decoder pipes decoded tiles
+//     through blob/data URLs.
 //   • connect-src — same-origin for the proxied API + the third-party tile
 //     and metadata feeds we actually call. WSS for the live flight feed.
 //
