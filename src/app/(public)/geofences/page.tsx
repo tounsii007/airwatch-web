@@ -2,6 +2,8 @@
 
 import { useCallback, useState } from 'react';
 import { useGeoFenceStore } from '@/lib/stores/geofenceStore';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 import { PageContainer, FadeIn } from '@/components/ui';
 import { AlertsPanel } from '@/app/(public)/geofences/AlertsPanel';
 import { DrawPanel } from '@/app/(public)/geofences/DrawPanel';
@@ -22,6 +24,7 @@ function applyCircleDraft(form: FenceFormState, draft: GeoFenceDraft): FenceForm
 }
 
 export default function GeoFencesPage() {
+  const language = useSettingsStore((s) => s.language);
   const alerts = useGeoFenceStore((s) => s.alerts);
   const dismissAlert = useGeoFenceStore((s) => s.dismissAlert);
   const clearAlerts = useGeoFenceStore((s) => s.clearAlerts);
@@ -63,12 +66,12 @@ export default function GeoFencesPage() {
   return (
     <PageContainer
       maxWidth="4xl"
-      title="Geofences"
+      title={t('geofences_title', language)}
       subtitle={
         fences.length > 0 ? (
           <span className="badge badge-success">{fences.length} active</span>
         ) : (
-          <span className="badge">No fences yet</span>
+          <span className="badge">{t('no_fences_yet', language)}</span>
         )
       }
     >

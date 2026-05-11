@@ -145,7 +145,7 @@ export function BottomNav() {
             );
           }}
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-white/5 transition-colors"
-          aria-label="Open command palette (Cmd+K)"
+          aria-label={t('command_palette_open_with_shortcut', language)}
         >
           <Search size={13} aria-hidden />
           <kbd className="t-meta t-mono px-1.5 py-0.5 rounded bg-white/5 border border-[var(--glass-border)]">⌘K</kbd>
@@ -167,7 +167,7 @@ export function BottomNav() {
             );
           }}
           className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-          aria-label="Open command palette"
+          aria-label={t('command_palette_open', language)}
         >
           <Search size={16} aria-hidden />
         </button>
@@ -176,7 +176,7 @@ export function BottomNav() {
       {/* Mobile: bottom bar */}
       <nav
         className="lg:hidden fixed bottom-0 left-0 right-0 z-50 glass-panel rounded-none border-t border-[var(--glass-border)] border-x-0 border-b-0"
-        aria-label="Primary navigation"
+        aria-label={t('primary_navigation', language)}
       >
         <div className="flex justify-around py-2 px-2">
           {PRIMARY_ITEMS.map((item) => (

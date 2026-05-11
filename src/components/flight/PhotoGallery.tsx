@@ -26,6 +26,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 import { API } from '@/lib/constants';
+import { t } from '@/lib/i18n/translations';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 
 export interface Photo {
   src: string;
@@ -42,6 +44,7 @@ interface Props {
 const SWIPE_THRESHOLD = 50;
 
 export function PhotoGallery({ icao24, onClose }: Props) {
+  const language = useSettingsStore((s) => s.language);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -169,13 +172,13 @@ export function PhotoGallery({ icao24, onClose }: Props) {
         ref={modalRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Aircraft photos"
+        aria-label={t('photo_gallery_nav_label', language)}
         className="fixed inset-0 z-[2000] bg-black/90 flex items-center justify-center"
         onClick={onClose}
       >
         <div className="text-center">
           <Camera size={48} className="mx-auto text-white/30 mb-3" />
-          <p className="text-white/50 text-sm">No photos available</p>
+          <p className="text-white/50 text-sm">{t('no_photos_available', language)}</p>
           <button
             ref={closeBtnRef}
             type="button"
@@ -196,7 +199,7 @@ export function PhotoGallery({ icao24, onClose }: Props) {
       ref={modalRef}
       role="dialog"
       aria-modal="true"
-      aria-label="Aircraft photo gallery"
+      aria-label={t('photo_gallery_label', language)}
       className="fixed inset-0 z-[2000] bg-black/95 flex flex-col"
       onClick={onClose}
       onTouchStart={onTouchStart}
@@ -214,7 +217,7 @@ export function PhotoGallery({ icao24, onClose }: Props) {
           ref={closeBtnRef}
           type="button"
           onClick={onClose}
-          aria-label="Close gallery"
+          aria-label={t('photo_gallery_close', language)}
           className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition-colors cursor-pointer"
         >
           <X size={20} />
@@ -227,7 +230,7 @@ export function PhotoGallery({ icao24, onClose }: Props) {
           <button
             type="button"
             onClick={prev}
-            aria-label="Previous photo"
+            aria-label={t('photo_gallery_previous', language)}
             className="absolute left-2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors cursor-pointer z-10"
           >
             <ChevronLeft size={24} />
@@ -245,7 +248,7 @@ export function PhotoGallery({ icao24, onClose }: Props) {
           <button
             type="button"
             onClick={next}
-            aria-label="Next photo"
+            aria-label={t('photo_gallery_next', language)}
             className="absolute right-2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors cursor-pointer z-10"
           >
             <ChevronRight size={24} />

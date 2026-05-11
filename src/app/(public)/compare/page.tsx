@@ -118,7 +118,7 @@ export default function ComparePage() {
   return (
     <PageContainer
       maxWidth="3xl"
-      title="Compare Flights"
+      title={t('compare_title', language)}
       subtitle={
         flightA && flightB ? (
           <span className="badge badge-success">2 flights · ready to compare</span>

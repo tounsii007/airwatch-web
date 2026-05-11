@@ -3,6 +3,8 @@
 import { Camera, Compass, MapPin, ScanEye } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { NeonText } from '@/components/ui/NeonText';
+import { t } from '@/lib/i18n/translations';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 
 interface Props {
   busy: boolean;
@@ -26,21 +28,34 @@ function PermItem({ icon, title, detail }: { icon: React.ReactNode; title: strin
 
 /** First-run screen: explains required permissions before a user-gesture grant. */
 export function ArPermissionPrompt({ busy, error, onStart }: Props) {
+  const language = useSettingsStore((s) => s.language);
   return (
     <div className="fixed inset-0 bg-[var(--bg)] flex items-center justify-center p-6 z-40">
       <GlassPanel className="w-full max-w-md p-6 space-y-5 text-center">
         <div className="flex flex-col items-center gap-2">
           <ScanEye size={40} className="text-[var(--primary)] drop-shadow-[0_0_10px_var(--primary)]" />
-          <NeonText text="AR SPOTTING" size="text-lg" />
+          <NeonText text={t('ar_spotting_title', language)} size="text-lg" />
           <p className="text-xs text-[var(--text-muted)] font-[var(--font-body)]">
-            Halte dein Gerät zum Himmel — wir blenden Flüge in Echtzeit ein.
+            {t('ar_intro', language)}
           </p>
         </div>
 
         <div className="space-y-3">
-          <PermItem icon={<Camera size={16} />} title="Kamera" detail="Live-Feed als Hintergrund" />
-          <PermItem icon={<MapPin size={16} />} title="Standort" detail="Damit wir deinen Horizont berechnen" />
-          <PermItem icon={<Compass size={16} />} title="Kompass & Gyroskop" detail="Um Flüge richtig zu platzieren" />
+          <PermItem
+            icon={<Camera size={16} />}
+            title={t('ar_perm_camera_title', language)}
+            detail={t('ar_perm_camera_detail', language)}
+          />
+          <PermItem
+            icon={<MapPin size={16} />}
+            title={t('ar_perm_location_title', language)}
+            detail={t('ar_perm_location_detail', language)}
+          />
+          <PermItem
+            icon={<Compass size={16} />}
+            title={t('ar_perm_compass_title', language)}
+            detail={t('ar_perm_compass_detail', language)}
+          />
         </div>
 
         {error && (
@@ -54,7 +69,7 @@ export function ArPermissionPrompt({ busy, error, onStart }: Props) {
           disabled={busy}
           className="w-full px-4 py-3 rounded-xl text-sm font-[var(--font-heading)] font-bold tracking-wider bg-[var(--primary)] text-[var(--bg)] disabled:opacity-40 hover:opacity-90 transition-opacity cursor-pointer"
         >
-          {busy ? 'WIRD GESTARTET…' : 'AR STARTEN'}
+          {busy ? t('ar_starting', language) : t('ar_start_button', language)}
         </button>
       </GlassPanel>
     </div>

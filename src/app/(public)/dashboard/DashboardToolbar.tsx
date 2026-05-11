@@ -8,6 +8,8 @@
  */
 import { ArrowUpDown, RefreshCw } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { t } from '@/lib/i18n/translations';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { SORT_LABELS, type SortMode } from '@/app/(public)/dashboard/sortAirports';
 
 interface Props {
@@ -34,6 +36,7 @@ export function DashboardToolbar({
   isRefreshing,
   lastUpdated,
 }: Props) {
+  const language = useSettingsStore((s) => s.language);
   return (
     <GlassPanel className="flex items-center justify-between gap-3 px-3 py-2">
       <label className="flex items-center gap-2 cursor-pointer">
@@ -45,7 +48,7 @@ export function DashboardToolbar({
           value={sort}
           onChange={(e) => onSortChange(e.target.value as SortMode)}
           className="t-label t-mono bg-transparent text-[var(--text-primary)] outline-none cursor-pointer"
-          aria-label="Sort dashboard airports by"
+          aria-label={t('dashboard_sort_label', language)}
         >
           {(Object.entries(SORT_LABELS) as Array<[SortMode, string]>).map(([key, label]) => (
             <option key={key} value={key} className="bg-[var(--surface)]">
@@ -66,7 +69,7 @@ export function DashboardToolbar({
           onClick={onRefresh}
           disabled={isRefreshing}
           className="p-1.5 rounded hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Refresh dashboard data"
+          aria-label={t('dashboard_refresh_label', language)}
         >
           <RefreshCw
             size={14}

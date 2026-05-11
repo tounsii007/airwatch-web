@@ -2,6 +2,8 @@
 
 import { Bell } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { t } from '@/lib/i18n/translations';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 import type { GeoFenceAlert } from '@/lib/stores/geofenceStore';
 
 interface Props {
@@ -27,6 +29,7 @@ function Header({ count, onClear }: { count: number; onClear: () => void }) {
 }
 
 function AlertRow({ alert, onDismiss }: { alert: GeoFenceAlert; onDismiss: (icao24: string, fenceId: number) => void }) {
+  const language = useSettingsStore((s) => s.language);
   return (
     <li className="flex items-center justify-between text-xs border-l-2 border-[var(--warning)]/60 pl-2">
       <div className="truncate">
@@ -36,7 +39,7 @@ function AlertRow({ alert, onDismiss }: { alert: GeoFenceAlert; onDismiss: (icao
       <button
         onClick={() => onDismiss(alert.icao24, alert.fenceId)}
         className="text-[var(--text-muted)] hover:text-[var(--text)] ml-2 text-[10px]"
-        aria-label="Dismiss"
+        aria-label={t('dismiss', language)}
       >
         ×
       </button>
