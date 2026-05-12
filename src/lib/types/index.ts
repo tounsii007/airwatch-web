@@ -25,6 +25,19 @@ export interface AirlineInfo {
   iata: string;
   name: string;
   country: string;
+  /**
+   * Extended attributes populated from the backend /api/airlines catalogue
+   * (AirlineSyncService). Optional because the hand-curated fallback list
+   * doesn't carry them — code must use {@code ??} when reading.
+   */
+  callsign?: string | null;
+  fleetSize?: number | null;
+  fleetAverageAge?: number | null;
+  dateFounded?: number | null;
+  isCargo?: boolean | null;
+  isScheduled?: boolean | null;
+  isPassenger?: boolean | null;
+  isInternational?: boolean | null;
 }
 
 export interface AirportEntry {

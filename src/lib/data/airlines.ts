@@ -173,6 +173,79 @@ export function resolveAirline(callsign: string): AirlineInfo | undefined {
 }
 
 /**
+ * Hydrate the hand-curated AIRLINES map with backend data from
+ * {@code /api/proxy/airlines} (populated by AirlineSyncService).
+ *
+ * <h3>Why hydrate, not replace</h3>
+ * The hand-curated 160-row list is used synchronously across the codebase
+ * (e.g. {@link resolveAirline} from a callsign). Replacing it on load
+ * would create a window where lookups return undefined. Instead we merge:
+ * backend rows shadow hand-curated rows where ICAO matches, and new rows
+ * extend the map for the long tail (Airlabs ships ~13k carriers).
+ *
+ * <h3>Cold start</h3>
+ * Safe to call repeatedly; concurrent calls share the same in-flight
+ * promise. On a fetch failure we reset the promise so a retry is possible
+ * — never leaves the map in a "loaded-but-empty" state.
+ */
+let airlinesLoadPromise: Promise<void> | null = null;
+
+interface BackendAirlineDto {
+  icao: string;
+  iata: string | null;
+  name: string;
+  country: string | null;
+  callsign: string | null;
+  fleetSize: number | null;
+  fleetAverageAge: number | null;
+  dateFounded: number | null;
+  isScheduled: boolean | null;
+  isPassenger: boolean | null;
+  isCargo: boolean | null;
+  isInternational: boolean | null;
+}
+
+export function loadAirlines(): Promise<void> {
+  if (airlinesLoadPromise) return airlinesLoadPromise;
+  airlinesLoadPromise = (async () => {
+    try {
+      const res = await fetch('/api/proxy/airlines', { cache: 'no-store' });
+      if (!res.ok) { airlinesLoadPromise = null; return; }
+      const list = (await res.json()) as BackendAirlineDto[];
+      if (!Array.isArray(list) || list.length === 0) { airlinesLoadPromise = null; return; }
+      for (const item of list) {
+        const icao = item.icao.toUpperCase();
+        AIRLINES[icao] = {
+          icao,
+          iata: item.iata ?? '',
+          name: item.name,
+          country: item.country ?? '',
+          callsign: item.callsign,
+          fleetSize: item.fleetSize,
+          fleetAverageAge: item.fleetAverageAge,
+          dateFounded: item.dateFounded,
+          isCargo: item.isCargo,
+          isScheduled: item.isScheduled,
+          isPassenger: item.isPassenger,
+          isInternational: item.isInternational,
+        };
+      }
+    } catch (err) {
+      airlinesLoadPromise = null;
+
+      console.error('[airlines] failed to hydrate from backend', err);
+    }
+  })();
+  return airlinesLoadPromise;
+}
+
+/** True once the backend hydrate completed (the hand-curated list is always present). */
+export function isAirlinesLoaded(): boolean {
+  // Heuristic: the hand-curated list has ~160 entries; backend ships > 1000.
+  return Object.keys(AIRLINES).length > 500;
+}
+
+/**
  * Get the airline logo URL.
  *
  * <h3>Direct CDN (no nginx proxy)</h3>
