@@ -29,28 +29,74 @@ export const AIRPORTS: Record<string, AirportRecord> = {};
 
 let loadPromise: Promise<void> | null = null;
 
+/** Wire shape returned by the backend `/api/airports` endpoint. */
+interface BackendAirportDto {
+  icao: string;
+  iata: string | null;
+  name: string;
+  country: string;
+  lat: number;
+  lng: number;
+}
+
 /**
  * Fetch and cache the airports dataset. Safe to call multiple times — returns
  * the same promise. Idempotent once the first call succeeds.
+ *
+ * <h3>Source priority</h3>
+ *   1. Try the live backend at `/api/proxy/airports` — populated by the
+ *      AirportSyncService from Airlabs. Fresh coordinates, refreshable.
+ *   2. Fall back to the static `/data/airports.json` snapshot bundled
+ *      with the frontend — always available, even on a fresh deploy
+ *      where the backend table hasn't been seeded yet.
+ *
+ * Both paths fail-soft so the user never sees an empty airport-label
+ * layer on the map.
  */
 export function loadAirports(): Promise<void> {
   if (loadPromise) return loadPromise;
   loadPromise = (async () => {
-    try {
-      const res = await fetch('/data/airports.json', { cache: 'force-cache' });
-      if (!res.ok) throw new Error(`http_${res.status}`);
-      const data = (await res.json()) as Record<string, AirportRecord>;
-      for (const [iata, record] of Object.entries(data)) {
-        AIRPORTS[iata] = record;
-      }
-    } catch (err) {
-      // Reset so a retry is possible; don't keep an empty-forever cache.
-      loadPromise = null;
-       
-      console.error('[airports] failed to load', err);
-    }
+    if (await loadFromBackend()) return;
+    await loadFromStatic();
   })();
   return loadPromise;
+}
+
+/** Returns true on success, false to signal "fall back to static JSON". */
+async function loadFromBackend(): Promise<boolean> {
+  try {
+    const res = await fetch('/api/proxy/airports', { cache: 'no-store' });
+    if (!res.ok) return false;
+    const list = (await res.json()) as BackendAirportDto[];
+    if (!Array.isArray(list) || list.length === 0) return false;
+    for (const item of list) {
+      // Backend uses ICAO as primary identity, but the frontend lookup
+      // is keyed by IATA (legacy callers — airportCity('FRA') etc.).
+      // Index under both so callers that only know the ICAO still hit.
+      const record: AirportRecord = { c: item.country, n: item.name, la: item.lat, lo: item.lng };
+      if (item.iata) AIRPORTS[item.iata.toUpperCase()] = record;
+      AIRPORTS[item.icao.toUpperCase()] = record;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function loadFromStatic(): Promise<void> {
+  try {
+    const res = await fetch('/data/airports.json', { cache: 'force-cache' });
+    if (!res.ok) throw new Error(`http_${res.status}`);
+    const data = (await res.json()) as Record<string, AirportRecord>;
+    for (const [iata, record] of Object.entries(data)) {
+      AIRPORTS[iata] = record;
+    }
+  } catch (err) {
+    // Reset so a retry is possible; don't keep an empty-forever cache.
+    loadPromise = null;
+
+    console.error('[airports] failed to load', err);
+  }
 }
 
 /** True once at least one airport has been loaded. */
