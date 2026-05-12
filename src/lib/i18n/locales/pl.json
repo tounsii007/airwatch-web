@@ -74,6 +74,8 @@
   "search_callsign_hint": "Numer lotu (np. LO744 lub TAR744)",
   "search_callsign_prompt": "Wyszukaj numer lotu lub znak wywoławczy,\naby zobaczyć historię z 7 dni",
   "on_time": "Punktualnie",
+  "codeshare_short": "CS",
+  "codeshare_with": "Numer lotu codeshare",
   "delayed": "Opóźniony",
   "avg_delay": "Śr. opóźnienie",
   "departure": "ODLOT",

@@ -74,6 +74,8 @@
   "search_callsign_hint": "رقم الرحلة (مثل TU744 أو TAR744)",
   "search_callsign_prompt": "ابحث عن رقم رحلة أو رمز نداء\nلعرض سجل 7 أيام",
   "on_time": "في الموعد",
+  "codeshare_short": "م.ر",
+  "codeshare_with": "رقم رحلة المشاركة بالرمز",
   "delayed": "متأخرة",
   "avg_delay": "متوسط التأخير",
   "departure": "المغادرة",

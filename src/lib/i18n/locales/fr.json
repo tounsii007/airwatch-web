@@ -74,6 +74,8 @@
   "search_callsign_hint": "Indicatif (ex. TAR744)",
   "search_callsign_prompt": "Recherchez un indicatif de vol\npour voir l'historique sur 7 jours",
   "on_time": "A l'heure",
+  "codeshare_short": "CS",
+  "codeshare_with": "Numéro de vol partagé",
   "delayed": "Retardé",
   "avg_delay": "Retard moy.",
   "departure": "DÉPART",

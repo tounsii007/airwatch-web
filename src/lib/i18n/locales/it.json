@@ -74,6 +74,8 @@
   "search_callsign_hint": "Numero di volo (es. TU744 o TAR744)",
   "search_callsign_prompt": "Cerca un numero di volo o indicativo\nper vedere lo storico di 7 giorni",
   "on_time": "In orario",
+  "codeshare_short": "CS",
+  "codeshare_with": "Numero di volo in code-share",
   "delayed": "In ritardo",
   "avg_delay": "Ritardo medio",
   "departure": "PARTENZA",

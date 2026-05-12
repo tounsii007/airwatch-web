@@ -74,6 +74,8 @@
   "search_callsign_hint": "Uçuş numarası (örn. TK744 veya TAR744)",
   "search_callsign_prompt": "7 günlük geçmişi görmek için\nuçuş numarası veya çağrı işareti arayın",
   "on_time": "Zamanında",
+  "codeshare_short": "CS",
+  "codeshare_with": "Kod paylaşımı uçuş numarası",
   "delayed": "Gecikmeli",
   "avg_delay": "Ort. gecikme",
   "departure": "KALKIŞ",

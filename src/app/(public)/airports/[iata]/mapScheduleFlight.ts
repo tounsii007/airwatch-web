@@ -19,6 +19,10 @@ export function mapScheduleFlight(f: any): AirportScheduleFlight {
     arrTerminal: f.arr_terminal ?? undefined,
     depGate: f.dep_gate ?? undefined,
     arrGate: f.arr_gate ?? undefined,
+    csAirlineIata: f.cs_airline_iata ?? undefined,
+    csFlightIata: f.cs_flight_iata ?? undefined,
+    // cs_flight_number is sometimes a number, sometimes a string in the wild.
+    csFlightNumber: f.cs_flight_number != null ? String(f.cs_flight_number) : undefined,
   };
 }
 

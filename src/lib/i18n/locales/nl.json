@@ -74,6 +74,8 @@
   "search_callsign_hint": "Vluchtnummer (bijv. KL744 of TAR744)",
   "search_callsign_prompt": "Zoek een vluchtnummer of roepnaam\nvoor de geschiedenis van 7 dagen",
   "on_time": "Op tijd",
+  "codeshare_short": "CS",
+  "codeshare_with": "Codeshare-vluchtnummer",
   "delayed": "Vertraagd",
   "avg_delay": "Gem. vertraging",
   "departure": "VERTREK",

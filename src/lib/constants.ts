@@ -3,6 +3,26 @@ export const PROXY_BASE_URL = '/api/proxy';
 
 export const API = {
   flights: (query = '') => `${PROXY_BASE_URL}/airlabs/flights${query ? '?' + query : ''}`,
+  /**
+   * Live flights inside a geographic viewport. {@code bbox} is a
+   * comma-separated {@code lat1,lng1,lat2,lng2} string. The proxy
+   * passes through to Airlabs's server-side bbox filter, so the
+   * response is already trimmed to the visible chunk — no client
+   * filtering needed.
+   */
+  flightsByBbox: (bbox: string, fields?: string) => {
+    const f = fields ? `&_fields=${fields}` : '';
+    return `${PROXY_BASE_URL}/airlabs/flights?bbox=${encodeURIComponent(bbox)}${f}`;
+  },
+  /**
+   * Live flights filtered by aircraft registration country flag (1-3
+   * letters, e.g. {@code FR} for French-registered tails). Useful for
+   * country-themed views or analytics drill-downs.
+   */
+  flightsByFlag: (flag: string, fields?: string) => {
+    const f = fields ? `&_fields=${fields}` : '';
+    return `${PROXY_BASE_URL}/airlabs/flights?flag=${flag.toUpperCase()}${f}`;
+  },
   flight: (params: { flightIcao?: string; flightIata?: string }) => {
     if (params.flightIata) return `${PROXY_BASE_URL}/airlabs/flight?flight_iata=${params.flightIata}`;
     return `${PROXY_BASE_URL}/airlabs/flight?flight_icao=${params.flightIcao}`;

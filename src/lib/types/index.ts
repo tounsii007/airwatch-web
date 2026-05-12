@@ -96,6 +96,14 @@ export interface AirportScheduleFlight {
   arrTerminal?: string;
   depGate?: string;
   arrGate?: string;
+  /**
+   * Codeshare info — when the operating carrier sells the same flight
+   * under a partner's flight number. Airlabs returns these as
+   * {@code cs_airline_iata} / {@code cs_flight_iata} / {@code cs_flight_number}.
+   */
+  csAirlineIata?: string;
+  csFlightIata?: string;
+  csFlightNumber?: string;
 }
 
 export interface FavoriteItem {

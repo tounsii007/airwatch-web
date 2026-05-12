@@ -88,16 +88,36 @@ function AirlineLogoLink({ flight }: { flight: AirportScheduleFlight }) {
   );
 }
 
+function CodeshareBadge({ flight, language }: { flight: AirportScheduleFlight; language: AppLanguage }) {
+  // Render only when the partner number is meaningfully different from the
+  // operating one — same-airline duplicates aren't real codeshares.
+  const partner = flight.csFlightIata
+    ?? (flight.csAirlineIata && flight.csFlightNumber
+      ? `${flight.csAirlineIata}${flight.csFlightNumber}`
+      : '');
+  if (!partner || partner === flight.flightIata) return null;
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-[9px] font-[var(--font-heading)] font-semibold px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-300"
+      title={t('codeshare_with', language)}
+    >
+      <span className="opacity-70">{t('codeshare_short', language)}</span>
+      <span className="font-bold">{partner}</span>
+    </span>
+  );
+}
+
 function FlightInfo({ flight, tab, language }: { flight: AirportScheduleFlight; tab: TabType; language: AppLanguage }) {
   const peer = pickPeerIata(flight, tab);
   const peerCity = peer ? localizeCity(airportCity(peer), language) : '';
   return (
     <div className="min-w-0">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <span className="font-[var(--font-heading)] text-xs font-bold text-[var(--primary)]">
           {flight.flightIata || flight.flightIcao}
         </span>
         <AirlineLogoLink flight={flight} />
+        <CodeshareBadge flight={flight} language={language} />
       </div>
       <div className="text-[10px] text-[var(--text-secondary)] font-[var(--font-body)] mt-0.5 truncate">
         {tab === 'departures' ? '→' : '←'}{' '}

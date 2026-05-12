@@ -74,6 +74,8 @@
   "search_callsign_hint": "Flight number (e.g. TU744 or TAR744)",
   "search_callsign_prompt": "Search for a flight number or callsign\nto see 7-day history",
   "on_time": "On Time",
+  "codeshare_short": "CS",
+  "codeshare_with": "Codeshare flight number",
   "delayed": "Delayed",
   "avg_delay": "Avg Delay",
   "departure": "DEPARTURE",

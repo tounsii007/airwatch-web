@@ -74,6 +74,8 @@
   "search_callsign_hint": "Flugnummer (z. B. TU744 oder TAR744)",
   "search_callsign_prompt": "Suche nach einer Flugnummer oder einem Rufzeichen,\num den 7-Tage-Verlauf zu sehen",
   "on_time": "Pünktlich",
+  "codeshare_short": "CS",
+  "codeshare_with": "Codeshare-Flugnummer",
   "delayed": "Verspätet",
   "avg_delay": "Ø Verspätung",
   "departure": "ABFLUG",
