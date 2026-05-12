@@ -38,6 +38,86 @@ export const API = {
     return `${PROXY_BASE_URL}/airlabs/schedules?flight_icao=${params.flightIcao}`;
   },
   airport: (iata: string) => `${PROXY_BASE_URL}/airlabs/airports?iata_code=${iata}`,
+  /**
+   * Airports within {@code distanceKm} km of (lat, lng). Powers the
+   * "airports near me" feature on the airports page — the browser supplies
+   * coordinates from {@code navigator.geolocation}, this URL fetches the
+   * radius slice. Default 100 km matches the backend default.
+   */
+  airportsNearby: (lat: number, lng: number, distanceKm = 100) =>
+    `${PROXY_BASE_URL}/airlabs/airports/nearby?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}&distance=${distanceKm}`,
+
+  // ─── Reference / Stammdaten endpoints ───
+  /** Airline catalogue. All filters optional — uppercased before send. */
+  airlines: (filters: { country?: string; iata?: string; icao?: string } = {}) => {
+    const q = new URLSearchParams();
+    if (filters.country) q.set('country_code', filters.country.toUpperCase());
+    if (filters.iata) q.set('iata_code', filters.iata.toUpperCase());
+    if (filters.icao) q.set('icao_code', filters.icao.toUpperCase());
+    const tail = q.toString();
+    return `${PROXY_BASE_URL}/airlabs/airlines${tail ? '?' + tail : ''}`;
+  },
+  /** Cities catalogue, optionally filtered by ISO-3166 alpha-2 country. */
+  cities: (country?: string) =>
+    `${PROXY_BASE_URL}/airlabs/cities${country ? '?country_code=' + country.toUpperCase() : ''}`,
+  /** Country catalogue, optionally narrowed to one entry. */
+  countries: (country?: string) =>
+    `${PROXY_BASE_URL}/airlabs/countries${country ? '?country_code=' + country.toUpperCase() : ''}`,
+  /** Star Alliance / SkyTeam / oneworld membership lookup. */
+  aviationCodes: () => `${PROXY_BASE_URL}/airlabs/aviation_codes`,
+  /** Air-travel taxes per country. */
+  taxes: (country?: string) =>
+    `${PROXY_BASE_URL}/airlabs/taxes${country ? '?country_code=' + country.toUpperCase() : ''}`,
+  /** Timezone catalogue with UTC offsets. */
+  timezones: () => `${PROXY_BASE_URL}/airlabs/timezones`,
+
+  // ─── Per-resource lookups + search ───
+  /** Aircraft details by tail registration OR Mode-S 24-bit hex. */
+  aircraft: (params: { reg?: string; hex?: string }) => {
+    const q = new URLSearchParams();
+    if (params.reg) q.set('reg_number', params.reg.toUpperCase());
+    else if (params.hex) q.set('hex', params.hex.toUpperCase());
+    return `${PROXY_BASE_URL}/airlabs/aircraft?${q.toString()}`;
+  },
+  /** Airline fleet roster by IATA code. */
+  fleets: (airlineIata: string) =>
+    `${PROXY_BASE_URL}/airlabs/fleets?airline_iata=${airlineIata.toUpperCase()}`,
+  /** Wikipedia summary for an airline (IATA-2) OR airport (IATA-3). */
+  wiki: (params: { airlineIata?: string; airportIata?: string }) => {
+    const q = new URLSearchParams();
+    if (params.airlineIata) q.set('airline_iata', params.airlineIata.toUpperCase());
+    else if (params.airportIata) q.set('airport_iata', params.airportIata.toUpperCase());
+    return `${PROXY_BASE_URL}/airlabs/wiki?${q.toString()}`;
+  },
+  /** Autocomplete typeahead across airports + airlines + cities. */
+  suggest: (q: string) =>
+    `${PROXY_BASE_URL}/airlabs/suggest?q=${encodeURIComponent(q)}`,
+  /** Generic location search — geographic entities only. */
+  locations: (q: string) =>
+    `${PROXY_BASE_URL}/airlabs/locations?q=${encodeURIComponent(q)}`,
+  /**
+   * Currently-delayed flights. {@code type} is "departures" | "arrivals".
+   * Optional filters narrow to one airport or airline.
+   */
+  delays: (type: 'departures' | 'arrivals',
+           filters: { depIata?: string; arrIata?: string; airlineIata?: string } = {}) => {
+    const q = new URLSearchParams({ type });
+    if (filters.depIata) q.set('dep_iata', filters.depIata.toUpperCase());
+    if (filters.arrIata) q.set('arr_iata', filters.arrIata.toUpperCase());
+    if (filters.airlineIata) q.set('airline_iata', filters.airlineIata.toUpperCase());
+    return `${PROXY_BASE_URL}/airlabs/delays?${q.toString()}`;
+  },
+  /** Live cargo flights — same filter shape as flights, cargo-only upstream. */
+  cargos: (filters: { fields?: string; airlineIcao?: string; bbox?: string; flag?: string } = {}) => {
+    const q = new URLSearchParams();
+    if (filters.fields) q.set('_fields', filters.fields);
+    if (filters.airlineIcao) q.set('airline_icao', filters.airlineIcao.toUpperCase());
+    if (filters.bbox) q.set('bbox', filters.bbox);
+    if (filters.flag) q.set('flag', filters.flag.toUpperCase());
+    const tail = q.toString();
+    return `${PROXY_BASE_URL}/airlabs/cargos${tail ? '?' + tail : ''}`;
+  },
+
   weather: (lat: number, lon: number) => `${PROXY_BASE_URL}/weather/${lat.toFixed(2)}/${lon.toFixed(2)}`,
   aircraftMeta: (hex: string) => `${PROXY_BASE_URL}/hexdb/${hex}`,
   aircraftPhoto: (hex: string) => `${PROXY_BASE_URL}/photo/${hex}`,
