@@ -18,6 +18,12 @@ interface SettingsStoreState {
   showAircraftPhotos: boolean;
   /** Show a tiny weather icon next to airport labels on the map. Default on. */
   showAirportWeather: boolean;
+  /**
+   * "Cargo only" filter — when on, the map hides passenger flights and
+   * only renders aircraft whose operator's {@code isCargo} flag is true
+   * (resolved through the hydrated airlines catalogue). Default off.
+   */
+  cargoOnly: boolean;
   updateInterval: number; // seconds
   mapStyle: MapStyle;
 }
@@ -33,6 +39,7 @@ interface SettingsStoreActions {
   setShowTurbulence: (show: boolean) => void;
   setShowAircraftPhotos: (show: boolean) => void;
   setShowAirportWeather: (show: boolean) => void;
+  setCargoOnly: (cargoOnly: boolean) => void;
   setUpdateInterval: (seconds: number) => void;
   setMapStyle: (style: MapStyle) => void;
 }
@@ -52,6 +59,7 @@ export const useSettingsStore = create<SettingsStore>()(
       showTurbulence: false,
       showAircraftPhotos: true,
       showAirportWeather: true,
+      cargoOnly: false,
       updateInterval: 300, // 5 minutes default
       mapStyle: 'dark' as MapStyle,
 
@@ -71,6 +79,7 @@ export const useSettingsStore = create<SettingsStore>()(
       setShowTurbulence: (show: boolean) => set({ showTurbulence: show }),
       setShowAircraftPhotos: (show: boolean) => set({ showAircraftPhotos: show }),
       setShowAirportWeather: (show: boolean) => set({ showAirportWeather: show }),
+      setCargoOnly: (cargoOnly: boolean) => set({ cargoOnly }),
       setUpdateInterval: (seconds: number) => set({ updateInterval: seconds }),
       setMapStyle: (style: MapStyle) => set({ mapStyle: style }),
     }),

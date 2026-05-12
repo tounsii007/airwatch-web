@@ -16,6 +16,23 @@ async function fetchJson(url: string, signal: AbortSignal): Promise<unknown | nu
   return response.json();
 }
 
+/** {@code "2014-06-12"} → {@code 2014}; null/undefined preserved. */
+function parseDeliveryYear(aircraft: Record<string, unknown> | undefined): number | undefined {
+  if (!aircraft) return undefined;
+  const raw = aircraft.delivery_date ?? aircraft.first_flight_date ?? aircraft.rollout_date;
+  if (typeof raw !== 'string' || raw.length < 4) return undefined;
+  const year = Number(raw.slice(0, 4));
+  return Number.isFinite(year) ? year : undefined;
+}
+
+function optString(v: unknown): string | undefined {
+  return typeof v === 'string' && v.length > 0 ? v : undefined;
+}
+
+function optNumber(v: unknown): number | undefined {
+  return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+}
+
 export async function fetchFlightDetails(
   icao24: string,
   callsign: string | undefined,
@@ -23,10 +40,14 @@ export async function fetchFlightDetails(
 ): Promise<FlightDetailsData> {
   const trimmedCallsign = callsign?.trim();
 
-  const [flightData, metadataData, photoData] = await Promise.allSettled([
+  const [flightData, metadataData, photoData, airlabsAircraftData] = await Promise.allSettled([
     trimmedCallsign ? fetchJson(API.flight({ flightIcao: trimmedCallsign }), signal) : Promise.resolve(null),
     fetchJson(API.aircraftMeta(icao24), signal),
     fetchJson(API.aircraftPhoto(icao24), signal),
+    // Airlabs /aircraft enriches hexdb's basics with delivery date,
+    // engine type, seat count, plane age — fields hexdb doesn't ship.
+    // The call is cached for 2 min server-side so this stays cheap.
+    fetchJson(API.aircraft({ hex: icao24 }), signal),
   ]);
 
   let routeInfo: FlightRouteInfo | null = null;
@@ -74,7 +95,7 @@ export async function fetchFlightDetails(
   }
 
   const metadataResponse = metadataData.status === 'fulfilled' ? (metadataData.value as Record<string, unknown> | null) : null;
-  const metadata =
+  const baseMetadata: AircraftMetadata | null =
     metadataResponse?.Registration
       ? {
           registration: metadataResponse.Registration as string | undefined,
@@ -84,6 +105,35 @@ export async function fetchFlightDetails(
           operatorName: metadataResponse.RegisteredOwners as string | undefined,
         }
       : null;
+
+  // Layer Airlabs's richer fields on top. hexdb is the authoritative
+  // source for the basics (it ships the most accurate registration +
+  // manufacturer); Airlabs fills in the things hexdb omits.
+  const airlabsResp = airlabsAircraftData.status === 'fulfilled'
+    ? (airlabsAircraftData.value as { response?: Record<string, unknown> | Record<string, unknown>[] } | null)
+    : null;
+  const airlabsAircraft = Array.isArray(airlabsResp?.response)
+    ? airlabsResp.response[0]
+    : (airlabsResp?.response as Record<string, unknown> | undefined);
+  const deliveryYear = parseDeliveryYear(airlabsAircraft);
+  const metadata: AircraftMetadata | null = (baseMetadata || airlabsAircraft)
+    ? {
+        ...(baseMetadata ?? {}),
+        // Use existing values when present; only fill gaps from Airlabs.
+        registration: baseMetadata?.registration ?? (airlabsAircraft?.reg_number as string | undefined),
+        typecode: baseMetadata?.typecode
+          ?? (airlabsAircraft?.icao_code as string | undefined)
+          ?? (airlabsAircraft?.iata_code_short as string | undefined),
+        model: baseMetadata?.model ?? (airlabsAircraft?.model_name as string | undefined),
+        engine: optString(airlabsAircraft?.engine),
+        engineCount: airlabsAircraft?.engines_count != null
+          ? String(airlabsAircraft.engines_count) : undefined,
+        built: deliveryYear,
+        age: optNumber(airlabsAircraft?.plane_age),
+        msn: optString(airlabsAircraft?.construction_number)
+          ?? optString(airlabsAircraft?.line_number),
+      }
+    : null;
 
   const photoResponse = photoData.status === 'fulfilled' ? (photoData.value as { photos?: Array<{ src?: string }> } | null) : null;
   const photoSource = photoResponse?.photos?.[0]?.src;

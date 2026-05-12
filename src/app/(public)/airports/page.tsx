@@ -6,6 +6,7 @@ import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { t } from '@/lib/i18n/translations';
 import { AirportSearch } from '@/app/(public)/airports/AirportSearch';
 import { DeparturesList } from '@/app/(public)/airports/DeparturesList';
+import { NearbyAirportsPanel } from '@/app/(public)/airports/NearbyAirportsPanel';
 import { PopularAirportsStrip } from '@/app/(public)/airports/PopularAirportsStrip';
 import { QuickLinks } from '@/app/(public)/airports/QuickLinks';
 import { StatsRow } from '@/app/(public)/airports/StatsRow';
@@ -38,6 +39,9 @@ export default function AirportsPage() {
         </FadeIn>
         <FadeIn delay={50}>
           <QuickLinks language={language} />
+        </FadeIn>
+        <FadeIn delay={75}>
+          <NearbyAirportsPanel />
         </FadeIn>
         <FadeIn delay={100}>
           <PopularAirportsStrip airports={filteredAirports} language={language} />

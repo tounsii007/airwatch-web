@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { CONVERSION } from '@/lib/constants';
-import { resolveAirline } from '@/lib/data/airlines';
+import { resolveAirline, AIRLINES } from '@/lib/data/airlines';
 import { isFresh } from '@/lib/flights/aircraftFreshness';
 import type { AircraftState, MapStyle } from '@/lib/types';
 import { EMERGENCY_SQUAWKS, squawkColor } from '@/lib/hooks/useSquawkAlerts';
@@ -17,6 +17,7 @@ export function useAircraftMarkers({
   selectAircraft,
   showLabels,
   zoom,
+  cargoOnly = false,
 }: {
   aircraftMap: Map<string, AircraftState>;
   mapRef: React.MutableRefObject<L.Map | null>;
@@ -25,6 +26,8 @@ export function useAircraftMarkers({
   selectAircraft: (aircraft: AircraftState) => void;
   showLabels: boolean;
   zoom: number;
+  /** When true, hide every flight whose operator's catalogue isCargo flag isn't true. */
+  cargoOnly?: boolean;
 }) {
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
@@ -55,6 +58,21 @@ export function useAircraftMarkers({
       // them on the live map would show stale positions — skip them here.
       if (!isFresh(aircraft, now)) return;
       if (aircraft.latitude == null || aircraft.longitude == null) return;
+      // Cargo-only filter: keep the aircraft only when the catalogue marks
+      // its operator as a cargo carrier. Falls open (keeps the row) when
+      // the airlines catalogue hasn't hydrated yet, so the user never sees
+      // a momentarily-empty map after toggling the switch.
+      if (cargoOnly) {
+        const callsignOp = aircraft.callsign ? resolveAirline(aircraft.callsign) : undefined;
+        const fallbackOp = aircraft.airlineIcao
+          ? AIRLINES[aircraft.airlineIcao.toUpperCase()]
+          : undefined;
+        const isCargo = (callsignOp ?? fallbackOp)?.isCargo;
+        // Strict check: only when isCargo is explicitly true do we render.
+        // This deliberately drops uncategorised flights so the filter is
+        // honest about what it includes.
+        if (isCargo !== true) return;
+      }
       if (
         aircraft.latitude >= south &&
         aircraft.latitude <= north &&
@@ -181,7 +199,7 @@ export function useAircraftMarkers({
 
       marker.addTo(layer);
     }
-  }, [aircraftMap, mapRef, mapStyle, selectedAircraft, selectAircraft, showLabels, zoom]);
+  }, [aircraftMap, mapRef, mapStyle, selectedAircraft, selectAircraft, showLabels, zoom, cargoOnly]);
 
   return markersLayerRef;
 }

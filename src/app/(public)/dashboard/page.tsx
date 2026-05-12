@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n/translations';
 import { AddAirportInput } from '@/app/(public)/dashboard/AddAirportInput';
 import { AirportCard } from '@/app/(public)/dashboard/AirportCard';
 import { DashboardToolbar } from '@/app/(public)/dashboard/DashboardToolbar';
+import { TopDelaysWidget } from '@/app/(public)/dashboard/TopDelaysWidget';
 import { useDashboardAirports } from '@/app/(public)/dashboard/useDashboardAirports';
 import { comparatorFor, type SortMode } from '@/app/(public)/dashboard/sortAirports';
 import { PageContainer, Stagger, FadeIn } from '@/components/ui';
@@ -65,6 +66,10 @@ export default function DashboardPage() {
           />
         </FadeIn>
       )}
+
+      <FadeIn delay={75} className="mt-6">
+        <TopDelaysWidget />
+      </FadeIn>
 
       <Stagger className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
         {sortedAirports.map((ap) => (

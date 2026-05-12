@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
-import { ZoomIn, ZoomOut, Locate, CloudRain, Info } from 'lucide-react';
+import { ZoomIn, ZoomOut, Locate, CloudRain, Info, Package } from 'lucide-react';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { CONFIG } from '@/lib/constants';
 import { useWeatherRadar } from '@/lib/hooks/useWeatherRadar';
@@ -36,6 +36,8 @@ export function MapView() {
   const showLabels = useSettingsStore((s) => s.showLabels);
   const showTurbulence = useSettingsStore((s) => s.showTurbulence);
   const showAirportWeather = useSettingsStore((s) => s.showAirportWeather);
+  const cargoOnly = useSettingsStore((s) => s.cargoOnly);
+  const setCargoOnly = useSettingsStore((s) => s.setCargoOnly);
   const setShowRadar = useSettingsStore((s) => s.setShowRadar);
   const mapStyle = useSettingsStore((s) => s.mapStyle);
   const setMapStyle = useSettingsStore((s) => s.setMapStyle);
@@ -54,6 +56,7 @@ export function MapView() {
     selectAircraft,
     showLabels,
     zoom,
+    cargoOnly,
   });
 
   useBaseLayer({ baseLayerRef, mapRef, mapStyle });
@@ -225,6 +228,16 @@ export function MapView() {
           className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] ${showRadar ? 'bg-[var(--info)]/15 border-[var(--info)]/30' : ''}`}
         >
           <CloudRain size={18} className={showRadar && !radarShouldShow ? 'text-[var(--info)] opacity-40' : showRadar ? 'text-[var(--info)]' : 'text-[var(--primary)]'} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          onClick={() => setCargoOnly(!cargoOnly)}
+          aria-pressed={cargoOnly}
+          aria-label={cargoOnly ? t('cargo_only_off', language) : t('cargo_only_on', language)}
+          title={cargoOnly ? t('cargo_only_off', language) : t('cargo_only_on', language)}
+          className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] ${cargoOnly ? 'bg-[var(--accent)]/15 border-[var(--accent)]/30' : ''}`}
+        >
+          <Package size={18} className={cargoOnly ? 'text-[var(--accent)]' : 'text-[var(--primary)]'} aria-hidden="true" />
         </button>
         <MapStylePicker mapStyle={mapStyle} onChange={setMapStyle} />
         <button

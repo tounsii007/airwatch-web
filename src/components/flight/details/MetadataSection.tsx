@@ -36,12 +36,21 @@ function Operator({ operatorName, language }: { operatorName?: string; language:
   );
 }
 
-function TagRow({ metadata, icao24 }: { metadata: AircraftMetadata; icao24: string }) {
+function TagRow({ metadata, icao24, language }: { metadata: AircraftMetadata; icao24: string; language: AppLanguage }) {
+  // Compose "engines×type" once so the row stays compact when both are known.
+  const enginesLabel =
+    metadata.engineCount && metadata.engine
+      ? `${metadata.engineCount}× ${metadata.engine}`
+      : (metadata.engine ?? metadata.engineCount);
   return (
     <div className="flex gap-2 mt-2 flex-wrap">
       {metadata.registration && <Tag label="REG" value={metadata.registration} />}
       {metadata.typecode && <Tag label="TYPE" value={metadata.typecode} />}
       <Tag label="ICAO24" value={icao24.toUpperCase()} />
+      {metadata.built && <Tag label={t('built', language)} value={String(metadata.built)} />}
+      {metadata.age != null && <Tag label={t('age', language)} value={`${metadata.age} ${t('years_short', language)}`} />}
+      {enginesLabel && <Tag label={t('engines', language)} value={enginesLabel} />}
+      {metadata.msn && <Tag label="MSN" value={metadata.msn} />}
     </div>
   );
 }
@@ -52,7 +61,7 @@ export function MetadataSection({ metadata, icao24, language }: Props) {
     <div className="px-4 py-3 border-b border-[var(--glass-border)]">
       <Title metadata={metadata} />
       <Operator operatorName={metadata.operatorName} language={language} />
-      <TagRow metadata={metadata} icao24={icao24} />
+      <TagRow metadata={metadata} icao24={icao24} language={language} />
     </div>
   );
 }

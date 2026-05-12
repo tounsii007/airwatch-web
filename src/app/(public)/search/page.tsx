@@ -11,6 +11,7 @@ import { t } from '@/lib/i18n/translations';
 import type { AircraftState } from '@/lib/types';
 import { NoResultsState, TypeToSearchState } from '@/app/(public)/search/SearchEmptyState';
 import { ResultsGroup } from '@/app/(public)/search/ResultsGroup';
+import { useAirlabsSuggest } from '@/app/(public)/search/useAirlabsSuggest';
 import { useDebouncedValue } from '@/app/(public)/search/useDebouncedValue';
 import { useSearchResults } from '@/app/(public)/search/useSearchResults';
 import { MIN_QUERY_LENGTH } from '@/app/(public)/search/searchTypes';
@@ -30,8 +31,18 @@ export default function SearchPage() {
   useEffect(() => { if (flightCount === 0) startPolling(); }, [flightCount, startPolling]);
 
   const { flights, airlines } = useSearchResults(debouncedQuery);
+  const { items: suggestItems } = useAirlabsSuggest(debouncedQuery, 0);
   const hasQuery = debouncedQuery.length >= MIN_QUERY_LENGTH;
-  const hasResults = flights.length + airlines.length > 0;
+  const hasResults = flights.length + airlines.length + suggestItems.length > 0;
+
+  // Routes for /suggest tiles — airports route to /airports/{IATA},
+  // airlines to /airlines/{IATA}, cities don't have a dedicated page
+  // yet so the tile becomes informational only.
+  const suggestHref = (s: typeof suggestItems[number]): string | null => {
+    if (s.type === 'airport' && s.iata) return `/airports/${s.iata.toUpperCase()}`;
+    if (s.type === 'airline' && s.iata) return `/airlines/${s.iata.toUpperCase()}`;
+    return null;
+  };
 
   const handleFlightClick = useCallback((aircraft: AircraftState) => {
     selectAircraft(aircraft);
@@ -108,6 +119,33 @@ export default function SearchPage() {
                     />
                   </div>
                 ))}
+              </Stagger>
+            </ResultsGroup>
+          </FadeIn>
+        )}
+
+        {suggestItems.length > 0 && (
+          <FadeIn delay={150}>
+            <ResultsGroup title={t('places', language)} count={suggestItems.length}>
+              <Stagger>
+                {suggestItems.map((s, i) => {
+                  const href = suggestHref(s);
+                  const title = s.iata
+                    ? `${s.iata.toUpperCase()} · ${s.name ?? ''}`
+                    : (s.name ?? '');
+                  const subtitle = [s.city, s.country_code].filter(Boolean).join(', ');
+                  return (
+                    <div key={`${s.iata ?? s.icao ?? s.name ?? i}-${i}`} className="animate-fade-up">
+                      <ResultTile
+                        type={s.type === 'airline' ? 'airline' : 'airport'}
+                        title={title}
+                        subtitle={subtitle}
+                        query={debouncedQuery}
+                        onClick={() => { if (href) router.push(href); }}
+                      />
+                    </div>
+                  );
+                })}
               </Stagger>
             </ResultsGroup>
           </FadeIn>

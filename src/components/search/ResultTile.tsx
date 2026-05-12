@@ -1,13 +1,13 @@
 'use client';
 
-import { Plane, Building2 } from 'lucide-react';
+import { Plane, Building2, MapPin } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { ManagedImage } from '@/components/common/ManagedImage';
 import { OfflineBadge } from '@/components/common/OfflineBadge';
 import type { AircraftState } from '@/lib/types';
 
 interface ResultTileProps {
-  type: 'flight' | 'airline';
+  type: 'flight' | 'airline' | 'airport';
   title: string;
   subtitle?: string;
   status?: string;
@@ -46,7 +46,7 @@ function HighlightedText({ text, query }: { text: string; query: string }) {
 }
 
 export function ResultTile({ type, title, subtitle, status, query, onClick, logoUrl, aircraft }: ResultTileProps) {
-  const Icon = type === 'flight' ? Plane : Building2;
+  const Icon = type === 'flight' ? Plane : type === 'airport' ? MapPin : Building2;
 
   return (
     <button
