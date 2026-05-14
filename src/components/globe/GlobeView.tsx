@@ -106,6 +106,27 @@ export function GlobeView() {
     };
   }, []);
 
+  // Keep the Cesium canvas in sync with its container. Cesium reads the
+  // size once inside `new Viewer(container, ...)` and never re-measures
+  // on its own — so any subsequent layout change (devtools toggle, late
+  // hydration, parent resize, phone rotation) leaves a stretched / shrunken
+  // canvas painting only a sub-rectangle of the visible area. The fix is
+  // a ResizeObserver that pipes the new size into `viewer.resize()`,
+  // which recomputes the canvas + projection matrix. Also fire one
+  // synchronous resize on first attach to swallow the very common
+  // "container grew between init and paint" race.
+  useEffect(() => {
+    if (!loaded || !containerRef.current) return;
+    const safeResize = () => {
+      const v = viewerRef.current;
+      if (v && !v.isDestroyed()) v.resize();
+    };
+    safeResize();
+    const ro = new ResizeObserver(safeResize);
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, [loaded]);
+
   // Update aircraft entities
   useEffect(() => {
     const viewer = viewerRef.current;
