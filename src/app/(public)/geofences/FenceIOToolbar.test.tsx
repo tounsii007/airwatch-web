@@ -46,7 +46,10 @@ describe('<FenceIOToolbar />', () => {
 
   it('imports a valid envelope through onImport and reports success', async () => {
     const user = userEvent.setup();
-    const onImport = vi.fn(async () => true);
+    // Explicit parameter signature so `mock.calls[N][0]` survives `tsc`
+    // in strict mode — the default `vi.fn(async () => true)` infers a
+    // zero-arg call shape and the tuple access below would be `[]'[0]'`.
+    const onImport = vi.fn<(fence: GeoFence) => Promise<boolean>>(async () => true);
     const envelope = buildExportEnvelope([CIRCLE]);
     const file = new File([JSON.stringify(envelope)], 'fences.json', { type: 'application/json' });
 
@@ -56,7 +59,7 @@ describe('<FenceIOToolbar />', () => {
 
     await waitFor(() => expect(onImport).toHaveBeenCalledTimes(1));
     // onImport receives a GeoFence with the local clientId grafted on.
-    const arg = onImport.mock.calls[0]![0] as GeoFence;
+    const arg = onImport.mock.calls[0]![0];
     expect(arg.name).toBe('X');
     expect(arg.clientId).toBeTruthy();
     expect(arg.id).toBeUndefined();

@@ -130,16 +130,12 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: securityHeaders,
       },
-      // Hashed Next.js chunks are content-addressed by filename — once
-      // built, the bytes never change for a given URL, so cache them
-      // aggressively. Bumps performance + insulates the user from
-      // intermediate proxy caches.
-      {
-        source: '/_next/static/:path*',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
-      },
+      // `_next/static/:path*` does NOT need a manual Cache-Control rule —
+      // Next.js already sets `public, max-age=31536000, immutable` on
+      // hashed chunks itself (and from 16.x prints a build-time warning
+      // when applications shadow the same value). Hashing makes the URL
+      // change whenever the bytes change, so the "immutable" assertion
+      // stays correct without our intervention.
       // HTML pages MUST revalidate on every visit — otherwise Chrome's
       // HTTP cache happily serves the previous build's HTML pointing at
       // chunk filenames that already changed. Symptom: classic "works in

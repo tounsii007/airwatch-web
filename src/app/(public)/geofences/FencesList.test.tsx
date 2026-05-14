@@ -7,7 +7,7 @@
  *   - empty state still works
  */
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FencesList, __test__ } from '@/app/(public)/geofences/FencesList';
 import type { GeoFence } from '@/lib/flights/geofence';
