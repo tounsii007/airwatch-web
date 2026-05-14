@@ -117,6 +117,26 @@ export function MapView() {
     mapRef.current.setView([ac.latitude, ac.longitude], targetZoom, { animate: true });
   }, [mapRef, selectedAircraft]);
 
+  // ── Deep-link consumer: /?icao24=ABC123 selects that aircraft on load ────
+  // Used by the geofence /alerts panel to "Show on map" — clicking an
+  // alert navigates here with the icao24 query param, and we hand off to
+  // selectAircraft once the polling/WS feed has the aircraft in the map.
+  //
+  // The ref guards against repeated selection across renders: once we've
+  // honoured the URL hint we don't keep re-asserting it (so the user can
+  // click around freely without the URL param yanking the selection back).
+  const consumedDeepLinkRef = useRef(false);
+  useEffect(() => {
+    if (consumedDeepLinkRef.current) return;
+    if (typeof window === 'undefined') return;
+    const target = new URLSearchParams(window.location.search).get('icao24')?.trim().toLowerCase();
+    if (!target) { consumedDeepLinkRef.current = true; return; }
+    const ac = aircraftMap.get(target);
+    if (!ac) return; // Aircraft hasn't arrived in the feed yet — wait for next tick.
+    consumedDeepLinkRef.current = true;
+    selectAircraft(ac);
+  }, [aircraftMap, selectAircraft]);
+
   return (
     /* Sizing strategy:
        * h-full grabs height from the parent (page.tsx wraps us in
