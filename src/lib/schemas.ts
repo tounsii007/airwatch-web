@@ -11,30 +11,36 @@ import { z } from 'zod';
 // ═══ Airlabs live feed (proxy → Airlabs /v9/flights) ═══
 // Field names match Airlabs. Backend's Aircraft.java serializes into the
 // same shape thanks to its @JsonProperty("hex") aliases.
+//
+// .nullish() rather than .optional(): Airlabs emits explicit `null` for
+// unknown fields (a VFR flight with no flight-plan has dep_icao: null),
+// not an omitted key. With plain .optional() the whole 5000-row envelope
+// parse failed on the first null and the snapshot returned []. Consumers
+// already use `??` so the distinction is invisible to them.
 export const AirlabsFlightSchema = z
   .object({
-    hex: z.string().optional(),
-    reg_number: z.string().optional(),
-    flag: z.string().optional(),
-    lat: z.number().optional(),
-    lng: z.number().optional(),
-    alt: z.number().optional(),
-    dir: z.number().optional(),
-    speed: z.number().optional(),
-    v_speed: z.number().optional(),
-    squawk: z.string().optional(),
-    flight_icao: z.string().optional(),
-    flight_iata: z.string().optional(),
-    flight_number: z.string().optional(),
-    airline_icao: z.string().optional(),
-    airline_iata: z.string().optional(),
-    aircraft_icao: z.string().optional(),
-    dep_icao: z.string().optional(),
-    dep_iata: z.string().optional(),
-    arr_icao: z.string().optional(),
-    arr_iata: z.string().optional(),
-    status: z.string().optional(),
-    updated: z.number().optional(),
+    hex: z.string().nullish(),
+    reg_number: z.string().nullish(),
+    flag: z.string().nullish(),
+    lat: z.number().nullish(),
+    lng: z.number().nullish(),
+    alt: z.number().nullish(),
+    dir: z.number().nullish(),
+    speed: z.number().nullish(),
+    v_speed: z.number().nullish(),
+    squawk: z.string().nullish(),
+    flight_icao: z.string().nullish(),
+    flight_iata: z.string().nullish(),
+    flight_number: z.string().nullish(),
+    airline_icao: z.string().nullish(),
+    airline_iata: z.string().nullish(),
+    aircraft_icao: z.string().nullish(),
+    dep_icao: z.string().nullish(),
+    dep_iata: z.string().nullish(),
+    arr_icao: z.string().nullish(),
+    arr_iata: z.string().nullish(),
+    status: z.string().nullish(),
+    updated: z.number().nullish(),
   })
   .passthrough(); // tolerate extra fields the backend adds
 export type AirlabsFlight = z.infer<typeof AirlabsFlightSchema>;

@@ -1,7 +1,11 @@
 import type { AircraftState } from '@/lib/types';
 
-/** How long an aircraft stays "live" after its last update. */
-export const FRESH_THRESHOLD_MS = 90 * 1000;
+/** How long an aircraft stays "live" after its last update.
+ *  Set to 200 s so the freshness window comfortably outlasts the backend's
+ *  WS broadcast cadence (push-interval-ms, default 180 s). With the previous
+ *  90 s value flights would go stale-and-hidden between broadcasts, causing
+ *  the map to visibly thin out every cycle. */
+export const FRESH_THRESHOLD_MS = 200 * 1000;
 
 /** How long we remember an aircraft after it goes silent — useful for search/saved. */
 export const CACHED_TTL_MS = 15 * 60 * 1000;

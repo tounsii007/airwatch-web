@@ -72,7 +72,13 @@ export function FenceForm({ form, draft, submitting, submitError, onChange, onSu
       </h2>
       <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <NameField value={form.name} onChange={(v) => onChange({ name: v })} />
-        <NumberField label="RADIUS (KM)" value={form.radiusKm} onChange={(v) => onChange({ radiusKm: v })} min="0.1" step="0.1" />
+        {/* step="any" rather than "0.1": GeoFenceDrawMap rounds the drafted
+            radius to 2 decimals (round(c.getRadius()/1000, 2)), so a 0.1
+            step rejected every other drag with the native HTML5 validator
+            ("Gib einen gültigen Wert ein. Die zwei nächstliegenden Werte
+            sind 131,3 und 131,4."). The radius doesn't have a meaningful
+            discrete step — let users pick any precision. */}
+        <NumberField label="RADIUS (KM)" value={form.radiusKm} onChange={(v) => onChange({ radiusKm: v })} min="0.1" step="any" />
         <NumberField label="CENTER LAT" value={form.centerLat} onChange={(v) => onChange({ centerLat: v })} step="0.0001" placeholder="50.0379" />
         <NumberField label="CENTER LON" value={form.centerLon} onChange={(v) => onChange({ centerLon: v })} step="0.0001" placeholder="8.5622" />
         <NumberField
