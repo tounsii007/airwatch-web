@@ -4,10 +4,15 @@ import { Circle, Square, Trash2, MapPin, Plane, ArrowUp, ArrowDown } from 'lucid
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { AIRLINES } from '@/lib/data/airlines';
 import type { GeoFence } from '@/lib/flights/geofence';
+import { useGeoFenceStore } from '@/lib/stores/geofenceStore';
+import { FenceStatsBadge } from '@/app/(public)/geofences/FenceStatsBadge';
 
 interface Props {
   fences: GeoFence[];
   onDelete: (id?: number) => void;
+  /** Optional toolbar slot — page.tsx injects the export/import bar here
+   *  so it lives inside the same panel without bloating this component. */
+  toolbar?: React.ReactNode;
 }
 
 /**
@@ -117,6 +122,10 @@ function FilterChips({ fence }: { fence: GeoFence }) {
 }
 
 function FenceRow({ fence, onDelete }: { fence: GeoFence; onDelete: (id?: number) => void }) {
+  // Subscribe to the alerts store here (per-row) so the StatsBadge picks
+  // up new triggers as they arrive over WS without the parent having to
+  // pass them through. Zustand selector is cheap.
+  const alerts = useGeoFenceStore((s) => s.alerts);
   return (
     <li
       className="flex items-start gap-3 border-b border-[var(--glass-border)]/40 pb-2 last:border-b-0 last:pb-0"
@@ -133,6 +142,7 @@ function FenceRow({ fence, onDelete }: { fence: GeoFence; onDelete: (id?: number
           {shapeCaption(fence)}
         </div>
         <FilterChips fence={fence} />
+        <FenceStatsBadge fenceId={fence.id} alerts={alerts} />
       </div>
       <button
         onClick={() => onDelete(fence.id)}
@@ -155,7 +165,7 @@ function EmptyRow() {
 }
 
 /** List of the user's active geo-fences with per-row delete. */
-export function FencesList({ fences, onDelete }: Props) {
+export function FencesList({ fences, onDelete, toolbar }: Props) {
   return (
     <GlassPanel className="p-4">
       <h2 className="text-xs font-[var(--font-heading)] font-bold tracking-wider text-[var(--primary)] mb-3 flex items-center justify-between">
@@ -166,6 +176,7 @@ export function FencesList({ fences, onDelete }: Props) {
           </span>
         )}
       </h2>
+      {toolbar}
       {fences.length === 0 ? (
         <EmptyRow />
       ) : (

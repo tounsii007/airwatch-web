@@ -9,6 +9,7 @@ import { AlertsPanel } from '@/app/(public)/geofences/AlertsPanel';
 import { DrawPanel } from '@/app/(public)/geofences/DrawPanel';
 import { FenceForm } from '@/app/(public)/geofences/FenceForm';
 import { FencesList } from '@/app/(public)/geofences/FencesList';
+import { FenceIOToolbar } from '@/app/(public)/geofences/FenceIOToolbar';
 import { BLANK_FORM, buildFencePayload, type FenceFormState } from '@/app/(public)/geofences/fencePayload';
 import { useFences } from '@/app/(public)/geofences/useFences';
 import type { GeoFenceDraft } from '@/components/geofence/GeoFenceDrawMap';
@@ -93,7 +94,11 @@ export default function GeoFencesPage() {
           />
         </FadeIn>
         <FadeIn delay={180}>
-          <FencesList fences={fences} onDelete={remove} />
+          <FencesList
+            fences={fences}
+            onDelete={remove}
+            toolbar={<FenceIOToolbar fences={fences} onImport={create} />}
+          />
         </FadeIn>
       </div>
     </PageContainer>
