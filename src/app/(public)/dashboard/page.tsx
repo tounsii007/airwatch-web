@@ -45,7 +45,11 @@ export default function DashboardPage() {
         </span>
       )}
     >
-      <FadeIn>
+      {/* relative+z-20 lifts this FadeIn (and its absolute autocomplete
+          dropdown) above the later sibling FadeIns / Stagger, which each
+          create their own stacking context via `animate-fade-up`'s
+          transform and would otherwise paint on top of the dropdown. */}
+      <FadeIn className="relative z-20">
         <AddAirportInput
           language={language}
           value={newIata}
