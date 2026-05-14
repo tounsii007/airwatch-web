@@ -86,6 +86,11 @@ export function FenceForm({ form, draft, submitting, submitError, onChange, onSu
           value={form.minAltitudeFt} onChange={(v) => onChange({ minAltitudeFt: v })}
           placeholder="optional"
         />
+        <NumberField
+          label={<FilterLabel icon={<Filter size={10} />} text="MAX ALT (FT)" />}
+          value={form.maxAltitudeFt} onChange={(v) => onChange({ maxAltitudeFt: v })}
+          placeholder="optional"
+        />
         <Field label={<FilterLabel icon={<Filter size={10} />} text="AIRLINE ICAO" />}>
           <input
             type="text"
