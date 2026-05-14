@@ -124,7 +124,16 @@ export function proxy(request: NextRequest) {
     // 'strict-dynamic' lets a nonced script load further scripts without
     // each one needing its own nonce. Combined with the nonce, this is
     // the tightest practical CSP for a Next.js app.
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'wasm-unsafe-eval'`,
+    //
+    // 'unsafe-eval' is required by CesiumJS (/globe). Cesium compiles GLSL
+    // shaders + GLTF expression strings via `new Function(...)` at runtime
+    // — the spec doesn't have a narrower escape hatch, so the whole page
+    // would EvalError and the globe stays blank without it. The risk
+    // (string-to-code execution) is acceptable here because the only
+    // strings Cesium evals are its own internal shader templates, never
+    // user input. If a future page-only feature needs eval, prefer a
+    // per-route CSP relaxation over widening this site-wide rule.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-eval' 'wasm-unsafe-eval'`,
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     // Direct-CDN allowlist for every external image source.
