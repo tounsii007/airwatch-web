@@ -3,6 +3,9 @@
 import { ReactNode } from 'react';
 import { Filter, Plus } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { t } from '@/lib/i18n/translations';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import type { AppLanguage } from '@/lib/types';
 import type { GeoFenceDraft } from '@/components/geofence/GeoFenceDrawMap';
 import type { FenceFormState } from '@/app/(public)/geofences/fencePayload';
 
@@ -31,10 +34,10 @@ function FilterLabel({ icon, text }: { icon: ReactNode; text: string }) {
   return <span className="flex items-center gap-1">{icon} {text}</span>;
 }
 
-function NameField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function NameField({ value, onChange, language }: { value: string; onChange: (v: string) => void; language: AppLanguage }) {
   return (
-    <Field label="NAME">
-      <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className={INPUT_CLASS} placeholder="My house" maxLength={128} />
+    <Field label={t('fence_name_label', language)}>
+      <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className={INPUT_CLASS} placeholder={t('fence_name_placeholder', language)} maxLength={128} />
     </Field>
   );
 }
@@ -47,7 +50,7 @@ function NumberField({ label, value, onChange, placeholder, min, step }: { label
   );
 }
 
-function Submit({ submitting, submitError, typeLabel }: { submitting: boolean; submitError: string | null; typeLabel: string }) {
+function Submit({ submitting, submitError, typeLabel, language }: { submitting: boolean; submitError: string | null; typeLabel: string; language: AppLanguage }) {
   return (
     <div className="md:col-span-2 flex items-center justify-between pt-1">
       <span className="text-[10px] text-[var(--error)]">{submitError}</span>
@@ -56,7 +59,9 @@ function Submit({ submitting, submitError, typeLabel }: { submitting: boolean; s
         disabled={submitting}
         className="bg-[var(--primary)] text-[var(--bg)] px-4 py-1.5 text-xs font-[var(--font-heading)] font-bold tracking-wider disabled:opacity-40 hover:opacity-90"
       >
-        {submitting ? 'CREATING…' : `CREATE ${typeLabel}`}
+        {submitting
+          ? t('fence_creating_button', language)
+          : t('fence_create_button', language).replace('{0}', typeLabel)}
       </button>
     </div>
   );
@@ -64,34 +69,37 @@ function Submit({ submitting, submitError, typeLabel }: { submitting: boolean; s
 
 /** Geo-fence creation form with name / center / radius / altitude / airline filter. */
 export function FenceForm({ form, draft, submitting, submitError, onChange, onSubmit }: Props) {
-  const typeLabel = draft?.type === 'RECTANGLE' ? 'RECTANGLE' : 'CIRCLE';
+  const language = useSettingsStore((s) => s.language);
+  const typeLabel = draft?.type === 'RECTANGLE'
+    ? t('fence_type_rectangle', language)
+    : t('fence_type_circle', language);
   return (
     <GlassPanel className="mb-6 p-4">
       <h2 className="text-xs font-[var(--font-heading)] font-bold tracking-wider text-[var(--primary)] mb-3 flex items-center gap-2">
-        <Plus size={14} /> NEW FENCE ({typeLabel})
+        <Plus size={14} /> {t('fence_new_heading', language).replace('{0}', typeLabel)}
       </h2>
       <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <NameField value={form.name} onChange={(v) => onChange({ name: v })} />
+        <NameField value={form.name} onChange={(v) => onChange({ name: v })} language={language} />
         {/* step="any" rather than "0.1": GeoFenceDrawMap rounds the drafted
             radius to 2 decimals (round(c.getRadius()/1000, 2)), so a 0.1
             step rejected every other drag with the native HTML5 validator
             ("Gib einen gültigen Wert ein. Die zwei nächstliegenden Werte
             sind 131,3 und 131,4."). The radius doesn't have a meaningful
             discrete step — let users pick any precision. */}
-        <NumberField label="RADIUS (KM)" value={form.radiusKm} onChange={(v) => onChange({ radiusKm: v })} min="0.1" step="any" />
-        <NumberField label="CENTER LAT" value={form.centerLat} onChange={(v) => onChange({ centerLat: v })} step="0.0001" placeholder="50.0379" />
-        <NumberField label="CENTER LON" value={form.centerLon} onChange={(v) => onChange({ centerLon: v })} step="0.0001" placeholder="8.5622" />
+        <NumberField label={t('fence_radius_label', language)} value={form.radiusKm} onChange={(v) => onChange({ radiusKm: v })} min="0.1" step="any" />
+        <NumberField label={t('fence_center_lat_label', language)} value={form.centerLat} onChange={(v) => onChange({ centerLat: v })} step="0.0001" placeholder="50.0379" />
+        <NumberField label={t('fence_center_lon_label', language)} value={form.centerLon} onChange={(v) => onChange({ centerLon: v })} step="0.0001" placeholder="8.5622" />
         <NumberField
-          label={<FilterLabel icon={<Filter size={10} />} text="MIN ALT (FT)" />}
+          label={<FilterLabel icon={<Filter size={10} />} text={t('fence_min_alt_label', language)} />}
           value={form.minAltitudeFt} onChange={(v) => onChange({ minAltitudeFt: v })}
-          placeholder="optional"
+          placeholder={t('optional', language)}
         />
         <NumberField
-          label={<FilterLabel icon={<Filter size={10} />} text="MAX ALT (FT)" />}
+          label={<FilterLabel icon={<Filter size={10} />} text={t('fence_max_alt_label', language)} />}
           value={form.maxAltitudeFt} onChange={(v) => onChange({ maxAltitudeFt: v })}
-          placeholder="optional"
+          placeholder={t('optional', language)}
         />
-        <Field label={<FilterLabel icon={<Filter size={10} />} text="AIRLINE ICAO" />}>
+        <Field label={<FilterLabel icon={<Filter size={10} />} text={t('fence_airline_label', language)} />}>
           <input
             type="text"
             value={form.airlineFilter}
@@ -101,7 +109,7 @@ export function FenceForm({ form, draft, submitting, submitError, onChange, onSu
             placeholder="DLH"
           />
         </Field>
-        <Submit submitting={submitting} submitError={submitError} typeLabel="FENCE" />
+        <Submit submitting={submitting} submitError={submitError} typeLabel={typeLabel} language={language} />
       </form>
     </GlassPanel>
   );

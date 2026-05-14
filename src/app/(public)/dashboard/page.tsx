@@ -41,7 +41,7 @@ export default function DashboardPage() {
       title={t('dashboard', language)}
       subtitle={airports.length === 0 ? null : (
         <span className="badge badge-info badge-dot">
-          {airports.length} airports tracked
+          {t('airports_tracked_count', language).replace('{0}', String(airports.length))}
         </span>
       )}
     >
@@ -78,7 +78,7 @@ export default function DashboardPage() {
       {sortedAirports.length > 0 && (
         <FadeIn delay={100} className="mt-8 flex items-baseline justify-between gap-3">
           <h2 className="t-meta t-mono font-bold text-[var(--text-secondary)] tracking-widest uppercase">
-            Tracked airports
+            {t('tracked_airports', language)}
           </h2>
           <span className="t-meta t-mono text-[var(--text-muted)] tabular">
             {sortedAirports.length}

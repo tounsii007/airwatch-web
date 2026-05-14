@@ -24,20 +24,23 @@ function Header({
   total: number;
   onClear: () => void;
 }) {
+  const language = useSettingsStore((s) => s.language);
+  const alertsWord =
+    total === 1 ? t('alerts_count_one', language) : t('alerts_count_other', language);
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2 text-[var(--warning)]">
         <Bell size={14} className="animate-pulse-glow" />
         <span className="text-xs font-[var(--font-heading)] font-bold tracking-wider">
-          {shown === total ? `${total} ALERT${total === 1 ? '' : 'S'}` : `${shown} / ${total} ALERTS`}
+          {shown === total ? `${total} ${alertsWord}` : `${shown} / ${total} ${alertsWord}`}
         </span>
       </div>
       <button
         onClick={onClear}
         className="text-[10px] font-[var(--font-heading)] text-[var(--text-muted)] hover:text-[var(--text)] tracking-wider"
-        title="Drop the entire history. Backend will re-emit on the next entry."
+        title={t('clear_all_tooltip', language)}
       >
-        CLEAR ALL
+        {t('clear_all', language)}
       </button>
     </div>
   );

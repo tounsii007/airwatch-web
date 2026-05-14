@@ -2,6 +2,8 @@
 
 import { useRef, useState } from 'react';
 import { Download, Upload } from 'lucide-react';
+import { t } from '@/lib/i18n/translations';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 import type { GeoFence } from '@/lib/flights/geofence';
 import { getOrCreateClientId } from '@/lib/flights/geofence';
 import {
@@ -36,18 +38,22 @@ interface Props {
  * we never let a malformed file silently fail.
  */
 export function FenceIOToolbar({ fences, onImport }: Props) {
+  const language = useSettingsStore((s) => s.language);
   const fileRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<{ tone: 'ok' | 'err' | 'info'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
   const handleExport = () => {
     if (fences.length === 0) {
-      setStatus({ tone: 'info', text: 'No fences to export.' });
+      setStatus({ tone: 'info', text: t('fence_export_empty', language) });
       return;
     }
     const envelope = buildExportEnvelope(fences);
     downloadExportFile(envelope);
-    setStatus({ tone: 'ok', text: `Exported ${fences.length} fence${fences.length === 1 ? '' : 's'}.` });
+    const template = fences.length === 1
+      ? t('fence_exported_one', language)
+      : t('fence_exported_many', language);
+    setStatus({ tone: 'ok', text: template.replace('{0}', String(fences.length)) });
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,7 +62,7 @@ export function FenceIOToolbar({ fences, onImport }: Props) {
     e.target.value = '';
     if (!file) return;
     setBusy(true);
-    setStatus({ tone: 'info', text: 'Reading file…' });
+    setStatus({ tone: 'info', text: t('fence_reading_file', language) });
 
     try {
       const text = await file.text();
@@ -78,15 +84,24 @@ export function FenceIOToolbar({ fences, onImport }: Props) {
         }
       }
       if (summary.failed === 0) {
-        setStatus({ tone: 'ok', text: `Imported ${summary.ok} fence${summary.ok === 1 ? '' : 's'}.` });
+        const template = summary.ok === 1
+          ? t('fence_imported_one', language)
+          : t('fence_imported_many', language);
+        setStatus({ tone: 'ok', text: template.replace('{0}', String(summary.ok)) });
       } else {
         setStatus({
           tone: 'err',
-          text: `Imported ${summary.ok}, ${summary.failed} failed. First error: ${summary.errors[0] ?? '—'}`,
+          text: t('fence_imported_partial', language)
+            .replace('{0}', String(summary.ok))
+            .replace('{1}', String(summary.failed))
+            .replace('{2}', summary.errors[0] ?? '—'),
         });
       }
     } catch (err) {
-      setStatus({ tone: 'err', text: `Failed to read file: ${(err as Error).message}` });
+      setStatus({
+        tone: 'err',
+        text: t('fence_read_failed', language).replace('{0}', (err as Error).message),
+      });
     } finally {
       setBusy(false);
     }
@@ -110,18 +125,18 @@ export function FenceIOToolbar({ fences, onImport }: Props) {
         type="button"
         onClick={handleExport}
         className="inline-flex items-center gap-1 text-[10px] font-[var(--font-heading)] tracking-wider px-2 py-1 border border-[var(--glass-border)] hover:border-[var(--primary)]/40 hover:text-[var(--primary)] text-[var(--text-muted)] rounded transition-colors"
-        title="Download all fences as JSON"
+        title={t('fence_export_tooltip', language)}
       >
-        <Download size={11} /> EXPORT
+        <Download size={11} /> {t('export', language)}
       </button>
       <button
         type="button"
         onClick={handleImportClick}
         disabled={busy}
         className="inline-flex items-center gap-1 text-[10px] font-[var(--font-heading)] tracking-wider px-2 py-1 border border-[var(--glass-border)] hover:border-[var(--primary)]/40 hover:text-[var(--primary)] text-[var(--text-muted)] rounded transition-colors disabled:opacity-50"
-        title="Import fences from a previously-exported JSON file"
+        title={t('fence_import_tooltip', language)}
       >
-        <Upload size={11} /> {busy ? 'IMPORTING…' : 'IMPORT'}
+        <Upload size={11} /> {busy ? t('fence_importing_button', language) : t('fence_import_button', language)}
       </button>
       <input
         ref={fileRef}
