@@ -39,33 +39,43 @@ function formatHour(hour: number | null): string {
 }
 
 export function AirportStatStrip({ metrics, iata }: Props) {
+  // When there are no flights at all, every value is "no data" — show them
+  // all in the muted colour. Previously AVG DELAY rendered as "0m" in
+  // success-green, which read as "perfect — zero delay" instead of
+  // "unknown". Keeping the strip visually neutral makes the missing-data
+  // state honest.
+  const noData = metrics.total === 0;
+  const mutedColor = 'var(--text-muted)';
+
   const cells: { label: string; value: string; color: string; aria: string }[] = [
     {
       label: 'FLIGHTS',
       value: metrics.total.toString(),
-      color: 'var(--primary-bright)',
+      color: noData ? mutedColor : 'var(--primary-bright)',
       aria: `${metrics.total} flights scheduled at ${iata}`,
     },
     {
       label: 'ON-TIME',
-      value: metrics.total > 0 ? `${metrics.onTimePercent}%` : '—',
-      color: metrics.total > 0 ? ratingColor(metrics.onTimePercent) : 'var(--text-muted)',
-      aria: metrics.total > 0
-        ? `${metrics.onTimePercent} percent on time at ${iata}`
-        : `No on-time data for ${iata}`,
+      value: noData ? '—' : `${metrics.onTimePercent}%`,
+      color: noData ? mutedColor : ratingColor(metrics.onTimePercent),
+      aria: noData
+        ? `No on-time data for ${iata}`
+        : `${metrics.onTimePercent} percent on time at ${iata}`,
     },
     {
       label: 'AVG DELAY',
-      value: metrics.avgDelayMin > 0 ? `+${metrics.avgDelayMin}m` : '0m',
-      color: delayColor(metrics.avgDelayMin),
-      aria: metrics.avgDelayMin > 0
+      value: noData ? '—' : metrics.avgDelayMin > 0 ? `+${metrics.avgDelayMin}m` : '0m',
+      color: noData ? mutedColor : delayColor(metrics.avgDelayMin),
+      aria: noData
+        ? `No average delay at ${iata}`
+        : metrics.avgDelayMin > 0
         ? `Average delay ${metrics.avgDelayMin} minutes at ${iata}`
-        : `No average delay at ${iata}`,
+        : `On time at ${iata}`,
     },
     {
       label: 'PEAK',
       value: formatHour(metrics.busiestHour),
-      color: 'var(--accent)',
+      color: noData ? mutedColor : 'var(--accent)',
       aria: metrics.busiestHour !== null
         ? `Busiest hour ${formatHour(metrics.busiestHour)} at ${iata}`
         : `No peak hour data for ${iata}`,

@@ -75,7 +75,18 @@ export default function DashboardPage() {
         <TopDelaysWidget />
       </FadeIn>
 
-      <Stagger className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+      {sortedAirports.length > 0 && (
+        <FadeIn delay={100} className="mt-8 flex items-baseline justify-between gap-3">
+          <h2 className="t-meta t-mono font-bold text-[var(--text-secondary)] tracking-widest uppercase">
+            Tracked airports
+          </h2>
+          <span className="t-meta t-mono text-[var(--text-muted)] tabular">
+            {sortedAirports.length}
+          </span>
+        </FadeIn>
+      )}
+
+      <Stagger className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-3">
         {sortedAirports.map((ap) => (
           <div key={ap.iata} className="animate-fade-up">
             <AirportCard airport={ap} language={language} onRemove={removeAirport} />

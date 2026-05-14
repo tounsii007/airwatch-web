@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { PlaneLanding, PlaneTakeoff } from 'lucide-react';
+import { CloudOff, PlaneLanding, PlaneTakeoff } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Skeleton } from '@/components/ui';
 import { t } from '@/lib/i18n/translations';
@@ -65,6 +65,23 @@ function SchedulesGrid({ airport, language }: { airport: DashboardAirport; langu
   );
 }
 
+/** Compact placeholder when an airport returned zero departures *and*
+ *  zero arrivals — typically a rate-limit / offline case rather than
+ *  a quiet airport. Replaces two near-identical "— none scheduled"
+ *  schedule lists with a single, lighter row so the card stops
+ *  pretending it has structured data. */
+function EmptyScheduleNotice({ language }: { language: AppLanguage }) {
+  return (
+    <div
+      className="flex items-center gap-2 rounded-md border border-dashed border-[var(--glass-border)] px-3 py-2.5 t-meta text-[var(--text-muted)]"
+      role="status"
+    >
+      <CloudOff size={12} aria-hidden className="shrink-0" />
+      <span className="truncate">{t('no_flights', language)}</span>
+    </div>
+  );
+}
+
 /** One dashboard airport card. Header → stat strip → hour distribution
  *  → dep/arr schedule grid. The stat strip + chart turn this from a
  *  "list of schedules" into an actual dashboard tile. */
@@ -82,14 +99,18 @@ export function AirportCard({ airport, language, onRemove }: Props) {
       ) : (
         <>
           <AirportStatStrip metrics={metrics} iata={airport.iata} />
-          {metrics.total > 0 && (
-            <HourDistribution
-              buckets={metrics.hourBuckets}
-              peakHour={metrics.busiestHour}
-              ariaLabel={`Hourly flight distribution at ${airport.iata}`}
-            />
+          {metrics.total > 0 ? (
+            <>
+              <HourDistribution
+                buckets={metrics.hourBuckets}
+                peakHour={metrics.busiestHour}
+                ariaLabel={`Hourly flight distribution at ${airport.iata}`}
+              />
+              <SchedulesGrid airport={airport} language={language} />
+            </>
+          ) : (
+            <EmptyScheduleNotice language={language} />
           )}
-          <SchedulesGrid airport={airport} language={language} />
         </>
       )}
     </GlassPanel>
