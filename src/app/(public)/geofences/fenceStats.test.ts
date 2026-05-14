@@ -72,8 +72,8 @@ describe('computeFenceStats()', () => {
   it('falls back to the first 3 chars of the callsign when airlineIcao is empty', () => {
     const s = computeFenceStats(
       [
-        alert({ airlineIcao: null, callsign: 'AAL123', icao24: 'a' }),
-        alert({ airlineIcao: null, callsign: 'AAL999', icao24: 'b' }),
+        alert({ airlineIcao: undefined, callsign: 'AAL123', icao24: 'a' }),
+        alert({ airlineIcao: undefined, callsign: 'AAL999', icao24: 'b' }),
       ],
       1,
     );
@@ -82,7 +82,7 @@ describe('computeFenceStats()', () => {
 
   it('skips airline counting when neither airlineIcao nor callsign is usable', () => {
     const s = computeFenceStats(
-      [alert({ airlineIcao: null, callsign: null, icao24: 'a' })],
+      [alert({ airlineIcao: undefined, callsign: undefined, icao24: 'a' })],
       1,
     );
     expect(s.topAirline).toBeNull();

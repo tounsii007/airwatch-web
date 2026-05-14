@@ -27,4 +27,7 @@ const loadSpzFromUrl = async () => {
 };
 
 export { loadSpz, loadSpzFromUrl };
-export default { loadSpz, loadSpzFromUrl };
+// Named the default export so ESLint's `import/no-anonymous-default-export`
+// rule passes — the value itself is unchanged.
+const spzLoaderStub = { loadSpz, loadSpzFromUrl };
+export default spzLoaderStub;
