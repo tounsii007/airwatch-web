@@ -30,6 +30,19 @@ export function GlobeView() {
 
     let cancelled = false;
 
+    // A SyntaxError emitted while the Cesium chunk is being PARSED becomes a
+    // window-level 'error' event, not a promise rejection — so the try/catch
+    // around `await import('cesium')` never sees it and the user is left
+    // staring at a blank black panel. Surface those too.
+    const onChunkError = (e: ErrorEvent) => {
+      if (cancelled) return;
+      const src = (e.filename ?? '').toString();
+      if (src.includes('/_next/') || src.includes('cesium')) {
+        setError(`CesiumJS konnte nicht geladen werden: ${e.message}`);
+      }
+    };
+    window.addEventListener('error', onChunkError);
+
     async function initCesium() {
       try {
         Cesium = await import('cesium');
@@ -85,6 +98,7 @@ export function GlobeView() {
     initCesium();
     return () => {
       cancelled = true;
+      window.removeEventListener('error', onChunkError);
       if (viewerRef.current && !viewerRef.current.isDestroyed()) {
         viewerRef.current.destroy();
       }
@@ -155,7 +169,7 @@ export function GlobeView() {
   }, [selectedAircraft?.icao24]);
 
   return (
-    <div className="relative w-full h-screen bg-[var(--bg)]">
+    <div className="relative w-full h-full bg-[var(--bg)]">
       {/* Back button */}
       <div className="absolute top-4 left-4 z-10">
         <Link href="/" className="glass-panel px-3 py-1.5 flex items-center gap-1.5 text-[var(--primary)] text-sm hover:bg-white/10">

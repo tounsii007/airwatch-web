@@ -8,7 +8,7 @@
     "dev:local": "next dev",
     "dev:https": "next dev --experimental-https --hostname 0.0.0.0",
     "prebuild": "node scripts/copy-cesium-assets.mjs",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

@@ -7,7 +7,7 @@ const GlobeView = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-screen flex flex-col items-center justify-center gap-4 bg-[var(--bg)]">
+      <div className="h-full flex flex-col items-center justify-center gap-4 bg-[var(--bg)]">
         <div className="relative w-20 h-20">
           <div className="absolute inset-0 rounded-full border-2 border-[var(--primary)]/20" />
           <div className="absolute inset-0 rounded-full animate-radar origin-center"

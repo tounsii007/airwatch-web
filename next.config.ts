@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from 'node:path';
 import bundleAnalyzer from '@next/bundle-analyzer';
 
 // `ANALYZE=true npm run build` opens a treemap of the JS bundle in
@@ -180,6 +181,24 @@ const nextConfig: NextConfig = {
         destination: `${INTERNAL_API_URL}/:path*`,
       },
     ];
+  },
+  // Stub out @spz-loader/core: Cesium's GltfSpzLoader imports it eagerly,
+  // but @spz-loader/core/dist/index.js embeds its ~1 MB WebAssembly module
+  // as a single JS template literal containing bytes like `\00` and `\01`
+  // — both Webpack and Turbopack emit these verbatim, and JS engines
+  // reject them as invalid octal escapes in template literals
+  // (SyntaxError → /globe shows a black screen). AirWatch never loads
+  // Gaussian-Splatting 3D-Tiles content, so we alias the package to a
+  // no-op shim in src/lib/stubs/spz-loader.js. Documented at length
+  // there; if you ever need real SPZ support, remove this alias and find
+  // a workaround for the bundler issue (e.g. a custom loader that
+  // re-encodes the template, or wait for an upstream @spz-loader fix).
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@spz-loader/core': path.resolve(__dirname, 'src/lib/stubs/spz-loader.js'),
+    };
+    return config;
   },
 };
 
