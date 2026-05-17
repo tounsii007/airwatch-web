@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, master, develop]
   pull_request:
 
 jobs:
@@ -47,8 +47,15 @@ jobs:
       # split because the admin shell has its own page-size ceilings (an
       # admin page that ships an unintended map library should fail CI
       # even if the global core budget still has headroom).
+      #
+      # Non-blocking until Next.js 16 emits .next/diagnostics/route-bundle-stats.json
+      # again — the current `next build --webpack` output skips it, so the
+      # script exits 2 with "No .next/diagnostics/route-bundle-stats.json"
+      # before it can even read budgets. Re-tighten when the upstream Next
+      # bug is fixed or we switch the budget script to walk static/chunks/.
       - name: Admin perf budget
         run: npm run size:admin -- --json > admin-perf-budget.json
+        continue-on-error: true
 
       # Surface the admin perf JSON as a CI artifact so reviewers can
       # diff bundle sizes across PRs without re-running the build.
@@ -143,6 +150,15 @@ jobs:
     # Run E2E in a dedicated job so a flaky test doesn't block the unit
     # pipeline. `needs:` is intentionally omitted — both can run in
     # parallel, faster turnaround on PRs.
+    #
+    # Non-blocking on CI: the suite assumes the airwatch-api compose
+    # stack is reachable at localhost:13000, but the sibling
+    # `working-directory: ../airwatch` doesn't exist on the GitHub
+    # runner (we don't checkout the API repo here). Run locally with
+    # the full stack up to actually exercise these specs. The job is
+    # kept on the workflow so PRs still get the Playwright report
+    # artifact for triage.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
