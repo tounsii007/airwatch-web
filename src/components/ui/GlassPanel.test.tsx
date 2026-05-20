@@ -32,6 +32,11 @@ describe('<GlassPanel />', () => {
     expect(container.firstChild).toHaveClass('glass-panel-floating');
   });
 
+  it('applies the holographic variant class', () => {
+    const { container } = render(<GlassPanel variant="holographic">x</GlassPanel>);
+    expect(container.firstChild).toHaveClass('glass-panel-holographic');
+  });
+
   it('adds the interactive and shimmer flags as classes', () => {
     const { container } = render(
       <GlassPanel interactive shimmer>x</GlassPanel>,

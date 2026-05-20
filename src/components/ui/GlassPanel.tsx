@@ -19,12 +19,13 @@
 
 import type { ReactNode } from 'react';
 
-type Variant = 'default' | 'elevated' | 'floating';
+type Variant = 'default' | 'elevated' | 'floating' | 'holographic';
 
 const VARIANT_CLASS: Record<Variant, string> = {
   default: 'glass-panel',
   elevated: 'glass-panel-elevated',
   floating: 'glass-panel-floating',
+  holographic: 'glass-panel-holographic',
 };
 
 interface GlassPanelProps {
