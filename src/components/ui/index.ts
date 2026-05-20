@@ -30,3 +30,8 @@ export type { ToastVariant, ToastEntry } from './toast';
 export { ToastContainer } from './ToastContainer';
 export { EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
+export { KeyValueRow } from './KeyValueRow';
+export type { KeyValueRowProps } from './KeyValueRow';
+export { Switch } from './Switch';
+export type { SwitchProps } from './Switch';
+export { ProgressBar } from './ProgressBar';
