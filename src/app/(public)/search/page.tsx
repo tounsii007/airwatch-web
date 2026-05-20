@@ -15,7 +15,7 @@ import { useAirlabsSuggest } from '@/app/(public)/search/useAirlabsSuggest';
 import { useDebouncedValue } from '@/app/(public)/search/useDebouncedValue';
 import { useSearchResults } from '@/app/(public)/search/useSearchResults';
 import { MIN_QUERY_LENGTH } from '@/app/(public)/search/searchTypes';
-import { PageContainer, Stagger, FadeIn, CountUp } from '@/components/ui';
+import { PageContainer, Stagger, FadeIn, CountUp, LiveTicker } from '@/components/ui';
 
 export default function SearchPage() {
   const router = useRouter();
@@ -70,8 +70,18 @@ export default function SearchPage() {
           value={query}
           onChange={setQuery}
           placeholder={t('search_placeholder', language)}
+          kbdHint={['⌘', 'K']}
         />
       </FadeIn>
+
+      {/* Signature live-activity strip — only renders when there's at
+          least one airborne aircraft, so the empty-state remains clean.
+          Pure presentational; the search results below are independent. */}
+      {!hasQuery && (
+        <FadeIn delay={75} className="mt-3">
+          <LiveTicker maxItems={20} compact />
+        </FadeIn>
+      )}
 
       <div className="mt-4 space-y-4">
         {hasQuery && !hasResults && (
