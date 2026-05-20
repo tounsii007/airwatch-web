@@ -270,16 +270,33 @@ body {
   color: var(--text-primary);
 }
 
+/* Destructive action. Distinct enough from the primary brand colour
+   that the user has a clear "this deletes data" signal without
+   shouting. */
+.btn-danger {
+  background: rgba(248, 113, 113, 0.10);
+  color: var(--error);
+  border-color: rgba(248, 113, 113, 0.30);
+}
+
+.btn-danger:hover {
+  background: rgba(248, 113, 113, 0.18);
+  border-color: rgba(248, 113, 113, 0.50);
+  transform: translateY(-1px);
+}
+
 .btn:active,
 .btn-primary:active,
-.btn-ghost:active {
+.btn-ghost:active,
+.btn-danger:active {
   transform: translateY(0);
   transition-duration: 60ms;
 }
 
 .btn:disabled,
 .btn-primary:disabled,
-.btn-ghost:disabled {
+.btn-ghost:disabled,
+.btn-danger:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
@@ -583,7 +600,43 @@ body [class*="text-[10px]"] {
   100% { transform: scale(2.4); opacity: 0; }
 }
 
+/* Horizontal marquee — used by the LiveTicker. We translate exactly
+   -50% because the consumer renders the content twice in sequence:
+   that way the loop is seamless without any JS scheduling. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Diagonal scan-line that travels across a surface once per cycle.
+   Used by the loading radar and any "scanning" affordance to suggest
+   live signal acquisition. */
+@keyframes scan-sweep {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  20%  { opacity: 0.8; }
+  80%  { opacity: 0.8; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+/* Slow rotation used by the rotating altitude ring on the home loader
+   and the live ticker's orbit indicator. */
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Soft text-shadow breathing for the signature wordmark. Pairs with
+   `.gradient-text` to give the brand a heartbeat. */
+@keyframes brand-pulse {
+  0%, 100% { text-shadow: 0 0 8px rgba(122, 154, 191, 0.25), 0 0 18px rgba(212, 165, 116, 0.10); }
+  50%      { text-shadow: 0 0 14px rgba(122, 154, 191, 0.45), 0 0 28px rgba(212, 165, 116, 0.18); }
+}
+
 .animate-pulse-glow { animation: pulse-glow 1.5s ease-in-out infinite; }
+.animate-marquee   { animation: marquee 28s linear infinite; }
+.animate-orbit     { animation: orbit 14s linear infinite; }
+.animate-scan      { animation: scan-sweep 3.2s ease-in-out infinite; }
+.animate-brand-pulse { animation: brand-pulse 4s ease-in-out infinite; }
 .animate-radar { animation: radar-sweep 6s linear infinite; }
 .animate-slide-up { animation: slide-up var(--duration-slow) var(--ease-out); }
 .animate-fade-in { animation: fade-in var(--duration-base) var(--ease-out) both; }
