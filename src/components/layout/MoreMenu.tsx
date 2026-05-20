@@ -37,13 +37,18 @@ export function MoreMenuTrigger({ open, onToggle }: Props) {
       aria-expanded={open}
       aria-haspopup="dialog"
       aria-label={t('nav_more', language)}
-      className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-200 ${
+      data-pill-active={open || undefined}
+      className={`relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-200 z-10 active:scale-95 ${
         open
-          ? 'bg-[var(--primary)]/10 text-[var(--primary)]'
+          ? 'text-[var(--primary)]'
           : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
       }`}
     >
-      <MoreHorizontal size={open ? 22 : 20} aria-hidden />
+      <MoreHorizontal
+        size={open ? 22 : 20}
+        aria-hidden
+        className={`transition-all duration-200 ${open ? 'drop-shadow-[0_0_8px_var(--primary)]' : ''}`}
+      />
       <span className="t-meta t-mono font-bold tracking-widest">
         {t('nav_more', language)}
       </span>
