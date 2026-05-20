@@ -24,6 +24,7 @@
 
 import type { ReactNode } from 'react';
 import { CountUp } from './CountUp';
+import { Sparkline } from './Sparkline';
 
 type Status = 'default' | 'success' | 'warning' | 'error' | 'info';
 
@@ -32,14 +33,16 @@ interface StatusTokens {
   fg: string;
   /** Status variable name used for transparent halos via colour-mix. */
   cssVar: string;
+  /** Sparkline variant key. */
+  spark: 'primary' | 'success' | 'warning' | 'error' | 'info';
 }
 
 const STATUS: Record<Status, StatusTokens> = {
-  default: { fg: 'var(--primary-bright)', cssVar: '--primary-bright' },
-  success: { fg: 'var(--success)',        cssVar: '--success' },
-  warning: { fg: 'var(--warning)',        cssVar: '--warning' },
-  error:   { fg: 'var(--error)',          cssVar: '--error' },
-  info:    { fg: 'var(--info)',           cssVar: '--info' },
+  default: { fg: 'var(--primary-bright)', cssVar: '--primary-bright', spark: 'primary' },
+  success: { fg: 'var(--success)',        cssVar: '--success',        spark: 'success' },
+  warning: { fg: 'var(--warning)',        cssVar: '--warning',        spark: 'warning' },
+  error:   { fg: 'var(--error)',          cssVar: '--error',          spark: 'error'   },
+  info:    { fg: 'var(--info)',           cssVar: '--info',           spark: 'info'    },
 };
 
 export function StatCard({
@@ -52,6 +55,8 @@ export function StatCard({
   hint,
   icon,
   className = '',
+  trendData,
+  delta,
 }: {
   label: string;
   /** Numeric value — animated via CountUp. Pass `undefined` while loading. */
@@ -63,6 +68,12 @@ export function StatCard({
   hint?: ReactNode;
   icon?: ReactNode;
   className?: string;
+  /** Optional time-series — renders an inline Sparkline at the bottom. */
+  trendData?: readonly number[];
+  /** Optional period-over-period delta in %. Rendered as a colour-tinted
+   *  pill below the value. Sign-aware: negative numbers render with a
+   *  leading "−" and use the error colour. */
+  delta?: number;
 }) {
   const tokens = STATUS[status];
   const loading = value === undefined;
@@ -169,6 +180,50 @@ export function StatCard({
           </span>
         </div>
       )}
+
+      {/* Period-over-period delta pill. Sign-aware: positive deltas
+          are tinted with the card's accent (success-by-default); a
+          negative delta flips to the error colour regardless of the
+          parent's `status`. The leading glyph (▲ / ▼ / –) lets a
+          screen-reader user infer direction without parsing the
+          tabular number. */}
+      {typeof delta === 'number' && !loading && (
+        <div className="relative z-10 mt-2">
+          <DeltaPill value={delta} />
+        </div>
+      )}
+
+      {/* Sparkline — full-width trend chart anchored at the bottom of
+          the card. Decorative: the same numerical detail lives in the
+          tooltip / `aria-label` of the parent if needed, so we render
+          it as presentational and skip an aria-label here. */}
+      {trendData && trendData.length >= 2 && (
+        <div className="relative z-10 mt-3 -mx-1">
+          <Sparkline data={trendData} variant={tokens.spark} height={26} />
+        </div>
+      )}
     </div>
+  );
+}
+
+/** Sign-aware delta indicator. */
+function DeltaPill({ value }: { value: number }) {
+  const isUp = value > 0;
+  const isFlat = value === 0;
+  const color = isFlat
+    ? 'text-[var(--text-muted)] bg-white/5 border-[var(--glass-border)]'
+    : isUp
+    ? 'text-[var(--success)] bg-[var(--success)]/10 border-[var(--success)]/25'
+    : 'text-[var(--error)] bg-[var(--error)]/10 border-[var(--error)]/25';
+  const glyph = isFlat ? '–' : isUp ? '▲' : '▼';
+  const display = isFlat ? '0%' : `${isUp ? '+' : '−'}${Math.abs(value).toFixed(1)}%`;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] font-bold tabular ${color}`}
+    >
+      <span aria-hidden>{glyph}</span>
+      {display}
+    </span>
   );
 }

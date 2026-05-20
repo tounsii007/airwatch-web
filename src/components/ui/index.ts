@@ -20,3 +20,5 @@ export type { TooltipProps } from './Tooltip';
 export { Spinner } from './Spinner';
 export { Divider } from './Divider';
 export { Kbd } from './Kbd';
+export { Sparkline } from './Sparkline';
+export type { SparklineProps } from './Sparkline';
