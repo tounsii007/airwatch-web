@@ -94,6 +94,7 @@ export default function StatsPage() {
             icon={<Plane size={18} strokeWidth={2.25} />}
             trendData={isEmpty ? undefined : dailyViews}
             delta={wowDelta}
+            holographic={!isEmpty && totalViews > 0}
           />
         </div>
         <div className="animate-fade-up">

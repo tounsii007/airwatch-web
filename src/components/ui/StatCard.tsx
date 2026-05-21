@@ -57,6 +57,7 @@ export function StatCard({
   className = '',
   trendData,
   delta,
+  holographic = false,
 }: {
   label: string;
   /** Numeric value — animated via CountUp. Pass `undefined` while loading. */
@@ -74,6 +75,9 @@ export function StatCard({
    *  pill below the value. Sign-aware: negative numbers render with a
    *  leading "−" and use the error colour. */
   delta?: number;
+  /** Apply the rotating holographic sheen. Use on at most one card per
+   *  page to draw the eye to the focal metric. */
+  holographic?: boolean;
 }) {
   const tokens = STATUS[status];
   const loading = value === undefined;
@@ -88,7 +92,7 @@ export function StatCard({
 
   return (
     <div
-      className={`stat-card stat-card-rich ${className}`}
+      className={`stat-card stat-card-rich ${holographic ? 'glass-panel-holographic' : ''} ${className}`.trim()}
       style={{
         // Drives the left accent bar + corner glow so each card feels
         // tonally tied to its status without the parent having to pass
