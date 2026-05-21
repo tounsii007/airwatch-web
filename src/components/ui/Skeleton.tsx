@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Skeleton placeholders. Use during data fetch instead of a spinner —
  * the layout stays stable so the user's eye knows where content will
@@ -17,6 +19,9 @@
  * The shimmer animation lives in globals.css (`.skeleton`) and respects
  * prefers-reduced-motion (collapses to a static surface).
  */
+
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 interface BaseProps {
   className?: string;
@@ -113,10 +118,11 @@ function SkeletonStat({
 
 export const Skeleton = Object.assign(
   function Skeleton({ className = '', children }: BaseProps & { children?: React.ReactNode }) {
+    const language = useSettingsStore((s) => s.language);
     return (
-      <div className={className} role="status" aria-label="Loading content">
+      <div className={className} role="status" aria-label={t('aria_loading_content', language)}>
         {children}
-        <span className="sr-only">Loading…</span>
+        <span className="sr-only">{t('loading_dots', language)}</span>
       </div>
     );
   },

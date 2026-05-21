@@ -78,7 +78,7 @@ export function MoreMenuSheet({ open, onClose }: Props) {
           recedes visually without going pitch black. */}
       <button
         type="button"
-        aria-label="Close menu"
+        aria-label={t('aria_close_menu', language)}
         onClick={onClose}
         className="fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm animate-fade-in"
       />
@@ -97,7 +97,7 @@ export function MoreMenuSheet({ open, onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('aria_close', language)}
             className="p-1 rounded hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X size={16} className="text-[var(--text-muted)]" aria-hidden />

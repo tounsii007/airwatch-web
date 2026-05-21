@@ -11,6 +11,8 @@
 import { useEffect } from 'react';
 import { X, CheckCircle2, AlertTriangle, AlertCircle, Info } from 'lucide-react';
 import { useToastStore, type ToastEntry } from './toast';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t as translate } from '@/lib/i18n/translations';
 
 const VARIANT_CLASS: Record<ToastEntry['variant'], string> = {
   default: 'border-[var(--glass-border-strong)]',
@@ -31,6 +33,7 @@ const VARIANT_ICON: Record<ToastEntry['variant'], React.ReactNode> = {
 export function ToastContainer() {
   const toasts = useToastStore((s) => s.toasts);
   const dismiss = useToastStore((s) => s.dismiss);
+  const language = useSettingsStore((s) => s.language);
 
   // Schedule auto-dismiss timers per-toast. Each entry's `duration` may
   // differ, so we run one timer per active toast and tear it down when
@@ -49,7 +52,7 @@ export function ToastContainer() {
   return (
     <div
       role="region"
-      aria-label="Notifications"
+      aria-label={translate('aria_notifications', language)}
       className="pointer-events-none fixed z-[2000] top-14 lg:top-auto lg:bottom-6 left-1/2 -translate-x-1/2 lg:left-auto lg:right-6 lg:translate-x-0 flex flex-col gap-2 w-[min(90vw,360px)]"
     >
       {toasts.map((t) => (
@@ -71,7 +74,7 @@ export function ToastContainer() {
           <button
             type="button"
             onClick={() => dismiss(t.id)}
-            aria-label="Dismiss notification"
+            aria-label={translate('aria_dismiss_notification', language)}
             className="shrink-0 -mr-1 -mt-0.5 p-1 rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 transition-colors"
           >
             <X size={14} aria-hidden />

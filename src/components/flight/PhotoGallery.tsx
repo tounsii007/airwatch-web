@@ -276,13 +276,13 @@ export function PhotoGallery({ icao24, onClose }: Props) {
         )}
         {/* Thumbnail strip */}
         {photos.length > 1 && (
-          <div role="tablist" aria-label="Photo thumbnails" className="flex gap-2 justify-center overflow-x-auto pb-2 scrollbar-none">
+          <div role="tablist" aria-label={t('aria_photo_thumbnails', language)} className="flex gap-2 justify-center overflow-x-auto pb-2 scrollbar-none">
             {photos.map((p, i) => (
               <button
                 key={i}
                 role="tab"
                 aria-selected={i === currentIndex}
-                aria-label={`Photo ${i + 1}`}
+                aria-label={t('aria_photo_n', language).replace('{0}', String(i + 1))}
                 onClick={() => setCurrentIndex(i)}
                 className={`w-14 h-10 rounded overflow-hidden shrink-0 cursor-pointer transition-all ${
                   i === currentIndex ? 'ring-2 ring-[var(--primary)] opacity-100' : 'opacity-40 hover:opacity-70'

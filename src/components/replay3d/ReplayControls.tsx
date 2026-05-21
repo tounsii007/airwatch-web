@@ -2,6 +2,8 @@
 
 import { Pause, Play, RotateCcw } from 'lucide-react';
 import { formatElapsed } from '@/components/replay3d/formatClock';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 const SPEED_OPTIONS = [1, 10, 60, 300] as const;
 type SpeedOption = typeof SPEED_OPTIONS[number];
@@ -18,7 +20,7 @@ interface Props {
   onSeek: (tMs: number) => void;
 }
 
-function Scrubber({ current, duration, onSeek }: { current: number; duration: number; onSeek: (t: number) => void }) {
+function Scrubber({ current, duration, onSeek, label }: { current: number; duration: number; onSeek: (t: number) => void; label: string }) {
   return (
     <input
       type="range"
@@ -28,7 +30,7 @@ function Scrubber({ current, duration, onSeek }: { current: number; duration: nu
       value={Math.min(current, duration)}
       onChange={(e) => onSeek(Number(e.target.value))}
       className="flex-1 accent-[var(--primary)] cursor-pointer"
-      aria-label="Replay position"
+      aria-label={label}
     />
   );
 }
@@ -57,18 +59,32 @@ function PrimaryButton({ Icon, label, onClick }: { Icon: typeof Play; label: str
 
 /** Bottom-overlay transport controls: play/pause, restart, speed chips, scrubber. */
 export function ReplayControls({ playing, speed, currentTimeMs, durationMs, atEnd, onTogglePlay, onRestart, onSpeedChange, onSeek }: Props) {
+  const language = useSettingsStore((s) => s.language);
+  // Primary-button label flips with playback state — pick the right
+  // localised verb so screen readers announce the current action.
+  const primaryLabel = atEnd
+    ? t('replay_restart', language)
+    : playing
+      ? t('replay_pause', language)
+      : t('replay_play', language);
+
   return (
     <div className="absolute bottom-4 left-4 right-4 glass-panel rounded-2xl p-3 flex items-center gap-3 pointer-events-auto">
       <PrimaryButton
         Icon={atEnd ? RotateCcw : playing ? Pause : Play}
-        label={atEnd ? 'Restart' : playing ? 'Pause' : 'Play'}
+        label={primaryLabel}
         onClick={atEnd ? onRestart : onTogglePlay}
       />
       <div className="flex-1 flex items-center gap-2">
         <span className="text-[10px] font-[var(--font-heading)] text-[var(--text-muted)] tabular-nums min-w-[36px]">
           {formatElapsed(currentTimeMs)}
         </span>
-        <Scrubber current={currentTimeMs} duration={durationMs} onSeek={onSeek} />
+        <Scrubber
+          current={currentTimeMs}
+          duration={durationMs}
+          onSeek={onSeek}
+          label={t('aria_replay_position', language)}
+        />
         <span className="text-[10px] font-[var(--font-heading)] text-[var(--text-muted)] tabular-nums min-w-[36px] text-right">
           {formatElapsed(durationMs)}
         </span>

@@ -77,6 +77,7 @@ function Chip({
 }
 
 function FilterChips({ fence }: { fence: GeoFence }) {
+  const language = useSettingsStore((s) => s.language);
   const airlineCode = fence.airlineFilter?.trim();
   // resolveAirline looks up by ICAO (3-letter code); the AirlineFilter is itself
   // an ICAO so we can index AIRLINES directly.
@@ -90,7 +91,9 @@ function FilterChips({ fence }: { fence: GeoFence }) {
         key="airline"
         icon={<Plane size={9} />}
         label={airlineCode}
-        title={airlineName ? `Only ${airlineName} (${airlineCode}) flights trigger this fence` : `Airline filter: ${airlineCode}`}
+        title={airlineName
+          ? t('fence_tooltip_airline_named', language).replace('{0}', airlineName).replace('{1}', airlineCode)
+          : t('fence_tooltip_airline', language).replace('{0}', airlineCode)}
         tone="info"
       />,
     );
@@ -102,7 +105,7 @@ function FilterChips({ fence }: { fence: GeoFence }) {
         key="min"
         icon={<ArrowUp size={9} />}
         label={`≥${fence.minAltitudeFt.toLocaleString()} ft`}
-        title="Only flights at or above this altitude trigger this fence"
+        title={t('fence_tooltip_min_alt', language)}
         tone="muted"
       />,
     );
@@ -114,7 +117,7 @@ function FilterChips({ fence }: { fence: GeoFence }) {
         key="max"
         icon={<ArrowDown size={9} />}
         label={`≤${fence.maxAltitudeFt.toLocaleString()} ft`}
-        title="Only flights at or below this altitude trigger this fence"
+        title={t('fence_tooltip_max_alt', language)}
         tone="warn"
       />,
     );
@@ -129,6 +132,7 @@ function FenceRow({ fence, onDelete }: { fence: GeoFence; onDelete: (id?: number
   // up new triggers as they arrive over WS without the parent having to
   // pass them through. Zustand selector is cheap.
   const alerts = useGeoFenceStore((s) => s.alerts);
+  const language = useSettingsStore((s) => s.language);
   return (
     <li
       className="flex items-start gap-3 border-b border-[var(--glass-border)]/40 pb-2 last:border-b-0 last:pb-0"
@@ -150,8 +154,8 @@ function FenceRow({ fence, onDelete }: { fence: GeoFence; onDelete: (id?: number
       <button
         onClick={() => onDelete(fence.id)}
         className="text-[var(--text-muted)] hover:text-[var(--error)] p-1.5 flex-shrink-0 transition-colors"
-        aria-label={`Delete fence ${fence.name}`}
-        title="Delete fence"
+        aria-label={t('aria_delete_fence_named', language).replace('{0}', fence.name)}
+        title={t('fence_tooltip_delete', language)}
       >
         <Trash2 size={14} />
       </button>
@@ -160,11 +164,12 @@ function FenceRow({ fence, onDelete }: { fence: GeoFence; onDelete: (id?: number
 }
 
 function EmptyRow() {
+  const language = useSettingsStore((s) => s.language);
   return (
     <EmptyState
       icon={<ShieldOff size={24} strokeWidth={1.5} />}
-      title="No fences yet"
-      body="Create one above — alerts will appear here when an aircraft enters the zone."
+      title={t('no_fences_yet', language)}
+      body={t('fence_empty_body', language)}
       variant="default"
       bare
       className="py-4"

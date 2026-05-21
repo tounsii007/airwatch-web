@@ -17,6 +17,8 @@
 
 import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 type Size = 'sm' | 'md' | 'lg';
 
@@ -64,6 +66,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const hintId = `${inputId}-hint`;
+  const language = useSettingsStore((s) => s.language);
 
   const showClear = clearable && value.length > 0 && !disabled;
 
@@ -112,7 +115,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             type="button"
             onClick={() => onChange('')}
             className="absolute right-2 p-1 rounded-md hover:bg-white/5 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-            aria-label="Clear input"
+            aria-label={t('aria_clear_input', language)}
           >
             <X size={14} aria-hidden />
           </button>

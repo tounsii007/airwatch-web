@@ -3,6 +3,8 @@
 import { Plane } from 'lucide-react';
 import { resolveAirline } from '@/lib/data/airlines';
 import { formatAltitude, formatSpeed } from '@/lib/utils';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 import type { AltitudeUnit, SpeedUnit } from '@/lib/types';
 import type { ArAircraft } from '@/app/(public)/ar/visibleAircraft';
 
@@ -41,13 +43,14 @@ function Reticle({ heading }: { heading?: number }) {
 export function AircraftArLabel({ entry, altitudeUnit, speedUnit, onSelect }: Props) {
   const { aircraft, distanceKm, screen } = entry;
   const airlineInfo = resolveAirline(aircraft.callsign ?? '');
+  const language = useSettingsStore((s) => s.language);
 
   return (
     <button
       onClick={onSelect}
       className="absolute flex flex-col items-center gap-1 -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer"
       style={{ left: `${screen.x}px`, top: `${screen.y}px` }}
-      aria-label={`Track ${aircraft.callsign ?? aircraft.icao24}`}
+      aria-label={t('aria_track_aircraft', language).replace('{0}', aircraft.callsign ?? aircraft.icao24)}
     >
       <Reticle heading={aircraft.trueTrack} />
       <div className="glass-panel rounded-lg px-2 py-1 min-w-[108px] text-center shadow-[0_0_20px_rgba(0,0,0,0.6)]">
