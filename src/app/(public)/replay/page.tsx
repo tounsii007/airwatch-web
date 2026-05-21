@@ -4,7 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Clock, CuboidIcon, History, Plane } from 'lucide-react';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { LoadingRadar } from '@/components/ui/LoadingRadar';
+import { Tag } from '@/components/ui/Tag';
 import { useMounted } from '@/lib/hooks/useMounted';
 import {
   fetchAvailableReplays,
@@ -17,6 +20,33 @@ const FlightReplayMap = dynamic(
   () => import('@/components/replay/FlightReplayMap').then((m) => m.FlightReplayMap),
   { ssr: false },
 );
+
+function ReplayListItem({ info, active, onClick }: { info: ReplayInfo; active: boolean; onClick: () => void }) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onClick}
+        className={`w-full text-left px-2.5 py-2 border-l-2 transition-colors rounded-r ${
+          active
+            ? 'border-[var(--primary)] bg-[var(--primary)]/10'
+            : 'border-transparent hover:bg-white/5 hover:border-[var(--primary)]/30'
+        }`}
+        aria-current={active}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-[var(--font-heading)] text-xs font-bold text-[var(--text-primary)] truncate">
+            {info.callsign || info.icao24}
+          </span>
+          <Tag variant="info" size="sm">{info.positions} pts</Tag>
+        </div>
+        <div className="flex items-center gap-1 text-[10px] text-[var(--text-muted)] mt-0.5">
+          <Clock size={10} /> {info.durationMinutes} min
+        </div>
+      </button>
+    </li>
+  );
+}
 
 export default function ReplayPage() {
   const mounted = useMounted();
@@ -47,7 +77,7 @@ export default function ReplayPage() {
         </h1>
         <Link
           href="/replay/3d"
-          className="badge badge-info ml-auto hover:bg-[var(--info)]/20 transition-colors cursor-pointer"
+          className="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-[var(--font-heading)] tracking-wider bg-[var(--info)]/15 border border-[var(--info)]/30 text-[var(--info)] hover:bg-[var(--info)]/25 transition-colors"
         >
           <CuboidIcon size={12} />
           3D-ANSICHT
@@ -56,69 +86,68 @@ export default function ReplayPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
         {/* List of replayable flights */}
-        <GlassPanel className="p-4 max-h-[540px] overflow-y-auto">
-          <h2 className="text-xs font-[var(--font-heading)] font-bold tracking-wider text-[var(--primary)] mb-3">
-            RECENT FLIGHTS
-          </h2>
+        <Card
+          title="Recent flights"
+          badge={replays.length > 0 ? <Tag variant="info" size="sm">{replays.length}</Tag> : undefined}
+          bare
+          bodyClassName="px-3 pb-4 pt-2 max-h-[540px] overflow-y-auto"
+        >
           {replays.length === 0 ? (
-            <p className="text-xs text-[var(--text-muted)]">
-              No replay data yet. Wait a few minutes — the backend records airborne positions every poll.
-            </p>
+            <EmptyState
+              icon={<History size={22} />}
+              title="No replays yet"
+              body="The backend records airborne positions every poll cycle. Check back in a few minutes."
+              variant="default"
+              bare
+              className="py-6"
+            />
           ) : (
-            <ul className="space-y-1">
+            <ul className="space-y-0.5">
               {replays.map((r) => (
-                <li key={r.icao24}>
-                  <button
-                    onClick={() => load(r)}
-                    className={`w-full text-left px-2 py-1.5 border-l-2 transition-colors ${
-                      selected?.icao24 === r.icao24
-                        ? 'border-[var(--primary)] bg-[var(--primary)]/10'
-                        : 'border-transparent hover:bg-white/5'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-[var(--font-heading)] text-[var(--text)]">
-                        {r.callsign || r.icao24}
-                      </span>
-                      <span className="text-[10px] text-[var(--text-muted)]">
-                        {r.positions} pts
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
-                      <Clock size={10} /> {r.durationMinutes} min
-                    </div>
-                  </button>
-                </li>
+                <ReplayListItem
+                  key={r.icao24}
+                  info={r}
+                  active={selected?.icao24 === r.icao24}
+                  onClick={() => load(r)}
+                />
               ))}
             </ul>
           )}
-        </GlassPanel>
+        </Card>
 
         {/* Replay viewport */}
-        <GlassPanel className="p-4">
-          {selected ? (
-            <>
-              <div className="flex items-center gap-2 mb-3">
+        <Card
+          title={
+            selected ? (
+              <span className="flex items-center gap-2">
                 <Plane size={14} className="text-[var(--accent)]" />
-                <span className="text-sm font-[var(--font-heading)] tracking-wider">
-                  {selected.callsign || selected.icao24}
-                </span>
-                <span className="text-[10px] text-[var(--text-muted)] ml-auto">
-                  {positions.length} positions
-                </span>
-              </div>
-              {loading ? (
-                <p className="text-xs text-[var(--text-muted)] py-20 text-center">Loading track…</p>
-              ) : (
-                <FlightReplayMap positions={positions} />
-              )}
-            </>
-          ) : (
-            <div className="py-20 text-center text-xs text-[var(--text-muted)]">
-              Pick a flight from the list to start a replay.
+                <span>{selected.callsign || selected.icao24}</span>
+              </span>
+            ) : (
+              'Viewport'
+            )
+          }
+          badge={selected ? <Tag variant="default" size="sm">{positions.length} positions</Tag> : undefined}
+          bare
+          bodyClassName="px-4 pb-4 pt-2"
+        >
+          {!selected ? (
+            <EmptyState
+              icon={<Plane size={28} />}
+              title="Pick a flight"
+              body="Select an entry from the list to start a replay."
+              variant="info"
+              bare
+              className="py-16"
+            />
+          ) : loading ? (
+            <div className="py-12">
+              <LoadingRadar size={96} label="LOADING" hint="Fetching track" />
             </div>
+          ) : (
+            <FlightReplayMap positions={positions} />
           )}
-        </GlassPanel>
+        </Card>
       </div>
     </div>
   );
