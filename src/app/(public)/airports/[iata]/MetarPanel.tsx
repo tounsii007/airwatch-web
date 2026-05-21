@@ -18,7 +18,8 @@
  */
 import { useEffect, useState } from 'react';
 import { Cloud, FileText } from 'lucide-react';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/ui/Card';
+import { SegmentedControl, type SegmentedOption } from '@/components/ui/SegmentedControl';
 import { decodeMetar, decodeTaf, phenomenonText, type DecodedMetar, type DecodedTaf } from '@/lib/utils/metarDecode';
 import { t } from '@/lib/i18n/translations';
 import type { AppLanguage } from '@/lib/types';
@@ -81,22 +82,31 @@ export function MetarPanel({ icao, language }: Props) {
     try { localStorage.setItem('airwatch.metar.mode', next); } catch { /* private mode */ }
   }
 
-  return (
-    <GlassPanel className="p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Cloud size={14} className="text-[var(--primary)]" />
-          <span className="text-xs font-[var(--font-heading)] tracking-widest text-[var(--text-muted)]">
-            {t('metar_taf', language)}
-          </span>
-          <span className="text-[10px] text-[var(--text-muted)] font-mono">{icao}</span>
-        </div>
-        <div className="flex gap-1">
-          <ModeTab active={mode === 'metar'} onClick={() => selectMode('metar')}>METAR</ModeTab>
-          <ModeTab active={mode === 'taf'}   onClick={() => selectMode('taf')}>TAF</ModeTab>
-        </div>
-      </div>
+  const modeOptions: SegmentedOption<Mode>[] = [
+    { value: 'metar', label: 'METAR' },
+    { value: 'taf',   label: 'TAF' },
+  ];
 
+  return (
+    <Card
+      title={
+        <span className="flex items-center gap-2">
+          <Cloud size={14} className="text-[var(--primary)]" aria-hidden />
+          {t('metar_taf', language)}
+          <span className="text-[10px] text-[var(--text-muted)] font-mono">{icao}</span>
+        </span>
+      }
+      action={
+        <SegmentedControl
+          options={modeOptions}
+          value={mode}
+          onChange={selectMode}
+          size="sm"
+        />
+      }
+      bare
+      bodyClassName="px-4 pb-4 pt-2"
+    >
       {loading ? (
         <p className="text-xs text-[var(--text-muted)]">{t('loading', language)}…</p>
       ) : error && !metarRaw && !tafRaw ? (
@@ -106,25 +116,7 @@ export function MetarPanel({ icao, language }: Props) {
       ) : (
         <TafBody decoded={decodedTaf} language={language} />
       )}
-    </GlassPanel>
-  );
-}
-
-function ModeTab({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`px-2 py-0.5 text-[10px] font-[var(--font-heading)] tracking-wide rounded
-                  transition-colors ${
-                    active
-                      ? 'bg-[var(--primary)]/15 text-[var(--primary)]'
-                      : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
-                  }`}
-    >
-      {children}
-    </button>
+    </Card>
   );
 }
 
