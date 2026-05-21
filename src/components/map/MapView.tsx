@@ -10,6 +10,8 @@ import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { MAP_STYLES } from '@/components/map/mapStyles';
 import { MapStylePicker } from '@/components/map/MapStylePicker';
 import { CountUp } from '@/components/ui';
+import { IconButton } from '@/components/ui/IconButton';
+import { Tag } from '@/components/ui/Tag';
 import { t } from '@/lib/i18n/translations';
 import { useLeafletMap } from '@/components/map/hooks/useLeafletMap';
 import { useBaseLayer } from '@/components/map/hooks/useBaseLayer';
@@ -151,20 +153,22 @@ export function MapView() {
          map.invalidateSize() on every container size change. */
     <div className="relative w-full h-full h-dvh">
       <div className="absolute top-3 left-3 z-[1000] flex items-center gap-3 pointer-events-none animate-fade-in">
-        <span className="gradient-text font-[var(--font-heading)] font-bold tracking-[0.2em] text-lg">
+        <span className="gradient-text font-[var(--font-heading)] font-bold tracking-[0.2em] text-lg animate-neon-flicker">
           AIRWATCH
         </span>
         <span
-          className="badge badge-success badge-dot animate-fade-in"
+          className="animate-fade-in"
           style={{ animationDelay: '120ms' }}
           title={transport === 'websocket' ? 'WebSocket push' : transport === 'polling' ? 'HTTP polling' : ''}
         >
-          LIVE{transport === 'websocket' ? ' · WS' : ''}
+          <Tag variant="success" size="sm" dot>
+            LIVE{transport === 'websocket' ? ' · WS' : ''}
+          </Tag>
         </span>
       </div>
 
       <div
-        className="absolute top-3 right-3 z-[1000] glass-panel px-3 py-1.5 pointer-events-none animate-fade-in"
+        className="absolute top-3 right-3 z-[1000] glass-panel px-3 py-1.5 pointer-events-none animate-fade-in rounded-lg"
         style={{ animationDelay: '60ms' }}
         role="status"
         aria-live="polite"
@@ -216,59 +220,69 @@ export function MapView() {
         role="toolbar"
         aria-label="Map controls"
       >
-        <button
-          type="button"
-          onClick={handleZoomIn}
+        <IconButton
           aria-label="Zoom in"
-          className="glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
+          onClick={handleZoomIn}
+          variant="solid"
+          size="md"
+          className="glass-panel"
         >
           <ZoomIn size={18} className="text-[var(--primary)]" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          onClick={handleZoomOut}
+        </IconButton>
+        <IconButton
           aria-label="Zoom out"
-          className="glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
+          onClick={handleZoomOut}
+          variant="solid"
+          size="md"
+          className="glass-panel"
         >
           <ZoomOut size={18} className="text-[var(--primary)]" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          onClick={handleCenter}
+        </IconButton>
+        <IconButton
           aria-label="Reset view to default location"
-          className="glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
+          onClick={handleCenter}
+          variant="solid"
+          size="md"
+          className="glass-panel"
         >
           <Locate size={18} className="text-[var(--primary)]" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowRadar(!showRadar)}
-          aria-pressed={showRadar}
+        </IconButton>
+        <IconButton
           aria-label={showRadar ? 'Hide weather radar' : 'Show weather radar'}
-          className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] ${showRadar ? 'bg-[var(--info)]/15 border-[var(--info)]/30' : ''}`}
+          onClick={() => setShowRadar(!showRadar)}
+          variant="solid"
+          size="md"
+          active={showRadar}
+          className={`glass-panel ${showRadar ? '!bg-[var(--info)]/15 !border-[var(--info)]/30' : ''}`}
         >
-          <CloudRain size={18} className={showRadar && !radarShouldShow ? 'text-[var(--info)] opacity-40' : showRadar ? 'text-[var(--info)]' : 'text-[var(--primary)]'} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          onClick={() => setCargoOnly(!cargoOnly)}
-          aria-pressed={cargoOnly}
+          <CloudRain
+            size={18}
+            className={showRadar && !radarShouldShow ? 'text-[var(--info)] opacity-40' : showRadar ? 'text-[var(--info)]' : 'text-[var(--primary)]'}
+            aria-hidden="true"
+          />
+        </IconButton>
+        <IconButton
           aria-label={cargoOnly ? t('cargo_only_off', language) : t('cargo_only_on', language)}
           title={cargoOnly ? t('cargo_only_off', language) : t('cargo_only_on', language)}
-          className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] ${cargoOnly ? 'bg-[var(--accent)]/15 border-[var(--accent)]/30' : ''}`}
+          onClick={() => setCargoOnly(!cargoOnly)}
+          variant="solid"
+          size="md"
+          active={cargoOnly}
+          className={`glass-panel ${cargoOnly ? '!bg-[var(--accent)]/15 !border-[var(--accent)]/30' : ''}`}
         >
           <Package size={18} className={cargoOnly ? 'text-[var(--accent)]' : 'text-[var(--primary)]'} aria-hidden="true" />
-        </button>
+        </IconButton>
         <MapStylePicker mapStyle={mapStyle} onChange={setMapStyle} />
-        <button
-          type="button"
-          onClick={() => setShowLegend((v) => !v)}
-          aria-pressed={showLegend}
+        <IconButton
           aria-label={showLegend ? 'Hide legend' : 'Show legend'}
-          className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer lg:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] ${showLegend ? 'bg-[var(--primary)]/15' : ''}`}
+          onClick={() => setShowLegend((v) => !v)}
+          variant="solid"
+          size="md"
+          active={showLegend}
+          className={`glass-panel lg:hidden ${showLegend ? '!bg-[var(--primary)]/15' : ''}`}
         >
           <Info size={18} className="text-[var(--primary)]" aria-hidden="true" />
-        </button>
+        </IconButton>
       </div>
 
       {/* Legend — always on desktop, toggle on mobile */}

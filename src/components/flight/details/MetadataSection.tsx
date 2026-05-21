@@ -2,7 +2,8 @@
 
 import { Plane } from 'lucide-react';
 import { t } from '@/lib/i18n/translations';
-import { Tag } from '@/components/flight/details/primitives';
+import { Tag as KvTag } from '@/components/flight/details/primitives';
+import { Tag as UiTag } from '@/components/ui/Tag';
 import type { AircraftMetadata, AppLanguage } from '@/lib/types';
 
 interface Props {
@@ -13,15 +14,15 @@ interface Props {
 
 function Title({ metadata }: { metadata: AircraftMetadata }) {
   return (
-    <div className="flex items-center gap-2 mb-2">
-      <Plane size={14} className="text-[var(--primary)]" />
-      <span className="text-sm font-[var(--font-body)] font-bold text-[var(--text-primary)]">
+    <div className="flex items-center gap-2 mb-2 min-w-0">
+      <Plane size={14} className="text-[var(--primary)] shrink-0" aria-hidden />
+      <span className="text-sm font-[var(--font-body)] font-bold text-[var(--text-primary)] truncate">
         {metadata.manufacturer} {metadata.model}
       </span>
       {metadata.typecode && (
-        <span className="text-[9px] font-[var(--font-heading)] px-1.5 py-0.5 rounded bg-[var(--primary)]/10 text-[var(--primary)]">
+        <UiTag variant="info" size="sm" className="shrink-0">
           {metadata.typecode}
-        </span>
+        </UiTag>
       )}
     </div>
   );
@@ -44,13 +45,13 @@ function TagRow({ metadata, icao24, language }: { metadata: AircraftMetadata; ic
       : (metadata.engine ?? metadata.engineCount);
   return (
     <div className="flex gap-2 mt-2 flex-wrap">
-      {metadata.registration && <Tag label="REG" value={metadata.registration} />}
-      {metadata.typecode && <Tag label="TYPE" value={metadata.typecode} />}
-      <Tag label="ICAO24" value={icao24.toUpperCase()} />
-      {metadata.built && <Tag label={t('built', language)} value={String(metadata.built)} />}
-      {metadata.age != null && <Tag label={t('age', language)} value={`${metadata.age} ${t('years_short', language)}`} />}
-      {enginesLabel && <Tag label={t('engines', language)} value={enginesLabel} />}
-      {metadata.msn && <Tag label="MSN" value={metadata.msn} />}
+      {metadata.registration && <KvTag label="REG" value={metadata.registration} />}
+      {metadata.typecode && <KvTag label="TYPE" value={metadata.typecode} />}
+      <KvTag label="ICAO24" value={icao24.toUpperCase()} />
+      {metadata.built && <KvTag label={t('built', language)} value={String(metadata.built)} />}
+      {metadata.age != null && <KvTag label={t('age', language)} value={`${metadata.age} ${t('years_short', language)}`} />}
+      {enginesLabel && <KvTag label={t('engines', language)} value={enginesLabel} />}
+      {metadata.msn && <KvTag label="MSN" value={metadata.msn} />}
     </div>
   );
 }
