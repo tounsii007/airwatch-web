@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { X } from 'lucide-react';
+import { IconButton } from '@/components/ui/IconButton';
 import { getWeatherEmoji, getWeatherLabel } from '@/lib/utils';
 import type { AppLanguage } from '@/lib/types';
 import type { DashboardAirport } from '@/app/(public)/dashboard/dashboardData';
@@ -73,13 +74,14 @@ export function AirportCardHeader({ airport, language, onRemove }: Props) {
       </Link>
       <div className="flex items-center gap-3 shrink-0">
         <WeatherBadge weather={airport.weather} language={language} />
-        <button
-          onClick={() => onRemove(airport.iata)}
-          className="p-1.5 rounded hover:bg-white/10 transition-colors cursor-pointer"
+        <IconButton
           aria-label={`Remove ${airport.iata} from dashboard`}
+          onClick={() => onRemove(airport.iata)}
+          variant="ghost"
+          size="sm"
         >
           <X size={14} className="text-[var(--text-muted)]" aria-hidden />
-        </button>
+        </IconButton>
       </div>
     </div>
   );
