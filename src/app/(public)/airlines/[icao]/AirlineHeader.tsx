@@ -44,13 +44,13 @@ function CodeChips({ airline, icao }: { airline: AirlineData | null; icao: strin
   );
 }
 
-function FavoriteButton({ mounted, saved, onToggle }: { mounted: boolean; saved: boolean; onToggle: () => void }) {
+function FavoriteButton({ mounted, saved, onToggle, language }: { mounted: boolean; saved: boolean; onToggle: () => void; language: AppLanguage }) {
   const cls = mounted && saved ? 'fill-[var(--accent)] text-[var(--accent)]' : 'text-[var(--text-muted)]';
   return (
     <button
       onClick={onToggle}
       aria-pressed={saved}
-      aria-label={saved ? 'Remove from saved' : 'Save airline'}
+      aria-label={t(saved ? 'remove_from_saved' : 'save_airline', language)}
       className="p-2 rounded-xl hover:bg-[var(--primary)]/10 transition-colors active:scale-95"
     >
       <Star size={22} className={cls} />
@@ -87,7 +87,7 @@ export function AirlineHeader({ icao, airline, language, mounted, saved, onBack,
             <CodeChips airline={airline} icao={icao} />
           </div>
         </div>
-        <FavoriteButton mounted={mounted} saved={saved} onToggle={onToggleFavorite} />
+        <FavoriteButton mounted={mounted} saved={saved} onToggle={onToggleFavorite} language={language} />
       </div>
     </>
   );
