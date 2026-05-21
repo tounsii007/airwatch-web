@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
+import { useEnsurePolling } from '@/lib/hooks/useEnsurePolling';
 import { useRouter } from 'next/navigation';
 import { Pin, Calendar } from 'lucide-react';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
@@ -20,16 +21,13 @@ import { toast } from '@/components/ui/toast';
 export default function SavedPage() {
   const { items, removeFavorite, togglePin } = useFavoritesStore();
   const aircraftMap = useFlightStore((s) => s.aircraftMap);
-  const startPolling = useFlightStore((s) => s.startPolling);
   const selectAircraft = useFlightStore((s) => s.selectAircraft);
   const language = useSettingsStore((s) => s.language);
   const altitudeUnit = useSettingsStore((s) => s.altitudeUnit);
   const speedUnit = useSettingsStore((s) => s.speedUnit);
   const router = useRouter();
 
-  useEffect(() => {
-    if (aircraftMap.size === 0) startPolling();
-  }, [aircraftMap.size, startPolling]);
+  useEnsurePolling();
 
   const { pinned, flights, airports, airlines } = useSavedGroups(items);
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import { useEnsurePolling } from '@/lib/hooks/useEnsurePolling';
 import { ArrowLeftRight, Search, Plane, X } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -205,12 +206,12 @@ function FlightPicker({ value, onSelect, onClear, aircraftMap, language, slot }:
 }
 
 export default function ComparePage() {
-  const { aircraftMap, startPolling } = useFlightStore();
+  const aircraftMap = useFlightStore((s) => s.aircraftMap);
   const { language } = useSettingsStore();
   const [flightA, setFlightA] = useState<AircraftState | null>(null);
   const [flightB, setFlightB] = useState<AircraftState | null>(null);
 
-  useEffect(() => { if (aircraftMap.size === 0) startPolling(); }, [aircraftMap.size, startPolling]);
+  useEnsurePolling();
 
   const getDistance = (ac: AircraftState | null): number | null => {
     if (!ac?.depIata || !ac?.arrIata) return null;

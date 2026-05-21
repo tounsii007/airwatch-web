@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { useEnsurePolling } from '@/lib/hooks/useEnsurePolling';
 import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
@@ -42,15 +43,12 @@ export default function FlightDeepLinkPage() {
 
   const aircraftMap = useFlightStore((s) => s.aircraftMap);
   const selectAircraft = useFlightStore((s) => s.selectAircraft);
-  const startPolling = useFlightStore((s) => s.startPolling);
   const selectedAircraft = useFlightStore((s) => s.selectedAircraft);
   const recordView = useStatsStore((s) => s.recordView);
   const language = useSettingsStore((s) => s.language);
 
   // Start polling if no data
-  useEffect(() => {
-    if (aircraftMap.size === 0) startPolling();
-  }, [aircraftMap.size, startPolling]);
+  useEnsurePolling();
 
   // Auto-select the aircraft when data is available
   useEffect(() => {

@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useMounted } from '@/lib/hooks/useMounted';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
 import { useFavoriteToggle } from '@/lib/hooks/useFavoriteToggle';
+import { useEnsurePolling } from '@/lib/hooks/useEnsurePolling';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { AirlineHeader } from '@/app/(public)/airlines/[icao]/AirlineHeader';
@@ -24,8 +25,7 @@ export default function AirlineDetailPage() {
   const mounted = useMounted();
 
   const aircraftMap = useFlightStore((s) => s.aircraftMap);
-  const startPolling = useFlightStore((s) => s.startPolling);
-  useEffect(() => { if (aircraftMap.size === 0) startPolling(); }, [aircraftMap.size, startPolling]);
+  useEnsurePolling();
 
   const { airline, apiFlights } = useAirlineDetail(icao);
   const airlineFlights = useAirlineFlights(icao, apiFlights);

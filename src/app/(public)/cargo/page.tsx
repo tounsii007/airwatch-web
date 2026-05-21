@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useEnsurePolling } from '@/lib/hooks/useEnsurePolling';
 import { useRouter } from 'next/navigation';
 import { t } from '@/lib/i18n/translations';
 import { useFlightStore } from '@/lib/stores/flightStore';
@@ -25,13 +26,14 @@ function collectCargo(aircraftMap: ReadonlyMap<string, AircraftState>): Aircraft
 }
 
 export default function CargoPage() {
-  const { aircraftMap, startPolling, selectAircraft } = useFlightStore();
+  const aircraftMap = useFlightStore((s) => s.aircraftMap);
+  const selectAircraft = useFlightStore((s) => s.selectAircraft);
   const { altitudeUnit, speedUnit, language } = useSettingsStore();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<CargoStatusFilter>('all');
 
-  useEffect(() => { if (aircraftMap.size === 0) startPolling(); }, [aircraftMap.size, startPolling]);
+  useEnsurePolling();
 
   const cargoFlights = useMemo(() => collectCargo(aircraftMap), [aircraftMap]);
   const stats = useMemo(() => computeCargoStats(cargoFlights), [cargoFlights]);
