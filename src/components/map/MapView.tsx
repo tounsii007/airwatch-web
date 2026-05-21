@@ -7,12 +7,12 @@ import { useFlightStore } from '@/lib/stores/flightStore';
 import { CONFIG } from '@/lib/constants';
 import { useWeatherRadar } from '@/lib/hooks/useWeatherRadar';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
-import { MAP_STYLES } from '@/components/map/mapStyles';
 import { MapStylePicker } from '@/components/map/MapStylePicker';
 import { MapApiErrorBanner } from '@/components/map/MapApiErrorBanner';
-import { CountUp } from '@/components/ui';
+import { MapBrandOverlay } from '@/components/map/MapBrandOverlay';
+import { MapStatusOverlay } from '@/components/map/MapStatusOverlay';
+import { MapLegend } from '@/components/map/MapLegend';
 import { IconButton } from '@/components/ui/IconButton';
-import { Tag } from '@/components/ui/Tag';
 import { t } from '@/lib/i18n/translations';
 import { useLeafletMap } from '@/components/map/hooks/useLeafletMap';
 import { useBaseLayer } from '@/components/map/hooks/useBaseLayer';
@@ -153,47 +153,13 @@ export function MapView() {
          caught by the ResizeObserver in useLeafletMap which fires
          map.invalidateSize() on every container size change. */
     <div className="relative w-full h-full h-dvh">
-      <div className="absolute top-3 left-3 z-[1000] flex items-center gap-3 pointer-events-none animate-fade-in">
-        <span className="gradient-text font-[var(--font-heading)] font-bold tracking-[0.2em] text-lg animate-neon-flicker">
-          AIRWATCH
-        </span>
-        <span
-          className="animate-fade-in"
-          style={{ animationDelay: '120ms' }}
-          title={transport === 'websocket' ? 'WebSocket push' : transport === 'polling' ? 'HTTP polling' : ''}
-        >
-          <Tag variant="success" size="sm" dot>
-            LIVE{transport === 'websocket' ? ' · WS' : ''}
-          </Tag>
-        </span>
-      </div>
-
-      <div
-        className="absolute top-3 right-3 z-[1000] glass-panel px-3 py-1.5 pointer-events-none animate-fade-in rounded-lg"
-        style={{ animationDelay: '60ms' }}
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <div className="flex items-center gap-2">
-          {isLoading && (
-            <div
-              className="w-2 h-2 rounded-full bg-[var(--warning)] animate-pulse-glow"
-              aria-hidden="true"
-            />
-          )}
-          {flightError && (
-            <div
-              className="w-2 h-2 rounded-full bg-[var(--error)]"
-              aria-hidden="true"
-            />
-          )}
-          <span className="text-[var(--text-primary)] text-xs font-[var(--font-heading)] tracking-wider tabular">
-            <CountUp value={aircraftMap.size} />{' '}
-            <span className="text-[var(--text-muted)]">{t('flights_upper', language)}</span>
-          </span>
-        </div>
-      </div>
+      <MapBrandOverlay transport={transport} />
+      <MapStatusOverlay
+        count={aircraftMap.size}
+        isLoading={isLoading}
+        hasError={Boolean(flightError)}
+        language={language}
+      />
 
       {/* API error banner — copy + tone mapping lives in MapApiErrorBanner. */}
       <MapApiErrorBanner error={flightError} language={language} />
@@ -270,16 +236,7 @@ export function MapView() {
       </div>
 
       {/* Legend — always on desktop, toggle on mobile */}
-      {showLegend && (
-        <div className="absolute bottom-14 lg:bottom-4 right-3 z-[1000] glass-panel px-3 py-2">
-          <div className="flex flex-col gap-1.5 text-[9px] font-[var(--font-heading)] tracking-wider">
-            <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: MAP_STYLES[mapStyle].colors.low }} /> LOW &lt;10k ft</div>
-            <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: MAP_STYLES[mapStyle].colors.med }} /> MED 10-30k ft</div>
-            <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: MAP_STYLES[mapStyle].colors.high }} /> HIGH &gt;30k ft</div>
-            <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: MAP_STYLES[mapStyle].colors.ground }} /> GROUND</div>
-          </div>
-        </div>
-      )}
+      {showLegend && <MapLegend mapStyle={mapStyle} />}
 
       <VoiceButton />
 
