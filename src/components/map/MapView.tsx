@@ -9,6 +9,7 @@ import { useWeatherRadar } from '@/lib/hooks/useWeatherRadar';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { MAP_STYLES } from '@/components/map/mapStyles';
 import { MapStylePicker } from '@/components/map/MapStylePicker';
+import { MapApiErrorBanner } from '@/components/map/MapApiErrorBanner';
 import { CountUp } from '@/components/ui';
 import { IconButton } from '@/components/ui/IconButton';
 import { Tag } from '@/components/ui/Tag';
@@ -194,25 +195,8 @@ export function MapView() {
         </div>
       </div>
 
-      {/* API error banner */}
-      {flightError && (
-        <div className="absolute top-12 left-3 right-3 z-[999] glass-panel-elevated border border-[var(--error)]/40 bg-[var(--error)]/8 px-3 py-2 pointer-events-none animate-scale-in">
-          <p className="text-[10px] font-[var(--font-heading)] font-bold text-[var(--error)] tracking-wider">
-            {flightError.includes('month_limit') ? t('api_limit_reached', language)
-              : flightError === 'network_error' ? t('api_network_error', language)
-              : flightError.includes('proxy') ? t('api_proxy_error', language)
-              : flightError === 'rate_limited' ? t('api_rate_limited', language)
-              : t('api_error', language)}
-          </p>
-          <p className="text-[9px] font-[var(--font-body)] text-[var(--text-secondary)] mt-0.5">
-            {flightError.includes('month_limit') ? t('api_limit_hint', language)
-              : flightError === 'network_error' ? t('api_network_hint', language)
-              : flightError.includes('proxy') ? t('api_proxy_hint', language)
-              : flightError === 'rate_limited' ? t('api_rate_hint', language)
-              : t('api_error_hint', language)}
-          </p>
-        </div>
-      )}
+      {/* API error banner — copy + tone mapping lives in MapApiErrorBanner. */}
+      <MapApiErrorBanner error={flightError} language={language} />
 
       <div
         className="absolute top-16 right-3 z-[1000] flex flex-col gap-1.5 animate-fade-in"
