@@ -1,7 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Loader2, Plane } from 'lucide-react';
+import { Card } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Tag } from '@/components/ui/Tag';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { t } from '@/lib/i18n/translations';
 import { FlightRow } from '@/app/(public)/airlines/[icao]/FlightRow';
@@ -18,16 +21,6 @@ function isLiveStatus(status: string): boolean {
   return status === 'en-route' || status === 'active';
 }
 
-function EmptyBox({ loading, language }: { loading: boolean; language: AppLanguage }) {
-  return (
-    <GlassPanel className="p-6 text-center">
-      <p className="text-[var(--text-muted)] text-sm font-[var(--font-body)]">
-        {loading ? t('loading_flight_data', language) : t('no_flights_found', language)}
-      </p>
-    </GlassPanel>
-  );
-}
-
 /** Flights heading + rows. Each row navigates to the map when the flight is live. */
 export function FlightsSection({ flights, language, noDataLoading }: Props) {
   const router = useRouter();
@@ -42,13 +35,35 @@ export function FlightsSection({ flights, language, noDataLoading }: Props) {
     }
   };
 
+  const badge = flights.length > 0 ? (
+    <Tag variant="info" size="sm">{flights.length}</Tag>
+  ) : undefined;
+
   return (
-    <div>
-      <h3 className="text-xs font-[var(--font-heading)] text-[var(--text-muted)] tracking-widest mb-2">
-        {t('flights_upper', language)} ({flights.length})
-      </h3>
+    <Card
+      title={t('flights_upper', language)}
+      badge={badge}
+      bare
+      bodyClassName="px-4 pb-4 pt-2"
+    >
       {flights.length === 0 ? (
-        <EmptyBox loading={noDataLoading} language={language} />
+        noDataLoading ? (
+          <EmptyState
+            icon={<Loader2 size={24} className="animate-spin" />}
+            title={t('loading_flight_data', language)}
+            variant="info"
+            bare
+            className="py-6"
+          />
+        ) : (
+          <EmptyState
+            icon={<Plane size={24} />}
+            title={t('no_flights_found', language)}
+            variant="default"
+            bare
+            className="py-6"
+          />
+        )
       ) : (
         <div className="space-y-2">
           {flights.map((f, i) => (
@@ -61,6 +76,6 @@ export function FlightsSection({ flights, language, noDataLoading }: Props) {
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
