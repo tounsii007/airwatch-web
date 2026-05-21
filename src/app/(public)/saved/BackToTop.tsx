@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -10,12 +11,14 @@ function scrollToTop() {
 export function BackToTop() {
   return (
     <div className="flex justify-center pt-2">
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
+        leadingIcon={<ChevronUp size={12} />}
         onClick={scrollToTop}
-        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[9px] font-[var(--font-heading)] font-bold tracking-wider bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)]/20 transition-colors cursor-pointer"
       >
-        <ChevronUp size={12} /> TOP
-      </button>
+        TOP
+      </Button>
     </div>
   );
 }

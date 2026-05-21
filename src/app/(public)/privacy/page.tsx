@@ -21,7 +21,7 @@
 import { t } from '@/lib/i18n/translations';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { PageContainer, FadeIn } from '@/components/ui';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/ui/Card';
 
 export default function PrivacyPage() {
   const language = useSettingsStore((s) => s.language);
@@ -29,22 +29,22 @@ export default function PrivacyPage() {
   return (
     <PageContainer maxWidth="2xl" title={t('privacy_title', language)}>
       <FadeIn>
-        <GlassPanel className="p-5 space-y-4">
+        <Card bare bodyClassName="p-5 space-y-4">
           <p className="text-sm text-[var(--text-secondary)]">
             {t('privacy_intro', language)}
           </p>
-        </GlassPanel>
+        </Card>
       </FadeIn>
 
       <FadeIn delay={60}>
-        <GlassPanel className="p-5 mt-4 space-y-3">
-          <h2 className="text-sm font-[var(--font-heading)] tracking-widest text-[var(--primary)]">
-            {t('privacy_local_storage_title', language)}
-          </h2>
+        <Card
+          title={t('privacy_local_storage_title', language)}
+          className="mt-4"
+        >
           <p className="text-xs text-[var(--text-muted)]">
             {t('privacy_local_storage_intro', language)}
           </p>
-          <table className="w-full text-xs">
+          <table className="w-full text-xs mt-3">
             <thead className="text-[var(--text-muted)]">
               <tr className="text-left">
                 <th className="py-1.5 pr-3">{t('privacy_col_key', language)}</th>
@@ -80,35 +80,29 @@ export default function PrivacyPage() {
               </tr>
             </tbody>
           </table>
-          <p className="text-xs text-[var(--text-muted)]">
+          <p className="text-xs text-[var(--text-muted)] mt-3">
             {t('privacy_local_storage_clear_hint', language)}
           </p>
-        </GlassPanel>
+        </Card>
       </FadeIn>
 
       <FadeIn delay={120}>
-        <GlassPanel className="p-5 mt-4 space-y-3">
-          <h2 className="text-sm font-[var(--font-heading)] tracking-widest text-[var(--primary)]">
-            {t('privacy_server_title', language)}
-          </h2>
+        <Card title={t('privacy_server_title', language)} className="mt-4">
           <ul className="text-xs text-[var(--text-secondary)] space-y-2 list-disc list-inside">
             <li>{t('privacy_server_ip_hash', language)}</li>
             <li>{t('privacy_server_geoip', language)}</li>
             <li>{t('privacy_server_view_beacons', language)}</li>
             <li>{t('privacy_server_no_account', language)}</li>
           </ul>
-        </GlassPanel>
+        </Card>
       </FadeIn>
 
       <FadeIn delay={180}>
-        <GlassPanel className="p-5 mt-4 space-y-3">
-          <h2 className="text-sm font-[var(--font-heading)] tracking-widest text-[var(--primary)]">
-            {t('privacy_third_party_title', language)}
-          </h2>
+        <Card title={t('privacy_third_party_title', language)} className="mt-4">
           <p className="text-xs text-[var(--text-muted)]">
             {t('privacy_third_party_intro', language)}
           </p>
-          <ul className="text-xs text-[var(--text-secondary)] space-y-1.5 list-disc list-inside">
+          <ul className="text-xs text-[var(--text-secondary)] space-y-1.5 list-disc list-inside mt-3">
             <li>airlabs.co — {t('privacy_third_airlabs', language)}</li>
             <li>open-meteo.com — {t('privacy_third_weather', language)}</li>
             <li>hexdb.io — {t('privacy_third_hexdb', language)}</li>
@@ -116,18 +110,15 @@ export default function PrivacyPage() {
             <li>cartocdn.com / openstreetmap.org / opentopomap.org — {t('privacy_third_tiles', language)}</li>
             <li>tilecache.rainviewer.com — {t('privacy_third_radar', language)}</li>
           </ul>
-        </GlassPanel>
+        </Card>
       </FadeIn>
 
       <FadeIn delay={240}>
-        <GlassPanel className="p-5 mt-4 space-y-2">
-          <h2 className="text-sm font-[var(--font-heading)] tracking-widest text-[var(--primary)]">
-            {t('privacy_rights_title', language)}
-          </h2>
+        <Card title={t('privacy_rights_title', language)} className="mt-4">
           <p className="text-xs text-[var(--text-secondary)]">
             {t('privacy_rights_body', language)}
           </p>
-        </GlassPanel>
+        </Card>
       </FadeIn>
 
       <p className="text-[10px] text-[var(--text-muted)] tracking-widest text-center pt-4 pb-2">
