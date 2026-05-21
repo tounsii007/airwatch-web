@@ -466,5 +466,6 @@
   "view_count_tracked": "{0} رحلات متتبَّعة",
   "view_count_tracked_one": "رحلة واحدة متتبَّعة",
   "pinned_toast": "تم تثبيت «{0}»",
-  "unpinned_toast": "تم إلغاء تثبيت «{0}»"
+  "unpinned_toast": "تم إلغاء تثبيت «{0}»",
+  "fence_delete_aircraft_hint": "الطائرات التي تدخل النطاق بعد الحذف لن تطلق إشعارات بعد الآن."
 }

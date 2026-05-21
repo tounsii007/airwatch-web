@@ -468,5 +468,6 @@
   "view_count_tracked": "{0} vluchten bijgehouden",
   "view_count_tracked_one": "1 vlucht bijgehouden",
   "pinned_toast": "„{0}\" vastgemaakt",
-  "unpinned_toast": "„{0}\" losgemaakt"
+  "unpinned_toast": "„{0}\" losgemaakt",
+  "fence_delete_aircraft_hint": "Vliegtuigen die de zone na verwijdering binnenkomen, activeren geen meldingen meer."
 }

@@ -469,5 +469,6 @@
   "view_count_tracked": "{0} Flüge verfolgt",
   "view_count_tracked_one": "1 Flug verfolgt",
   "pinned_toast": "„{0}\" angeheftet",
-  "unpinned_toast": "„{0}\" losgelöst"
+  "unpinned_toast": "„{0}\" losgelöst",
+  "fence_delete_aircraft_hint": "Flugzeuge, die nach der Löschung in die Zone eintreten, lösen keine Benachrichtigungen mehr aus."
 }

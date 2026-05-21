@@ -468,5 +468,6 @@
   "view_count_tracked": "{0} śledzonych lotów",
   "view_count_tracked_one": "1 śledzony lot",
   "pinned_toast": "„{0}\" przypięto",
-  "unpinned_toast": "„{0}\" odpięto"
+  "unpinned_toast": "„{0}\" odpięto",
+  "fence_delete_aircraft_hint": "Samoloty, które wlecą do strefy po usunięciu, nie będą już wyzwalać powiadomień."
 }
