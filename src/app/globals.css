@@ -10,9 +10,13 @@
 
 :root {
   /* ── Surfaces ─────────────────────────────────────────────────────── */
-  --bg: #0A1628;
-  --surface: #0F1D32;
-  --surface-light: #1A2E48;
+  /* Neutral near-black tones — previously the dark theme used deep-navy
+     (#0A1628 etc.) which read as "blue" against the brand-blue accent.
+     A neutral surface lets the accent colour earn its identity, and it's
+     what users explicitly asked for: "Schwarz (dunkel) oder hell". */
+  --bg: #0A0A0A;
+  --surface: #151515;
+  --surface-light: #1F1F1F;
 
   /* ── Brand + accents ──────────────────────────────────────────────── */
   --primary: #7A9ABF;
@@ -37,8 +41,11 @@
   --info: #60A5FA;
 
   /* ── Glass panels ─────────────────────────────────────────────────── */
-  --glass-bg: rgba(15, 29, 50, 0.8);
-  --glass-bg-strong: rgba(15, 29, 50, 0.92);
+  /* Glass surfaces also moved off the navy tint to match the neutral
+     base. Borders stay primary-tinted so the panels still feel "branded"
+     against the now-neutral background. */
+  --glass-bg: rgba(21, 21, 21, 0.8);
+  --glass-bg-strong: rgba(21, 21, 21, 0.92);
   --glass-border: rgba(122, 154, 191, 0.2);
   --glass-border-strong: rgba(122, 154, 191, 0.4);
   --glass-blur: 14px;
@@ -70,9 +77,12 @@
 }
 
 .light {
-  --bg: #F0F4F8;
+  /* Light theme — clean off-white. The previous #F0F4F8 carried a faint
+     blue cast that mismatched the new neutral dark theme. Pure-neutral
+     greys ensure both themes share the same "no blue background" rule. */
+  --bg: #FAFAFA;
   --surface: #FFFFFF;
-  --surface-light: #F8FAFC;
+  --surface-light: #F4F4F5;
   --primary: #0062A0;
   --primary-dark: #004A7A;
   --primary-bright: #1A8AD9;
@@ -127,10 +137,15 @@ body {
   /* Subtle ambient gradient mesh — adds depth without distracting from
      content. Two soft radial gradients positioned off-screen so they
      bleed into the viewport. Pure CSS = zero runtime cost. Dark mode
-     only; light mode gets a flat surface. */
+     only; light mode gets a flat surface.
+
+     Switched from blue-tinted ambient (rgba(122,154,191,…)) to a
+     neutral warm/cool grey pair so the background reads as charcoal
+     rather than navy. The amber accent on the bottom corner gives the
+     subtle warmth that the panel-blue used to provide. */
   background-image:
-    radial-gradient(ellipse 1200px 800px at 15% -10%, rgba(122, 154, 191, 0.08), transparent 60%),
-    radial-gradient(ellipse 1000px 700px at 85% 110%, rgba(212, 165, 116, 0.05), transparent 60%);
+    radial-gradient(ellipse 1200px 800px at 15% -10%, rgba(255, 255, 255, 0.04), transparent 60%),
+    radial-gradient(ellipse 1000px 700px at 85% 110%, rgba(212, 165, 116, 0.04), transparent 60%);
   background-attachment: fixed;
 }
 
@@ -843,7 +858,7 @@ body [class*="text-[10px]"] {
 .leaflet-tooltip.airport-label::after { display: none !important; }
 
 .leaflet-control-attribution {
-  background: rgba(15, 29, 50, 0.7) !important;
+  background: rgba(21, 21, 21, 0.75) !important;
   color: var(--text-muted) !important;
   font-size: 9px !important;
 }

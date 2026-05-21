@@ -131,8 +131,8 @@ export const API = {
 export const COLORS = {
   primary: '#7A9ABF',
   accent: '#D4A574',
-  background: '#0A1628',
-  surface: '#0F1D32',
+  background: '#0A0A0A',
+  surface: '#151515',
   success: '#4ADE80',
   warning: '#FBBF24',
   error: '#F87171',

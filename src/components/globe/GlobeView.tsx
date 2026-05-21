@@ -84,7 +84,7 @@ export function GlobeView() {
         });
 
         viewer.scene.globe.enableLighting = false;
-        viewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#0A1628');
+        viewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#0A0A0A');
 
         // Set initial camera position (Europe)
         viewer.camera.setView({
