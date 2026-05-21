@@ -2,6 +2,8 @@
 
 import { ArrowRight } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/ui/Card';
+import { Tag } from '@/components/ui/Tag';
 import { getAirportCity } from '@/lib/data/airportIndex';
 import { t } from '@/lib/i18n/translations';
 import type { AppLanguage } from '@/lib/types';
@@ -42,13 +44,13 @@ function RouteRow({ route, language }: { route: RouteEntry; language: AppLanguag
 export function TopRoutesList({ routes, language }: Props) {
   if (routes.length === 0) return null;
   return (
-    <div>
-      <h3 className="text-xs font-[var(--font-heading)] text-[var(--text-muted)] tracking-widest mb-2">
-        {t('top_routes', language)}
-      </h3>
-      <div className="space-y-1.5">
-        {routes.map((r) => <RouteRow key={r.key} route={r} language={language} />)}
-      </div>
-    </div>
+    <Card
+      title={t('top_routes', language)}
+      badge={<Tag variant="default" size="sm">{routes.length}</Tag>}
+      bare
+      bodyClassName="px-4 pb-4 pt-1 space-y-1.5"
+    >
+      {routes.map((r) => <RouteRow key={r.key} route={r} language={language} />)}
+    </Card>
   );
 }

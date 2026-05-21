@@ -2,6 +2,8 @@
 
 import { Building2 } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/ui/Card';
+import { Tag } from '@/components/ui/Tag';
 import { getAirportCity, getAirportCountry } from '@/lib/data/airportIndex';
 import { t } from '@/lib/i18n/translations';
 import type { AppLanguage } from '@/lib/types';
@@ -48,13 +50,15 @@ function AirportRow({ iata, count, language }: { iata: string; count: number; la
 export function TopAirportsList({ entries, language }: Props) {
   if (entries.length === 0) return null;
   return (
-    <div>
-      <h3 className="text-xs font-[var(--font-heading)] text-[var(--text-muted)] tracking-widest mb-2">
-        {t('top_airports', language)}
-      </h3>
-      <div className="space-y-1.5">
-        {entries.map(([iata, count]) => <AirportRow key={iata} iata={iata} count={count} language={language} />)}
-      </div>
-    </div>
+    <Card
+      title={t('top_airports', language)}
+      badge={<Tag variant="success" size="sm">{entries.length}</Tag>}
+      bare
+      bodyClassName="px-4 pb-4 pt-1 space-y-1.5"
+    >
+      {entries.map(([iata, count]) => (
+        <AirportRow key={iata} iata={iata} count={count} language={language} />
+      ))}
+    </Card>
   );
 }
