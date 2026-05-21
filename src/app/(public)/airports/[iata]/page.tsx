@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useMounted } from '@/lib/hooks/useMounted';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
+import { useFavoriteToggle } from '@/lib/hooks/useFavoriteToggle';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
-import { toast } from '@/components/ui/toast';
 import { AirportHeader } from '@/app/(public)/airports/[iata]/AirportHeader';
 import { ClockPanel } from '@/app/(public)/airports/[iata]/ClockPanel';
 import { ScheduleList, type SortBy } from '@/app/(public)/airports/[iata]/ScheduleList';
@@ -32,7 +32,7 @@ export default function AirportDetailPage() {
   const params = useParams();
   const iata = (params.iata as string).toUpperCase();
   const { language } = useSettingsStore();
-  const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const isFavorite = useFavoritesStore((s) => s.isFavorite);
 
   const { airport, weather, utcOffsetSec, departures, arrivals, loading } = useAirportDetail(iata);
   const [activeTab, setActiveTab] = useState<TabType>('departures');
@@ -44,22 +44,13 @@ export default function AirportDetailPage() {
     [departures, arrivals, activeTab, sortBy],
   );
 
-  const handleFavorite = useCallback(() => {
-    const wasSaved = isFavorite(`airport-${iata}`);
-    toggleFavorite({
-      id: `airport-${iata}`,
-      type: 'airport',
-      label: iata,
-      subtitle: airport?.name ?? '',
-      addedAt: Date.now(),
-    });
-    const name = airport?.name ?? iata;
-    if (wasSaved) {
-      toast({ title: `Removed "${name}"`, variant: 'default', duration: 3000 });
-    } else {
-      toast.success({ title: `Saved "${name}"`, duration: 3000 });
-    }
-  }, [iata, airport, isFavorite, toggleFavorite]);
+  const handleFavorite = useFavoriteToggle({
+    id: `airport-${iata}`,
+    type: 'airport',
+    label: iata,
+    subtitle: airport?.name ?? '',
+    displayName: airport?.name ?? iata,
+  });
 
   const mounted = useMounted();
   const saved = mounted && isFavorite(`airport-${iata}`);
