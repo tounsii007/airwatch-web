@@ -12,9 +12,12 @@ describe('favoriteId', () => {
     expect(favoriteId.airport('FRA')).toBe('airport-FRA');
   });
 
-  it('builds a flight key with lower-case ICAO24 (matches OpenSky convention)', () => {
-    expect(favoriteId.flight('A1B2C3')).toBe('flight-a1b2c3');
-    expect(favoriteId.flight('a1b2c3')).toBe('flight-a1b2c3');
+  it('uses raw lower-case ICAO24 for flight keys — matches localStorage history', () => {
+    // ICAO24 is globally unique 6-char hex, no collision risk against
+    // airline/airport 3-letter codes, so we keep the existing un-prefixed
+    // shape to avoid breaking persisted user data.
+    expect(favoriteId.flight('A1B2C3')).toBe('a1b2c3');
+    expect(favoriteId.flight('a1b2c3')).toBe('a1b2c3');
   });
 
   it('does not mix prefix namespaces — airline/airport with the same code stay distinct', () => {
