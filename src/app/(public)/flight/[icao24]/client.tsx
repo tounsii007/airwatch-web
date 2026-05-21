@@ -4,18 +4,24 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useStatsStore } from '@/lib/stores/statsStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { LoadingRadar } from '@/components/ui/LoadingRadar';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Button } from '@/components/ui/Button';
 import { t } from '@/lib/i18n/translations';
 
 const MapView = dynamic(() => import('@/components/map/MapView').then((m) => m.MapView), {
   ssr: false,
   loading: () => (
-    <div className="h-full flex flex-col items-center justify-center gap-4 bg-[var(--bg)]">
-      <span className="neon-text font-[var(--font-heading)] font-bold tracking-wider text-2xl text-[var(--primary)]">AIRWATCH</span>
-      <p className="text-[var(--text-muted)] text-sm animate-pulse">Loading flight...</p>
-    </div>
+    <LoadingRadar
+      size={96}
+      label="AIRWATCH"
+      hint="LOADING FLIGHT"
+      className="h-full bg-[var(--bg)]"
+    />
   ),
 });
 const FlightDetailsPanel = dynamic(() => import('@/components/flight/FlightDetailsPanel').then((m) => m.FlightDetailsPanel), { ssr: false });
@@ -53,20 +59,20 @@ export default function FlightDeepLinkPage() {
 
   if (!isValid) {
     return (
-      <div className="h-full flex flex-col items-center justify-center gap-4 p-8 text-center">
-        <div className="w-16 h-16 rounded-full bg-[var(--error)]/10 flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--error)]"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        </div>
-        <h1 className="neon-text font-[var(--font-heading)] text-lg font-bold text-[var(--primary)]">{t('page_not_found', language)}</h1>
-        <p className="text-[var(--text-muted)] text-sm font-[var(--font-body)] max-w-sm">
-          {t('invalid_icao24_address', language).replace('{0}', rawIcao24)}
-        </p>
-        <Link
-          href="/"
-          className="mt-2 px-4 py-2 rounded-lg bg-[var(--primary)]/15 text-[var(--primary)] text-sm font-[var(--font-heading)] font-bold hover:bg-[var(--primary)]/25 transition-colors"
-        >
-          {t('back_to_map', language)}
-        </Link>
+      <div className="h-full flex items-center justify-center p-8">
+        <EmptyState
+          icon={<AlertTriangle size={28} />}
+          title={t('page_not_found', language)}
+          body={t('invalid_icao24_address', language).replace('{0}', rawIcao24)}
+          variant="error"
+          action={
+            <Link href="/">
+              <Button variant="primary" size="sm" leadingIcon={<ArrowLeft size={12} />}>
+                {t('back_to_map', language)}
+              </Button>
+            </Link>
+          }
+        />
       </div>
     );
   }
