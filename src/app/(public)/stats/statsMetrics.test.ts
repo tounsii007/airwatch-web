@@ -7,6 +7,7 @@ import {
   topAirlines,
   topAirports,
   topRoutes,
+  viewsByDay,
   viewsByHour,
 } from '@/app/(public)/stats/statsMetrics';
 import type { FlightStatEntry } from '@/lib/stores/statsStore';
@@ -217,5 +218,52 @@ describe('activitySummary', () => {
     expect(summary.daysActive).toBe(2);
     expect(summary.peakDay).toBe('2026-01-02');
     expect(summary.peakDayViews).toBe(6);
+  });
+});
+
+describe('viewsByDay', () => {
+  // Anchor: 2026-05-20 at 12:00 local time (matches the system's
+  // currentDate context — keeps the relative day math obvious).
+  const NOW = new Date(2026, 4, 20, 12, 0, 0).getTime();
+
+  it('returns an array of the requested length', () => {
+    expect(viewsByDay([], 7, NOW)).toHaveLength(7);
+    expect(viewsByDay([], 30, NOW)).toHaveLength(30);
+  });
+
+  it('returns zeros for an empty list', () => {
+    expect(viewsByDay([], 5, NOW)).toEqual([0, 0, 0, 0, 0]);
+  });
+
+  it('places flights into the bucket matching their lastSeenAt day, oldest first', () => {
+    // 5-day window ending today. Oldest bucket index 0 = today-4.
+    const today = new Date(2026, 4, 20, 9).getTime();
+    const yesterday = new Date(2026, 4, 19, 9).getTime();
+    const fourDaysAgo = new Date(2026, 4, 16, 9).getTime();
+
+    const flights = [
+      make({ icao24: 'a', lastSeenAt: today, viewCount: 3 }),
+      make({ icao24: 'b', lastSeenAt: yesterday, viewCount: 2 }),
+      make({ icao24: 'c', lastSeenAt: fourDaysAgo, viewCount: 5 }),
+    ];
+
+    const buckets = viewsByDay(flights, 5, NOW);
+    expect(buckets).toEqual([5, 0, 0, 2, 3]);
+  });
+
+  it('drops flights older than the window', () => {
+    const farPast = new Date(2026, 0, 1).getTime();
+    const flights = [make({ icao24: 'old', lastSeenAt: farPast, viewCount: 99 })];
+    expect(viewsByDay(flights, 5, NOW)).toEqual([0, 0, 0, 0, 0]);
+  });
+
+  it('aggregates multiple flights on the same day by viewCount', () => {
+    const today = new Date(2026, 4, 20, 10).getTime();
+    const flights = [
+      make({ icao24: 'a', lastSeenAt: today, viewCount: 4 }),
+      make({ icao24: 'b', lastSeenAt: today, viewCount: 3 }),
+    ];
+    const buckets = viewsByDay(flights, 3, NOW);
+    expect(buckets[buckets.length - 1]).toBe(7);
   });
 });

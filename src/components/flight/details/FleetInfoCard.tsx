@@ -22,6 +22,7 @@
 import { useEffect, useState } from 'react';
 import { History, Plane } from 'lucide-react';
 import { t } from '@/lib/i18n/translations';
+import { KeyValueRow } from '@/components/ui/KeyValueRow';
 import type { AppLanguage } from '@/lib/types';
 
 interface Props {
@@ -116,22 +117,13 @@ function relativeFromNow(iso: string, language: AppLanguage): string {
 function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
     <div className="border-l-2 border-[var(--primary)]/30 pl-2">
-      <div className="flex items-center gap-1.5 mb-0.5">
+      <div className="flex items-center gap-1.5 mb-1.5">
         {icon}
         <span className="text-[10px] font-[var(--font-heading)] tracking-widest text-[var(--text-muted)]">
           {title}
         </span>
       </div>
-      <div className="text-xs text-[var(--text-secondary)] space-y-0.5">{children}</div>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-2">
-      <span className="text-[10px] uppercase text-[var(--text-muted)]">{label}</span>
-      <span className="text-xs font-[var(--font-heading)] text-[var(--text-primary)]">{value}</span>
+      <div className="space-y-1">{children}</div>
     </div>
   );
 }
@@ -173,7 +165,7 @@ export function FleetInfoCard({ icao24, language }: Props) {
 
   return (
     <div className="px-4 py-3 border-b border-[var(--glass-border)]">
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-2 mb-3">
         <Plane size={14} className="text-[var(--primary)]" />
         <span className="text-xs font-[var(--font-heading)] tracking-widest text-[var(--text-muted)]">
           {t('fleet_info_title', language)}
@@ -184,16 +176,20 @@ export function FleetInfoCard({ icao24, language }: Props) {
         {hasRegistry && (
           <Section icon={<Plane size={11} className="text-[var(--primary)]/60" />} title={t('fleet_registry', language)}>
             {data.registry?.RegisteredOwners && (
-              <Stat label={t('fleet_owner', language)} value={data.registry.RegisteredOwners} />
+              <KeyValueRow label={t('fleet_owner', language)} value={data.registry.RegisteredOwners} />
             )}
             {year && (
-              <Stat
+              <KeyValueRow
                 label={t('fleet_built', language)}
-                value={`${year} (${yearsSince(year)} ${t('fleet_years_old', language)})`}
+                value={`${year}`}
+                hint={`${yearsSince(year)} ${t('fleet_years_old', language)}`}
               />
             )}
+            {data.registry?.Registration && (
+              <KeyValueRow label="REG" value={data.registry.Registration} copyable />
+            )}
             {data.registry?.OperatorFlagCode && (
-              <Stat label={t('fleet_flag', language)} value={data.registry.OperatorFlagCode} />
+              <KeyValueRow label={t('fleet_flag', language)} value={data.registry.OperatorFlagCode} />
             )}
           </Section>
         )}
@@ -201,13 +197,13 @@ export function FleetInfoCard({ icao24, language }: Props) {
         {hasSightings && (
           <Section icon={<History size={11} className="text-[var(--primary)]/60" />} title={t('fleet_sightings', language)}>
             {data.sightings?.firstSeenAt && (
-              <Stat label={t('fleet_first_seen', language)} value={relativeFromNow(data.sightings.firstSeenAt, language)} />
+              <KeyValueRow label={t('fleet_first_seen', language)} value={relativeFromNow(data.sightings.firstSeenAt, language)} />
             )}
             {data.sightings?.lastSeenAt && (
-              <Stat label={t('fleet_last_seen', language)} value={relativeFromNow(data.sightings.lastSeenAt, language)} />
+              <KeyValueRow label={t('fleet_last_seen', language)} value={relativeFromNow(data.sightings.lastSeenAt, language)} />
             )}
             {typeof data.sightings?.count === 'number' && (
-              <Stat label={t('fleet_total_sightings', language)} value={data.sightings.count.toLocaleString(language)} />
+              <KeyValueRow label={t('fleet_total_sightings', language)} value={data.sightings.count.toLocaleString(language)} />
             )}
           </Section>
         )}

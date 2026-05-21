@@ -6,6 +6,7 @@ import { useMounted } from '@/lib/hooks/useMounted';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { toast } from '@/components/ui/toast';
 import { AirlineHeader } from '@/app/(public)/airlines/[icao]/AirlineHeader';
 import { AirlineStatsGrid } from '@/app/(public)/airlines/[icao]/AirlineStatsGrid';
 import { FlightSearch } from '@/app/(public)/airlines/[icao]/FlightSearch';
@@ -34,7 +35,8 @@ export default function AirlineDetailPage() {
   const stats = useMemo(() => computeAirlineStats(airlineFlights), [airlineFlights]);
 
   const saved = mounted && isFavorite(`airline-${icao}`);
-  const handleToggleFavorite = () =>
+  const handleToggleFavorite = () => {
+    const wasSaved = isFavorite(`airline-${icao}`);
     toggleFavorite({
       id: `airline-${icao}`,
       type: 'airline',
@@ -42,6 +44,13 @@ export default function AirlineDetailPage() {
       subtitle: airline?.name ?? icao,
       addedAt: Date.now(),
     });
+    const name = airline?.name ?? icao;
+    if (wasSaved) {
+      toast({ title: `Removed "${name}"`, variant: 'default', duration: 3000 });
+    } else {
+      toast.success({ title: `Saved "${name}"`, duration: 3000 });
+    }
+  };
 
   return (
     <div className="p-4 space-y-4">

@@ -46,11 +46,11 @@ describe('<NotificationsSection />', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('shows ENABLE button when not subscribed; clicking calls subscribe()', async () => {
+  it('shows ENABLE switch when not subscribed; clicking calls subscribe()', async () => {
     const user = userEvent.setup();
     render(<NotificationsSection language="en" />);
-    const btn = screen.getByRole('button', { name: /enable/i });
-    await user.click(btn);
+    const sw = screen.getByRole('switch', { name: /enable/i });
+    await user.click(sw);
     expect(hookState.subscribe).toHaveBeenCalledOnce();
   });
 
@@ -59,7 +59,7 @@ describe('<NotificationsSection />', () => {
     const user = userEvent.setup();
     render(<NotificationsSection language="en" />);
     expect(screen.getByText(/Push notifications active/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /disable/i }));
+    await user.click(screen.getByRole('switch', { name: /disable/i }));
     expect(hookState.unsubscribe).toHaveBeenCalledOnce();
   });
 
@@ -67,7 +67,7 @@ describe('<NotificationsSection />', () => {
     hookState.status = 'denied';
     render(<NotificationsSection language="en" />);
     expect(screen.getByText(/Blocked in browser settings/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /enable/i })).toBeDisabled();
+    expect(screen.getByRole('switch', { name: /enable/i })).toBeDisabled();
   });
 
   it('surfaces the favorites count in the hint', () => {

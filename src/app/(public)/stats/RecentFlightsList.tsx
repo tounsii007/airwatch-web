@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Search, X } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/ui/Card';
+import { Tag } from '@/components/ui/Tag';
 import { t } from '@/lib/i18n/translations';
 import type { AppLanguage } from '@/lib/types';
 import type { FlightStatEntry } from '@/lib/stores/statsStore';
@@ -92,65 +94,72 @@ export function RecentFlightsList({ flights, language }: Props) {
     return list;
   }, [filtered, sort]);
 
+  const sortAction = (
+    <div className="flex items-center gap-1" role="tablist" aria-label={t('sort_by', language)}>
+      {SORT_OPTIONS.map((opt) => {
+        const active = sort === opt.key;
+        return (
+          <button
+            key={opt.key}
+            type="button"
+            onClick={() => setSort(opt.key)}
+            aria-pressed={active}
+            className={`px-2 py-0.5 rounded-md text-[10px] font-[var(--font-heading)] tracking-wider transition-colors cursor-pointer ${
+              active
+                ? 'bg-[color-mix(in_srgb,var(--primary)_18%,transparent)] text-[var(--primary)] border border-[color-mix(in_srgb,var(--primary)_30%,transparent)]'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent'
+            }`}
+          >
+            {t(opt.labelKey, language)}
+          </button>
+        );
+      })}
+    </div>
+  );
+
   return (
-    <div>
-      <div className="flex items-center justify-between gap-3 mb-2">
-        <h3 className="text-xs font-[var(--font-heading)] text-[var(--text-muted)] tracking-widest">
-          {t('recent_flights', language)}
-        </h3>
-        <div className="flex items-center gap-1" role="tablist" aria-label={t('sort_by', language)}>
-          {SORT_OPTIONS.map((opt) => {
-            const active = sort === opt.key;
-            return (
-              <button
-                key={opt.key}
-                type="button"
-                onClick={() => setSort(opt.key)}
-                aria-pressed={active}
-                className={`px-2 py-0.5 rounded-md text-[10px] font-[var(--font-heading)] tracking-wider transition-colors cursor-pointer ${
-                  active
-                    ? 'bg-[color-mix(in_srgb,var(--primary)_18%,transparent)] text-[var(--primary)] border border-[color-mix(in_srgb,var(--primary)_30%,transparent)]'
-                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent'
-                }`}
-              >
-                {t(opt.labelKey, language)}
-              </button>
-            );
-          })}
+    <Card
+      title={t('recent_flights', language)}
+      badge={<Tag variant="info" size="sm">{flights.length}</Tag>}
+      action={sortAction}
+      bare
+    >
+      {/* Search bar lives inside the body, above the row list. */}
+      <div className="px-4 pt-3 pb-2">
+        <div className="relative">
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none" aria-hidden />
+          <input
+            type="search"
+            value={needle}
+            onChange={(e) => setNeedle(e.target.value)}
+            placeholder={t('filter_flights_placeholder', language)}
+            className="w-full pl-7 pr-7 py-1.5 rounded-lg text-xs font-[var(--font-body)] bg-[color-mix(in_srgb,var(--glass-bg)_60%,transparent)] border border-[var(--glass-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[color-mix(in_srgb,var(--primary)_45%,transparent)]"
+            aria-label={t('filter_flights_placeholder', language)}
+          />
+          {needle && (
+            <button
+              type="button"
+              onClick={() => setNeedle('')}
+              aria-label={t('clear', language)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
+            >
+              <X size={13} />
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="relative mb-2">
-        <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none" aria-hidden />
-        <input
-          type="search"
-          value={needle}
-          onChange={(e) => setNeedle(e.target.value)}
-          placeholder={t('filter_flights_placeholder', language)}
-          className="w-full pl-7 pr-7 py-1.5 rounded-lg text-xs font-[var(--font-body)] bg-[color-mix(in_srgb,var(--glass-bg)_60%,transparent)] border border-[var(--glass-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[color-mix(in_srgb,var(--primary)_45%,transparent)]"
-          aria-label={t('filter_flights_placeholder', language)}
-        />
-        {needle && (
-          <button
-            type="button"
-            onClick={() => setNeedle('')}
-            aria-label={t('clear', language)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
-          >
-            <X size={13} />
-          </button>
+      <div className="px-4 pb-4">
+        {sorted.length === 0 ? (
+          <GlassPanel className="px-3 py-4 text-center text-xs text-[var(--text-muted)] font-[var(--font-body)]">
+            {t('no_matches', language)}
+          </GlassPanel>
+        ) : (
+          <div className="space-y-1.5">
+            {sorted.map((entry) => <Row key={entry.icao24} entry={entry} language={language} />)}
+          </div>
         )}
       </div>
-
-      {sorted.length === 0 ? (
-        <GlassPanel className="px-3 py-4 text-center text-xs text-[var(--text-muted)] font-[var(--font-body)]">
-          {t('no_matches', language)}
-        </GlassPanel>
-      ) : (
-        <div className="space-y-1.5">
-          {sorted.map((entry) => <Row key={entry.icao24} entry={entry} language={language} />)}
-        </div>
-      )}
-    </div>
+    </Card>
   );
 }

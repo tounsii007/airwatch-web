@@ -12,6 +12,7 @@ import { InstallPrompt } from "@/components/layout/InstallPrompt";
 import { CommandPaletteController } from "@/components/layout/CommandPaletteController";
 import { StatsBeacon } from "@/components/layout/StatsBeacon";
 import { DevTools } from "@/components/debug/DevTools";
+import { ToastContainer } from "@/components/ui/ToastContainer";
 
 const orbitron = Orbitron({
   variable: "--font-orbitron",
@@ -124,6 +125,7 @@ export default async function RootLayout({
         <BottomNav />
         <InstallPrompt />
         <CommandPaletteController />
+        <ToastContainer />
         {/* Mobile: top-bar offset (pt-11) + bottom-bar offset (pb-20).
             Desktop: top-bar offset (lg:pt-12), no bottom bar. */}
         <main className="h-full overflow-auto pt-11 pb-20 lg:pt-12 lg:pb-0">

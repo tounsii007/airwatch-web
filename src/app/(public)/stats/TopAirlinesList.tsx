@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/ui/Card';
+import { Tag } from '@/components/ui/Tag';
 import { LogoImage } from '@/components/common/LogoImage';
 import { getAirlineLogoUrl, resolveAirline } from '@/lib/data/airlines';
 import { t } from '@/lib/i18n/translations';
@@ -57,15 +59,15 @@ export function TopAirlinesList({ entries, language }: Props) {
   if (entries.length === 0) return null;
   const max = Math.max(...entries.map(([, c]) => c));
   return (
-    <div>
-      <h3 className="text-xs font-[var(--font-heading)] text-[var(--text-muted)] tracking-widest mb-2">
-        {t('top_airlines', language)}
-      </h3>
-      <div className="space-y-1.5">
-        {entries.map(([icao, count]) => (
-          <AirlineRow key={icao} icao={icao} count={count} language={language} max={max} />
-        ))}
-      </div>
-    </div>
+    <Card
+      title={t('top_airlines', language)}
+      badge={<Tag variant="info" size="sm">{entries.length}</Tag>}
+      bare
+      bodyClassName="px-4 pb-4 pt-1 space-y-1.5"
+    >
+      {entries.map(([icao, count]) => (
+        <AirlineRow key={icao} icao={icao} count={count} language={language} max={max} />
+      ))}
+    </Card>
   );
 }

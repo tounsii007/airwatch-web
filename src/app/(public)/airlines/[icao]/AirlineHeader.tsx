@@ -1,10 +1,10 @@
 'use client';
 
 import { ArrowLeft, Star } from 'lucide-react';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Avatar } from '@/components/ui/Avatar';
+import { Tag } from '@/components/ui/Tag';
 import { NeonText } from '@/components/ui/NeonText';
 import { FlagImage } from '@/components/common/FlagImage';
-import { LogoImage } from '@/components/common/LogoImage';
 import { API } from '@/lib/constants';
 import { t } from '@/lib/i18n/translations';
 import { countryToCode } from '@/lib/data/country-translations';
@@ -30,66 +30,62 @@ function Back({ language, onBack }: { language: AppLanguage; onBack: () => void 
   );
 }
 
-function Logo({ icao, airline }: { icao: string; airline: AirlineData | null }) {
-  const logoIata = airline?.iata || icao;
-  // pics.avs.io has gaps for less-trafficked carriers; show the code as a
-  // dignified fallback instead of a broken-image icon.
-  const fallback = (
-    <span className="font-[var(--font-heading)] text-xs font-bold text-slate-700 px-1">{logoIata}</span>
-  );
-  return (
-    <GlassPanel className="p-2 bg-white/90 rounded-xl">
-      <LogoImage src={API.airlineLogo(logoIata)} alt={airline?.name ?? icao} width={60} height={24} className="object-contain" fallback={fallback} />
-    </GlassPanel>
-  );
-}
-
 function CodeChips({ airline, icao }: { airline: AirlineData | null; icao: string }) {
   return (
-    <div className="flex gap-1.5 mt-1">
+    <div className="flex flex-wrap gap-1.5 mt-1.5">
       {airline?.iata && (
-        <span className="text-[9px] font-[var(--font-heading)] font-bold px-1.5 py-0.5 rounded bg-[var(--primary)]/15 text-[var(--primary)]">
-          IATA: {airline.iata}
-        </span>
+        <Tag variant="info" size="sm">IATA: {airline.iata}</Tag>
       )}
-      <span className="text-[9px] font-[var(--font-heading)] font-bold px-1.5 py-0.5 rounded bg-[var(--accent)]/15 text-[var(--accent)]">
-        ICAO: {airline?.icao ?? icao}
-      </span>
-    </div>
-  );
-}
-
-function NameBlock({ airline, icao }: { airline: AirlineData | null; icao: string }) {
-  const code = airline?.country ? countryToCode(airline.country) : null;
-  return (
-    <div>
-      <div className="flex items-center gap-2">
-        <NeonText text={airline?.name ?? icao} size="text-lg" />
-        {code && <FlagImage code={code} className="w-5 h-4 rounded-sm shadow object-cover" />}
-      </div>
-      <CodeChips airline={airline} icao={icao} />
+      <Tag variant="default" size="sm">ICAO: {airline?.icao ?? icao}</Tag>
+      {airline?.country && (
+        <Tag variant="default" size="sm">{airline.country}</Tag>
+      )}
     </div>
   );
 }
 
 function FavoriteButton({ mounted, saved, onToggle }: { mounted: boolean; saved: boolean; onToggle: () => void }) {
-  const className = mounted && saved ? 'fill-[var(--accent)] text-[var(--accent)]' : 'text-[var(--text-muted)]';
+  const cls = mounted && saved ? 'fill-[var(--accent)] text-[var(--accent)]' : 'text-[var(--text-muted)]';
   return (
-    <button onClick={onToggle} className="p-2 rounded-xl hover:bg-[var(--primary)]/10 transition-colors">
-      <Star size={22} className={className} />
+    <button
+      onClick={onToggle}
+      aria-pressed={saved}
+      aria-label={saved ? 'Remove from saved' : 'Save airline'}
+      className="p-2 rounded-xl hover:bg-[var(--primary)]/10 transition-colors active:scale-95"
+    >
+      <Star size={22} className={cls} />
     </button>
   );
 }
 
-/** Back button + airline header (logo + name + code chips + favorite star). */
+/** Back button + airline header (logo avatar + name + code chips + favorite star). */
 export function AirlineHeader({ icao, airline, language, mounted, saved, onBack, onToggleFavorite }: Props) {
+  const logoIata = airline?.iata || icao;
+  const countryCode = airline?.country ? countryToCode(airline.country) : null;
+
   return (
     <>
       <Back language={language} onBack={onBack} />
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Logo icao={icao} airline={airline} />
-          <NameBlock airline={airline} icao={icao} />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Avatar handles logo → initials → plane icon fallback chain */}
+          <Avatar
+            src={API.airlineLogo(logoIata)}
+            name={airline?.name ?? icao}
+            alt={airline?.name ?? icao}
+            size="xl"
+            shape="squircle"
+            className="bg-white/90 p-1 shadow-md shrink-0"
+          />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <NeonText text={airline?.name ?? icao} size="text-lg" />
+              {countryCode && (
+                <FlagImage code={countryCode} className="w-5 h-4 rounded-sm shadow object-cover shrink-0" />
+              )}
+            </div>
+            <CodeChips airline={airline} icao={icao} />
+          </div>
         </div>
         <FavoriteButton mounted={mounted} saved={saved} onToggle={onToggleFavorite} />
       </div>

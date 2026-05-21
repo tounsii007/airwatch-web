@@ -22,6 +22,7 @@ import {
   topAirlines,
   topAirports,
   topRoutes,
+  viewsByDay,
   viewsByHour,
 } from '@/app/(public)/stats/statsMetrics';
 import { formatNumber, localeOf } from '@/app/(public)/stats/format';
@@ -40,6 +41,23 @@ export default function StatsPage() {
   const recent = useMemo(() => recentFlights(viewedFlights), [viewedFlights]);
   const hourBuckets = useMemo(() => viewsByHour(viewedFlights), [viewedFlights]);
   const summary = useMemo(() => activitySummary(viewedFlights), [viewedFlights]);
+
+  // 14-day daily-views series powers the StatCard sparklines below.
+  // Computed once per render and memoised so we don't re-bucket on
+  // unrelated state changes (e.g. settings toggles).
+  const dailyViews = useMemo(() => viewsByDay(viewedFlights, 14), [viewedFlights]);
+
+  // Week-over-week delta on total views — compares the most recent 7
+  // days to the prior 7. Renders as a sign-aware percentage pill below
+  // the value. When the prior week is zero we skip the delta to avoid
+  // a misleading "+∞%" — the user just sees the absolute total.
+  const wowDelta = useMemo<number | undefined>(() => {
+    if (dailyViews.length < 14) return undefined;
+    const prior = dailyViews.slice(0, 7).reduce((a, b) => a + b, 0);
+    const recent = dailyViews.slice(7).reduce((a, b) => a + b, 0);
+    if (prior === 0) return undefined;
+    return Math.round(((recent - prior) / prior) * 1000) / 10;
+  }, [dailyViews]);
 
   const isEmpty = viewedFlights.length === 0;
 
@@ -74,6 +92,9 @@ export default function StatsPage() {
             label={t('total_viewed', language)}
             value={totalViews}
             icon={<Plane size={18} strokeWidth={2.25} />}
+            trendData={isEmpty ? undefined : dailyViews}
+            delta={wowDelta}
+            holographic={!isEmpty && totalViews > 0}
           />
         </div>
         <div className="animate-fade-up">

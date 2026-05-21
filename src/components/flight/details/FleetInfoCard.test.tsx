@@ -102,9 +102,10 @@ describe('<FleetInfoCard />', () => {
     });
     render(<FleetInfoCard icao24="abc123" language="en" />);
     await waitFor(() => screen.getByText('Lufthansa'));
-    // Year displayed alongside age. The exact age depends on the
-    // current year (2026) so we assert a relaxed form.
-    expect(screen.getByText(/2018 \(\d+ yrs\)/)).toBeInTheDocument();
+    // Year is now the KeyValueRow `value`; the age hint is a separate
+    // `<p>` element rendered by KeyValueRow. Assert both individually.
+    expect(screen.getByText('2018')).toBeInTheDocument();
+    expect(screen.getByText(/\d+ yrs/)).toBeInTheDocument();
     // Sighting count formatted with locale separator.
     expect(screen.getByText('100')).toBeInTheDocument();
   });

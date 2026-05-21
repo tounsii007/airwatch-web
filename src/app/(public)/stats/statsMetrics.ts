@@ -87,6 +87,44 @@ export function viewsByHour(flights: readonly FlightStatEntry[]): number[] {
   return buckets;
 }
 
+/**
+ * Rolling daily view totals over the last `days` calendar days, oldest
+ * first. The returned array always has `days` elements — quiet days
+ * contribute a 0. Used to feed the StatCard sparkline footers on
+ * /stats so the user gets an immediate "have I been more active this
+ * week?" read alongside the lifetime totals.
+ *
+ * The `now` parameter is injectable for deterministic tests; production
+ * callers omit it and get the live wall-clock value.
+ */
+export function viewsByDay(
+  flights: readonly FlightStatEntry[],
+  days = 14,
+  now: number = Date.now(),
+): number[] {
+  const buckets = new Array<number>(days).fill(0);
+  if (days <= 0) return buckets;
+
+  // Anchor to local-midnight `days - 1` ago. We compare against each
+  // flight's `lastSeenAt` to assign it to a bucket; flights older than
+  // the window simply fall off the left and don't count.
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const windowStart = today.getTime() - (days - 1) * 24 * 60 * 60 * 1000;
+
+  flights.forEach((f) => {
+    if (f.lastSeenAt < windowStart) return;
+    const day = new Date(f.lastSeenAt);
+    day.setHours(0, 0, 0, 0);
+    const offset = Math.round((day.getTime() - windowStart) / (24 * 60 * 60 * 1000));
+    if (offset >= 0 && offset < days) {
+      buckets[offset] += f.viewCount;
+    }
+  });
+
+  return buckets;
+}
+
 export interface ActivitySummary {
   /** Timestamp of the earliest `firstSeenAt` across all flights, or null when empty. */
   trackingSince: number | null;

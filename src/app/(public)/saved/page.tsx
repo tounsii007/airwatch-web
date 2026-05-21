@@ -15,6 +15,7 @@ import { Section } from '@/app/(public)/saved/Section';
 import { useSavedGroups } from '@/app/(public)/saved/useSavedGroups';
 import type { AircraftState, FavoriteItem } from '@/lib/types';
 import { PageContainer, FadeIn, Stagger } from '@/components/ui';
+import { toast } from '@/components/ui/toast';
 
 export default function SavedPage() {
   const { items, removeFavorite, togglePin } = useFavoritesStore();
@@ -75,8 +76,18 @@ export default function SavedPage() {
         language={language}
         altitudeUnit={altitudeUnit}
         speedUnit={speedUnit}
-        onRemove={() => removeFavorite(item.id)}
-        onPin={() => togglePin(item.id)}
+        onRemove={() => {
+          removeFavorite(item.id);
+          toast({ title: `Removed "${item.label}"`, variant: 'default', duration: 3000 });
+        }}
+        onPin={() => {
+          togglePin(item.id);
+          const isPinned = pinned.some((p) => p.id === item.id);
+          toast.info({
+            title: isPinned ? `Unpinned "${item.label}"` : `Pinned "${item.label}"`,
+            duration: 2500,
+          });
+        }}
         onTrack={() => handleTrack(item)}
       />
     </div>

@@ -62,9 +62,10 @@ export function DataCell({ icon, label, value, color }: { color?: string; icon: 
       {/* TickingValue keeps the DOM identity stable when the WS push
           re-emits the same number (no flash), and briefly highlights
           the value on a real change so the user can spot which stat
-          actually moved between two updates. */}
+          actually moved between two updates. tickAnimation adds the
+          scale+brightness keyframe for bold numeric readouts. */}
       <p className="font-[var(--font-heading)] font-bold text-sm tracking-wide" style={color ? { color } : undefined}>
-        <TickingValue value={value} />
+        <TickingValue value={value} tickAnimation />
       </p>
     </div>
   );
