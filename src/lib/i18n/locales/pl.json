@@ -470,5 +470,12 @@
   "pinned_toast": "„{0}\" przypięto",
   "unpinned_toast": "„{0}\" odpięto",
   "fence_delete_aircraft_hint": "Samoloty, które wlecą do strefy po usunięciu, nie będą już wyzwalać powiadomień.",
-  "skip_to_content": "Przejdź do treści"
+  "skip_to_content": "Przejdź do treści",
+  "airline_stat_active": "AKTYWNE",
+  "airline_stat_routes": "TRASY",
+  "airline_stat_ground": "NA ZIEMI",
+  "ar_status_location": "Lokalizacja",
+  "ar_status_pitch": "Pochylenie",
+  "ar_status_in_view": "W polu widzenia",
+  "fences_active_section": "AKTYWNE STREFY"
 }

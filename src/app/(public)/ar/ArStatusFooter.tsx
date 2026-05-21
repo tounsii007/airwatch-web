@@ -1,6 +1,8 @@
 'use client';
 
 import { Crosshair, Plane, Radar } from 'lucide-react';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 import type { UserPosition } from '@/app/(public)/ar/useUserPosition';
 
 interface Props {
@@ -27,21 +29,22 @@ function formatLatLon(position: UserPosition): string {
 
 /** Bottom readout: lat/lon, pitch, and visible-aircraft count. */
 export function ArStatusFooter({ position, pitch, visibleCount }: Props) {
+  const language = useSettingsStore((s) => s.language);
   return (
     <div className="absolute bottom-4 left-4 right-4 glass-panel rounded-xl px-3 py-2 flex items-center justify-between pointer-events-none">
       <StatCell
         icon={<Crosshair size={12} className="text-[var(--primary)]" />}
-        label="Location"
+        label={t('ar_status_location', language)}
         value={position ? formatLatLon(position) : '—'}
       />
       <StatCell
         icon={<Radar size={12} className="text-[var(--accent)]" />}
-        label="Pitch"
+        label={t('ar_status_pitch', language)}
         value={pitch != null ? `${Math.round(pitch)}°` : '—'}
       />
       <StatCell
         icon={<Plane size={12} className="text-[var(--success)]" />}
-        label="In view"
+        label={t('ar_status_in_view', language)}
         value={`${visibleCount}`}
       />
     </div>

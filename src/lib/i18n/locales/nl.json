@@ -470,5 +470,12 @@
   "pinned_toast": "„{0}\" vastgemaakt",
   "unpinned_toast": "„{0}\" losgemaakt",
   "fence_delete_aircraft_hint": "Vliegtuigen die de zone na verwijdering binnenkomen, activeren geen meldingen meer.",
-  "skip_to_content": "Naar inhoud springen"
+  "skip_to_content": "Naar inhoud springen",
+  "airline_stat_active": "ACTIEF",
+  "airline_stat_routes": "ROUTES",
+  "airline_stat_ground": "OP DE GROND",
+  "ar_status_location": "Locatie",
+  "ar_status_pitch": "Helling",
+  "ar_status_in_view": "In zicht",
+  "fences_active_section": "ACTIEVE ZONES"
 }

@@ -470,5 +470,12 @@
   "pinned_toast": "«{0}» sabitlendi",
   "unpinned_toast": "«{0}» sabitlemesi kaldırıldı",
   "fence_delete_aircraft_hint": "Silindikten sonra bölgeye giren uçaklar artık bildirim tetiklemez.",
-  "skip_to_content": "İçeriğe atla"
+  "skip_to_content": "İçeriğe atla",
+  "airline_stat_active": "AKTİF",
+  "airline_stat_routes": "ROTALAR",
+  "airline_stat_ground": "YERDE",
+  "ar_status_location": "Konum",
+  "ar_status_pitch": "Eğim",
+  "ar_status_in_view": "Görünürde",
+  "fences_active_section": "AKTİF BÖLGELER"
 }

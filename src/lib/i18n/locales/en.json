@@ -471,5 +471,12 @@
   "pinned_toast": "Pinned \"{0}\"",
   "unpinned_toast": "Unpinned \"{0}\"",
   "fence_delete_aircraft_hint": "Aircraft that enter the zone after deletion will no longer trigger notifications.",
-  "skip_to_content": "Skip to content"
+  "skip_to_content": "Skip to content",
+  "airline_stat_active": "ACTIVE",
+  "airline_stat_routes": "ROUTES",
+  "airline_stat_ground": "GROUND",
+  "ar_status_location": "Location",
+  "ar_status_pitch": "Pitch",
+  "ar_status_in_view": "In view",
+  "fences_active_section": "ACTIVE FENCES"
 }

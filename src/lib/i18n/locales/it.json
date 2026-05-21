@@ -471,5 +471,12 @@
   "pinned_toast": "«{0}» fissato",
   "unpinned_toast": "«{0}» sbloccato",
   "fence_delete_aircraft_hint": "Gli aerei che entrano nella zona dopo l'eliminazione non attiveranno più notifiche.",
-  "skip_to_content": "Vai al contenuto"
+  "skip_to_content": "Vai al contenuto",
+  "airline_stat_active": "ATTIVI",
+  "airline_stat_routes": "ROTTE",
+  "airline_stat_ground": "A TERRA",
+  "ar_status_location": "Posizione",
+  "ar_status_pitch": "Inclinazione",
+  "ar_status_in_view": "In vista",
+  "fences_active_section": "ZONE ATTIVE"
 }

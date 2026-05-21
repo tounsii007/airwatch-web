@@ -468,5 +468,12 @@
   "pinned_toast": "تم تثبيت «{0}»",
   "unpinned_toast": "تم إلغاء تثبيت «{0}»",
   "fence_delete_aircraft_hint": "الطائرات التي تدخل النطاق بعد الحذف لن تطلق إشعارات بعد الآن.",
-  "skip_to_content": "تخطّي إلى المحتوى"
+  "skip_to_content": "تخطّي إلى المحتوى",
+  "airline_stat_active": "نشط",
+  "airline_stat_routes": "المسارات",
+  "airline_stat_ground": "على الأرض",
+  "ar_status_location": "الموقع",
+  "ar_status_pitch": "الميل",
+  "ar_status_in_view": "ضمن الرؤية",
+  "fences_active_section": "النطاقات النشطة"
 }
