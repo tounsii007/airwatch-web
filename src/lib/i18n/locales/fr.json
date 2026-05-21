@@ -470,5 +470,6 @@
   "view_count_tracked_one": "1 vol suivi",
   "pinned_toast": "« {0} » épinglé",
   "unpinned_toast": "« {0} » désépinglé",
-  "fence_delete_aircraft_hint": "Les avions qui entrent dans la zone après la suppression ne déclencheront plus de notifications."
+  "fence_delete_aircraft_hint": "Les avions qui entrent dans la zone après la suppression ne déclencheront plus de notifications.",
+  "skip_to_content": "Aller au contenu"
 }

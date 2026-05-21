@@ -5,6 +5,7 @@ import "@/app/globals.css";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { GlobalEffects } from "@/components/layout/GlobalEffects";
+import { SkipToContent } from "@/components/layout/SkipToContent";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { WebVitalsReporter } from "@/components/layout/WebVitalsReporter";
 import { ServiceWorkerRegistrar } from "@/components/layout/ServiceWorkerRegistrar";
@@ -119,6 +120,7 @@ export default async function RootLayout({
         */}
         <ThemeProvider />
         <GlobalEffects />
+        <SkipToContent />
         <ServiceWorkerRegistrar />
         <WebVitalsReporter />
         <StatsBeacon />
@@ -127,8 +129,9 @@ export default async function RootLayout({
         <CommandPaletteController />
         <ToastContainer />
         {/* Mobile: top-bar offset (pt-11) + bottom-bar offset (pb-20).
-            Desktop: top-bar offset (lg:pt-12), no bottom bar. */}
-        <main className="h-full overflow-auto pt-11 pb-20 lg:pt-12 lg:pb-0">
+            Desktop: top-bar offset (lg:pt-12), no bottom bar.
+            id="main-content" is the anchor for the SkipToContent link. */}
+        <main id="main-content" className="h-full overflow-auto pt-11 pb-20 lg:pt-12 lg:pb-0">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
         <DevTools />

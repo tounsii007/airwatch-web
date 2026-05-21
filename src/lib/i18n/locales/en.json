@@ -470,5 +470,6 @@
   "view_count_tracked_one": "1 flight tracked",
   "pinned_toast": "Pinned \"{0}\"",
   "unpinned_toast": "Unpinned \"{0}\"",
-  "fence_delete_aircraft_hint": "Aircraft that enter the zone after deletion will no longer trigger notifications."
+  "fence_delete_aircraft_hint": "Aircraft that enter the zone after deletion will no longer trigger notifications.",
+  "skip_to_content": "Skip to content"
 }

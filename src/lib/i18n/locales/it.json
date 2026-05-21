@@ -470,5 +470,6 @@
   "view_count_tracked_one": "1 volo tracciato",
   "pinned_toast": "«{0}» fissato",
   "unpinned_toast": "«{0}» sbloccato",
-  "fence_delete_aircraft_hint": "Gli aerei che entrano nella zona dopo l'eliminazione non attiveranno più notifiche."
+  "fence_delete_aircraft_hint": "Gli aerei che entrano nella zona dopo l'eliminazione non attiveranno più notifiche.",
+  "skip_to_content": "Vai al contenuto"
 }

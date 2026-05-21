@@ -469,5 +469,6 @@
   "view_count_tracked_one": "1 uçuş takip ediliyor",
   "pinned_toast": "«{0}» sabitlendi",
   "unpinned_toast": "«{0}» sabitlemesi kaldırıldı",
-  "fence_delete_aircraft_hint": "Silindikten sonra bölgeye giren uçaklar artık bildirim tetiklemez."
+  "fence_delete_aircraft_hint": "Silindikten sonra bölgeye giren uçaklar artık bildirim tetiklemez.",
+  "skip_to_content": "İçeriğe atla"
 }
