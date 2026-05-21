@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Download } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 import { t } from '@/lib/i18n/translations';
 import type { AppLanguage } from '@/lib/types';
 import type { FlightStatEntry } from '@/lib/stores/statsStore';
@@ -77,16 +78,16 @@ export function ExportButton({ flights, totalViews, language }: Props) {
 
   return (
     <div className="relative inline-block">
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
+        leadingIcon={<Download size={13} />}
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-[var(--font-heading)] font-bold tracking-wider text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--glass-border)] hover:border-[color-mix(in_srgb,var(--primary)_45%,transparent)] transition-colors cursor-pointer"
       >
-        <Download size={13} />
         {t('export', language)}
-      </button>
+      </Button>
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden />

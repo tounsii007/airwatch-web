@@ -2,42 +2,69 @@
 
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Dialog } from '@/components/ui/Dialog';
 import { t } from '@/lib/i18n/translations';
 import type { AppLanguage } from '@/lib/types';
-
-const CONFIRM = 'bg-[var(--error)]/15 text-[var(--error)] border border-[var(--error)]/30';
-const DEFAULT = 'text-[var(--text-muted)] hover:text-[var(--error)] border border-[var(--glass-border)]';
 
 interface Props {
   onClear: () => void;
   language: AppLanguage;
 }
 
-/** Two-click confirm for wiping the local /stats history. */
+/** Dialog-confirmed wipe of the local /stats history. */
 export function ClearHistoryButton({ onClear, language }: Props) {
-  const [confirm, setConfirm] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const handleClick = () => {
-    if (confirm) {
-      onClear();
-      setConfirm(false);
-    } else {
-      setConfirm(true);
-    }
+  const handleConfirm = () => {
+    onClear();
+    setOpen(false);
   };
 
   return (
-    <div className="pt-2 pb-8 text-center space-y-2">
-      {confirm && (
-        <p className="text-xs text-[var(--error)] font-[var(--font-body)]">{t('clear_data_confirm', language)}</p>
-      )}
-      <button
-        onClick={handleClick}
-        className={`flex items-center gap-2 mx-auto px-4 py-2 rounded-xl text-xs font-[var(--font-heading)] font-bold tracking-wider transition-colors cursor-pointer ${confirm ? CONFIRM : DEFAULT}`}
+    <>
+      <div className="pt-2 pb-8 text-center">
+        <Button
+          variant="danger"
+          size="sm"
+          leadingIcon={<Trash2 size={13} />}
+          onClick={() => setOpen(true)}
+          className="mx-auto"
+        >
+          {t('clear_data', language)}
+        </Button>
+      </div>
+
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title={t('clear_data', language)}
+        description={t('clear_data_confirm', language)}
+        size="sm"
+        footer={
+          <div className="flex gap-2 justify-end">
+            <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" size="sm" leadingIcon={<Trash2 size={12} />} onClick={handleConfirm}>
+              {t('clear_data', language)}
+            </Button>
+          </div>
+        }
       >
-        <Trash2 size={13} />
-        {t('clear_data', language)}
-      </button>
-    </div>
+        <div className="flex items-center justify-center py-2">
+          <span
+            className="inline-flex items-center justify-center w-12 h-12 rounded-full"
+            style={{
+              background: 'color-mix(in srgb, var(--error) 12%, transparent)',
+              boxShadow: '0 0 0 1px color-mix(in srgb, var(--error) 28%, transparent)',
+              color: 'var(--error)',
+            }}
+          >
+            <Trash2 size={22} />
+          </span>
+        </div>
+      </Dialog>
+    </>
   );
 }
