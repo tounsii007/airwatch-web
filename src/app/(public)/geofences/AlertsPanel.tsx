@@ -80,12 +80,13 @@ function FenceFilterBar({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 mb-3 pb-3 border-b border-[var(--glass-border)]/30">
-      <Filter size={10} className="text-[var(--text-muted)]" />
+      <Filter size={10} className="text-[var(--text-muted)] shrink-0" aria-hidden />
       <button
+        type="button"
         onClick={() => onChange(null)}
-        className={`text-[10px] px-2 py-0.5 rounded border tracking-wider font-[var(--font-heading)] transition-colors ${
+        className={`inline-flex items-center text-[10px] px-2 py-0.5 rounded border tracking-wider font-[var(--font-heading)] transition-colors ${
           allActive
-            ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-[var(--primary)]/40'
+            ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-[var(--primary)]/40 shadow-[0_0_12px_-4px_var(--primary)]'
             : 'bg-transparent text-[var(--text-muted)] border-[var(--glass-border)] hover:text-[var(--text)]'
         }`}
         aria-pressed={allActive}
@@ -97,16 +98,18 @@ function FenceFilterBar({
         return (
           <button
             key={fc.id}
+            type="button"
             onClick={() => toggle(fc.id)}
-            className={`text-[10px] px-2 py-0.5 rounded border tracking-wider font-[var(--font-heading)] transition-colors ${
+            className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded border tracking-wider font-[var(--font-heading)] transition-colors ${
               active
-                ? 'bg-[var(--info)]/25 text-[var(--info)] border-[var(--info)]/50'
+                ? 'bg-[var(--info)]/25 text-[var(--info)] border-[var(--info)]/50 shadow-[0_0_12px_-4px_var(--info)]'
                 : 'bg-transparent text-[var(--text-muted)] border-[var(--glass-border)] hover:text-[var(--text)]'
             }`}
             aria-pressed={active}
             title={`Toggle alerts from "${fc.name}"`}
           >
-            {fc.name} <span className="opacity-60">({fc.count})</span>
+            <span>{fc.name}</span>
+            <span className="opacity-60 tabular">({fc.count})</span>
           </button>
         );
       })}
