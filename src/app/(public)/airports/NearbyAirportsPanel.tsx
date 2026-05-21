@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { MapPin } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Button } from '@/components/ui/Button';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { t } from '@/lib/i18n/translations';
 import { useGeoNearbyAirports } from './useGeoNearbyAirports';
@@ -36,13 +38,14 @@ export function NearbyAirportsPanel({ distanceKm = 100 }: { distanceKm?: number 
           )}
         </div>
         {status === 'idle' && (
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="sm"
+            leadingIcon={<MapPin size={12} />}
             onClick={requestLocation}
-            className="px-3 py-1.5 text-xs font-[var(--font-heading)] font-bold rounded bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90"
           >
             {t('use_my_location', language)}
-          </button>
+          </Button>
         )}
       </div>
 
