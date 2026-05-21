@@ -464,5 +464,9 @@
   "remove_airline": "Verwijderen",
   "filter_all": "ALLE",
   "alerts_filter_title": "Meldingen van „{0}\" wisselen",
-  "alerts_no_match": "Geen meldingen komen overeen met het actieve filter. Tik op ALLE om te wissen."
+  "alerts_no_match": "Geen meldingen komen overeen met het actieve filter. Tik op ALLE om te wissen.",
+  "view_count_tracked": "{0} vluchten bijgehouden",
+  "view_count_tracked_one": "1 vlucht bijgehouden",
+  "pinned_toast": "„{0}\" vastgemaakt",
+  "unpinned_toast": "„{0}\" losgemaakt"
 }

@@ -465,5 +465,9 @@
   "remove_airline": "Remove",
   "filter_all": "ALL",
   "alerts_filter_title": "Toggle alerts from \"{0}\"",
-  "alerts_no_match": "No alerts match the active filter. Tap ALL to clear."
+  "alerts_no_match": "No alerts match the active filter. Tap ALL to clear.",
+  "view_count_tracked": "{0} flights tracked",
+  "view_count_tracked_one": "1 flight tracked",
+  "pinned_toast": "Pinned \"{0}\"",
+  "unpinned_toast": "Unpinned \"{0}\""
 }

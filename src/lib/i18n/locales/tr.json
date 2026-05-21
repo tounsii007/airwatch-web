@@ -464,5 +464,9 @@
   "remove_airline": "Kaldır",
   "filter_all": "TÜMÜ",
   "alerts_filter_title": "«{0}» uyarılarını aç/kapat",
-  "alerts_no_match": "Aktif filtreyle eşleşen uyarı yok. Temizlemek için TÜMÜ'ne dokunun."
+  "alerts_no_match": "Aktif filtreyle eşleşen uyarı yok. Temizlemek için TÜMÜ'ne dokunun.",
+  "view_count_tracked": "{0} uçuş takip ediliyor",
+  "view_count_tracked_one": "1 uçuş takip ediliyor",
+  "pinned_toast": "«{0}» sabitlendi",
+  "unpinned_toast": "«{0}» sabitlemesi kaldırıldı"
 }

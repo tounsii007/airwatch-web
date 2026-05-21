@@ -78,13 +78,21 @@ export default function SavedPage() {
         speedUnit={speedUnit}
         onRemove={() => {
           removeFavorite(item.id);
-          toast({ title: `Removed "${item.label}"`, variant: 'default', duration: 3000 });
+          toast({
+            title: t('removed_toast', language).replace('{0}', item.label),
+            variant: 'default',
+            duration: 3000,
+          });
         }}
         onPin={() => {
           togglePin(item.id);
           const isPinned = pinned.some((p) => p.id === item.id);
+          // isPinned reflects state BEFORE the toggle, so the message
+          // describes the new state (inverted): if it was pinned, we
+          // just unpinned it; if not, we just pinned it.
+          const key = isPinned ? 'unpinned_toast' : 'pinned_toast';
           toast.info({
-            title: isPinned ? `Unpinned "${item.label}"` : `Pinned "${item.label}"`,
+            title: t(key, language).replace('{0}', item.label),
             duration: 2500,
           });
         }}

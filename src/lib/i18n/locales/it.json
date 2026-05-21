@@ -465,5 +465,9 @@
   "remove_airline": "Rimuovi",
   "filter_all": "TUTTI",
   "alerts_filter_title": "Attiva/disattiva avvisi da «{0}»",
-  "alerts_no_match": "Nessun avviso corrisponde al filtro attivo. Tocca TUTTI per cancellare."
+  "alerts_no_match": "Nessun avviso corrisponde al filtro attivo. Tocca TUTTI per cancellare.",
+  "view_count_tracked": "{0} voli tracciati",
+  "view_count_tracked_one": "1 volo tracciato",
+  "pinned_toast": "«{0}» fissato",
+  "unpinned_toast": "«{0}» sbloccato"
 }

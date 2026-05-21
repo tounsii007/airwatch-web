@@ -21,8 +21,14 @@ export function MyStatsSection({ language }: { language: AppLanguage }) {
   const handleConfirmReset = () => {
     clearStats();
     setConfirmOpen(false);
-    toast({ title: 'Statistics cleared', variant: 'default', duration: 3000 });
+    toast({ title: t('stats_cleared', language), variant: 'default', duration: 3000 });
   };
+
+  // The confirm body has a plural-aware form (1 flight vs. n flights). Each
+  // locale provides both keys; we pick the right one at render time.
+  const confirmBody = viewCount === 1
+    ? t('reset_statistics_confirm_one', language)
+    : t('reset_statistics_confirm', language).replace('{0}', String(viewCount));
 
   return (
     <>
@@ -43,8 +49,12 @@ export function MyStatsSection({ language }: { language: AppLanguage }) {
           {viewCount > 0 && (
             <SettingRow
               icon={<Trash2 size={16} className="text-[var(--error)]" />}
-              label="Reset statistics"
-              hint={`${viewCount} flight${viewCount === 1 ? '' : 's'} tracked`}
+              label={t('reset_statistics', language)}
+              hint={
+                viewCount === 1
+                  ? t('view_count_tracked_one', language)
+                  : t('view_count_tracked', language).replace('{0}', String(viewCount))
+              }
             >
               <button
                 type="button"
@@ -61,13 +71,13 @@ export function MyStatsSection({ language }: { language: AppLanguage }) {
       <Dialog
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title="Reset statistics"
-        description={`This will permanently delete all ${viewCount} tracked flight${viewCount === 1 ? '' : 's'} from your history.`}
+        title={t('reset_statistics', language)}
+        description={confirmBody}
         size="sm"
         footer={
           <div className="flex gap-2 justify-end">
             <Button variant="ghost" size="sm" onClick={() => setConfirmOpen(false)}>
-              Cancel
+              {t('cancel', language)}
             </Button>
             <Button
               variant="danger"

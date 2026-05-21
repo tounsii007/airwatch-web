@@ -462,5 +462,9 @@
   "remove_airline": "إزالة",
   "filter_all": "الكل",
   "alerts_filter_title": "تبديل التنبيهات من «{0}»",
-  "alerts_no_match": "لا توجد تنبيهات تطابق الفلتر النشط. اضغط الكل للمسح."
+  "alerts_no_match": "لا توجد تنبيهات تطابق الفلتر النشط. اضغط الكل للمسح.",
+  "view_count_tracked": "{0} رحلات متتبَّعة",
+  "view_count_tracked_one": "رحلة واحدة متتبَّعة",
+  "pinned_toast": "تم تثبيت «{0}»",
+  "unpinned_toast": "تم إلغاء تثبيت «{0}»"
 }

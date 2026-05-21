@@ -465,5 +465,9 @@
   "remove_airline": "Quitar",
   "filter_all": "TODOS",
   "alerts_filter_title": "Alternar alertas de «{0}»",
-  "alerts_no_match": "Ninguna alerta coincide con el filtro activo. Toca TODOS para borrar."
+  "alerts_no_match": "Ninguna alerta coincide con el filtro activo. Toca TODOS para borrar.",
+  "view_count_tracked": "{0} vuelos rastreados",
+  "view_count_tracked_one": "1 vuelo rastreado",
+  "pinned_toast": "«{0}» fijado",
+  "unpinned_toast": "«{0}» desfijado"
 }

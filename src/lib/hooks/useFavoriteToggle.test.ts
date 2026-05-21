@@ -1,14 +1,23 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { describe, expect, it, beforeEach, beforeAll } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { useToastStore } from '@/components/ui/toast';
+import { loadLocale } from '@/lib/i18n/translations';
 import { useFavoriteToggle } from './useFavoriteToggle';
 
 describe('useFavoriteToggle', () => {
+  beforeAll(async () => {
+    // Preload the DE dictionary so the locale-aware toast test below
+    // can synchronously call `t()` without a render-time cache miss.
+    await loadLocale('de');
+  });
+
   beforeEach(() => {
     useFavoritesStore.setState({ items: [] });
     useToastStore.setState({ toasts: [] });
+    useSettingsStore.setState({ language: 'en' });
   });
 
   it('adds the item on first invocation and fires a success toast', () => {
@@ -86,6 +95,22 @@ describe('useFavoriteToggle', () => {
     act(() => result.current());
     const toasts = useToastStore.getState().toasts;
     expect(toasts[0].duration).toBe(9999);
+  });
+
+  it('localises the toast title to the active language (DE)', () => {
+    useSettingsStore.setState({ language: 'de' });
+    const { result } = renderHook(() =>
+      useFavoriteToggle({
+        id: 'airline-DLH',
+        type: 'airline',
+        label: 'DLH',
+        subtitle: 'Lufthansa',
+      }),
+    );
+    act(() => result.current());
+    const toasts = useToastStore.getState().toasts;
+    // de.json: "saved_toast": "„{0}\" gespeichert"
+    expect(toasts[0].title).toBe('„Lufthansa" gespeichert');
   });
 
   it('merges extras into the persisted favourite payload', () => {

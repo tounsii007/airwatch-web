@@ -464,5 +464,9 @@
   "remove_airline": "Usuń",
   "filter_all": "WSZYSTKIE",
   "alerts_filter_title": "Przełącz alerty z „{0}\"",
-  "alerts_no_match": "Żaden alert nie pasuje do aktywnego filtra. Stuknij WSZYSTKIE, aby wyczyścić."
+  "alerts_no_match": "Żaden alert nie pasuje do aktywnego filtra. Stuknij WSZYSTKIE, aby wyczyścić.",
+  "view_count_tracked": "{0} śledzonych lotów",
+  "view_count_tracked_one": "1 śledzony lot",
+  "pinned_toast": "„{0}\" przypięto",
+  "unpinned_toast": "„{0}\" odpięto"
 }

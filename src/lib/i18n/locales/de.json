@@ -465,5 +465,9 @@
   "remove_airline": "Entfernen",
   "filter_all": "ALLE",
   "alerts_filter_title": "Alarme von „{0}\" umschalten",
-  "alerts_no_match": "Kein Alarm entspricht dem aktiven Filter. Tippe ALLE zum Zurücksetzen."
+  "alerts_no_match": "Kein Alarm entspricht dem aktiven Filter. Tippe ALLE zum Zurücksetzen.",
+  "view_count_tracked": "{0} Flüge verfolgt",
+  "view_count_tracked_one": "1 Flug verfolgt",
+  "pinned_toast": "„{0}\" angeheftet",
+  "unpinned_toast": "„{0}\" losgelöst"
 }

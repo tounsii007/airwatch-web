@@ -465,5 +465,9 @@
   "remove_airline": "Retirer",
   "filter_all": "TOUT",
   "alerts_filter_title": "Basculer les alertes de « {0} »",
-  "alerts_no_match": "Aucune alerte ne correspond au filtre actif. Touchez TOUT pour effacer."
+  "alerts_no_match": "Aucune alerte ne correspond au filtre actif. Touchez TOUT pour effacer.",
+  "view_count_tracked": "{0} vols suivis",
+  "view_count_tracked_one": "1 vol suivi",
+  "pinned_toast": "« {0} » épinglé",
+  "unpinned_toast": "« {0} » désépinglé"
 }
