@@ -37,4 +37,48 @@ describe('<IconButton />', () => {
     await userEvent.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledOnce();
   });
+
+  it('applies the info tone tint when active + tone="info"', () => {
+    render(<IconButton aria-label="Radar" active tone="info"><span /></IconButton>);
+    const btn = screen.getByRole('button');
+    expect(btn.className).toContain('text-[var(--info)]');
+    expect(btn.className).toContain('bg-[var(--info)]');
+    expect(btn.className).toContain('border-[var(--info)]');
+  });
+
+  it('applies the accent tone tint when active + tone="accent"', () => {
+    render(<IconButton aria-label="Cargo" active tone="accent"><span /></IconButton>);
+    const btn = screen.getByRole('button');
+    expect(btn.className).toContain('text-[var(--accent)]');
+  });
+
+  it('falls back to primary tone tint by default when active', () => {
+    render(<IconButton aria-label="Default" active><span /></IconButton>);
+    const btn = screen.getByRole('button');
+    expect(btn.className).toContain('text-[var(--primary)]');
+  });
+
+  it('does NOT apply any tone tint when inactive', () => {
+    render(<IconButton aria-label="Off" tone="info"><span /></IconButton>);
+    const btn = screen.getByRole('button');
+    expect(btn.className).not.toContain('bg-[var(--info)]');
+  });
+
+  it('expands the hit area on sm via ::after pseudo-element', () => {
+    render(<IconButton aria-label="Small" size="sm"><span /></IconButton>);
+    const btn = screen.getByRole('button');
+    expect(btn.className).toContain('after:-inset-2');
+  });
+
+  it('expands the hit area on md', () => {
+    render(<IconButton aria-label="Medium" size="md"><span /></IconButton>);
+    const btn = screen.getByRole('button');
+    expect(btn.className).toContain('after:-inset-1');
+  });
+
+  it('does NOT add hit-area expansion on lg (already 44×44 px)', () => {
+    render(<IconButton aria-label="Large" size="lg"><span /></IconButton>);
+    const btn = screen.getByRole('button');
+    expect(btn.className).not.toContain('after:-inset');
+  });
 });

@@ -4,6 +4,8 @@ import { Plane } from 'lucide-react';
 import { Spinner } from '@/components/ui/Spinner';
 import { FlagImage } from '@/components/common/FlagImage';
 import { FlagAirport } from '@/components/flight/details/primitives';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 interface Props {
   depIata?: string;
@@ -19,10 +21,11 @@ interface Props {
 }
 
 function LoadingRow() {
+  const language = useSettingsStore((s) => s.language);
   return (
     <div className="flex items-center justify-center py-3 gap-2">
       <Spinner size={12} variant="primary" />
-      <span className="text-[var(--text-muted)] text-[10px]">Loading...</span>
+      <span className="text-[var(--text-muted)] text-[10px]">{t('loading_dots', language)}</span>
     </div>
   );
 }

@@ -2,25 +2,22 @@
 
 /**
  * Shared favourite-toggle hook. The airline-detail, airport-detail, and
- * (eventually) flight-detail pages all want the same recipe:
+ * flight-detail pages all want the same recipe:
  *
  *   1. Flip the favorites store entry for this id.
  *   2. Fire a toast confirming the change (different copy for add/remove).
  *
  * Each page used to inline this logic, which made it easy for the copy
  * or duration to drift. This hook centralises both decisions so the
- * "saved" / "removed" UX stays consistent across every entity type.
- *
- *   const toggle = useFavoriteToggle({ id, type: 'airport', label, subtitle });
- *   <button onClick={toggle}>★</button>
- *
- * `subtitle` is also used as the display name in the toast. If you want
- * a different toast name (e.g. you have a localised airline name), pass
- * it via the optional `displayName` override.
+ * "saved" / "removed" UX stays consistent across every entity type, and
+ * runs the toast titles through `t()` so they obey the active locale —
+ * a German user sees „Lufthansa\" gespeichert, not the English string.
  */
 import { useCallback } from 'react';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { toast } from '@/components/ui/toast';
+import { t } from '@/lib/i18n/translations';
 import type { FavoriteItem } from '@/lib/types';
 
 interface Options {
@@ -50,6 +47,7 @@ export function useFavoriteToggle({
 }: Options): () => void {
   const isFavorite = useFavoritesStore((s) => s.isFavorite);
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
+  const language = useSettingsStore((s) => s.language);
 
   return useCallback(() => {
     const wasSaved = isFavorite(id);
@@ -62,10 +60,11 @@ export function useFavoriteToggle({
       ...extras,
     } as FavoriteItem);
     const name = displayName ?? subtitle ?? label;
+    const title = t(wasSaved ? 'removed_toast' : 'saved_toast', language).replace('{0}', name);
     if (wasSaved) {
-      toast({ title: `Removed "${name}"`, variant: 'default', duration: toastDuration });
+      toast({ title, variant: 'default', duration: toastDuration });
     } else {
-      toast.success({ title: `Saved "${name}"`, duration: toastDuration });
+      toast.success({ title, duration: toastDuration });
     }
-  }, [id, type, label, subtitle, displayName, extras, toastDuration, isFavorite, toggleFavorite]);
+  }, [id, type, label, subtitle, displayName, extras, toastDuration, isFavorite, toggleFavorite, language]);
 }

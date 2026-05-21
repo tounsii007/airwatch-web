@@ -5,6 +5,8 @@ import { CuboidIcon, Plane } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingRadar } from '@/components/ui/LoadingRadar';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 import type { FlightPosition, ReplayInfo } from '@/lib/flights/replay';
 
 // deck.gl + OSM tiles need window + WebGL — disable SSR entirely.
@@ -21,13 +23,14 @@ interface Props {
 
 /** Right-hand stage: shows the chosen replay or an instructional placeholder. */
 export function ReplayStage({ selected, loading, positions }: Props) {
+  const language = useSettingsStore((s) => s.language);
   if (!selected) {
     return (
       <GlassPanel className="p-4">
         <EmptyState
           icon={<CuboidIcon size={28} />}
-          title="3D-Replay starten"
-          body="Wähle einen Flug aus der Liste, um die 3D-Wiedergabe zu starten."
+          title={t('replay_3d_start_title', language)}
+          body={t('replay_3d_start_body', language)}
           variant="info"
           bare
           className="py-16"
@@ -39,7 +42,11 @@ export function ReplayStage({ selected, loading, positions }: Props) {
     return (
       <GlassPanel className="p-4">
         <div className="py-12">
-          <LoadingRadar size={96} label="LOADING" hint="Track wird geladen" />
+          <LoadingRadar
+            size={96}
+            label={t('loading_radar_loading', language)}
+            hint={t('replay_3d_loading', language)}
+          />
         </div>
       </GlassPanel>
     );
@@ -51,7 +58,9 @@ export function ReplayStage({ selected, loading, positions }: Props) {
         <span className="font-[var(--font-heading)] text-xs font-bold tracking-wider">
           {selected.callsign || selected.icao24}
         </span>
-        <span className="ml-auto text-[10px] text-[var(--text-muted)]">{positions.length} positions</span>
+        <span className="ml-auto text-[10px] text-[var(--text-muted)]">
+          {t('replay_positions', language).replace('{0}', String(positions.length))}
+        </span>
       </div>
       <div className="relative w-full h-[540px]">
         <FlightReplay3D positions={positions} />

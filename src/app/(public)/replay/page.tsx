@@ -9,6 +9,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingRadar } from '@/components/ui/LoadingRadar';
 import { Tag } from '@/components/ui/Tag';
 import { useMounted } from '@/lib/hooks/useMounted';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 import {
   fetchAvailableReplays,
   fetchHistory,
@@ -50,6 +52,7 @@ function ReplayListItem({ info, active, onClick }: { info: ReplayInfo; active: b
 
 export default function ReplayPage() {
   const mounted = useMounted();
+  const language = useSettingsStore((s) => s.language);
   const [replays, setReplays] = useState<ReplayInfo[]>([]);
   const [selected, setSelected] = useState<ReplayInfo | null>(null);
   const [positions, setPositions] = useState<FlightPosition[]>([]);
@@ -73,21 +76,21 @@ export default function ReplayPage() {
       <header className="mb-6 flex items-center gap-3 animate-fade-in">
         <History size={20} className="text-[var(--primary-bright)]" />
         <h1 className="gradient-text font-[var(--font-heading)] text-xl font-bold tracking-wider">
-          FLIGHT REPLAY
+          {t('replay_2d_title', language)}
         </h1>
         <Link
           href="/replay/3d"
           className="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-[var(--font-heading)] tracking-wider bg-[var(--info)]/15 border border-[var(--info)]/30 text-[var(--info)] hover:bg-[var(--info)]/25 transition-colors"
         >
           <CuboidIcon size={12} />
-          3D-ANSICHT
+          {t('replay_3d_view_link', language)}
         </Link>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
         {/* List of replayable flights */}
         <Card
-          title="Recent flights"
+          title={t('replay_recent_flights', language)}
           badge={replays.length > 0 ? <Tag variant="info" size="sm">{replays.length}</Tag> : undefined}
           bare
           bodyClassName="px-3 pb-4 pt-2 max-h-[540px] overflow-y-auto"
@@ -95,8 +98,8 @@ export default function ReplayPage() {
           {replays.length === 0 ? (
             <EmptyState
               icon={<History size={22} />}
-              title="No replays yet"
-              body="The backend records airborne positions every poll cycle. Check back in a few minutes."
+              title={t('replay_no_replays_title', language)}
+              body={t('replay_no_replays_body', language)}
               variant="default"
               bare
               className="py-6"
@@ -124,25 +127,33 @@ export default function ReplayPage() {
                 <span>{selected.callsign || selected.icao24}</span>
               </span>
             ) : (
-              'Viewport'
+              t('replay_viewport', language)
             )
           }
-          badge={selected ? <Tag variant="default" size="sm">{positions.length} positions</Tag> : undefined}
+          badge={selected ? (
+            <Tag variant="default" size="sm">
+              {t('replay_positions', language).replace('{0}', String(positions.length))}
+            </Tag>
+          ) : undefined}
           bare
           bodyClassName="px-4 pb-4 pt-2"
         >
           {!selected ? (
             <EmptyState
               icon={<Plane size={28} />}
-              title="Pick a flight"
-              body="Select an entry from the list to start a replay."
+              title={t('replay_pick_title', language)}
+              body={t('replay_pick_body', language)}
               variant="info"
               bare
               className="py-16"
             />
           ) : loading ? (
             <div className="py-12">
-              <LoadingRadar size={96} label="LOADING" hint="Fetching track" />
+              <LoadingRadar
+                size={96}
+                label={t('loading_radar_loading', language)}
+                hint={t('replay_loading_track', language)}
+              />
             </div>
           ) : (
             <FlightReplayMap positions={positions} />

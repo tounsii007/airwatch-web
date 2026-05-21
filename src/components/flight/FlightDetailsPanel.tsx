@@ -13,11 +13,12 @@ import { useFlightDetailsViewModel } from '@/components/flight/details/useFlight
 import { useShareFlight } from '@/components/flight/details/useShareFlight';
 import type { AircraftState } from '@/lib/types';
 import type { FlightDetailsVM } from '@/components/flight/details/useFlightDetailsViewModel';
+import { favoriteId } from '@/lib/stores/favoriteId';
 
 /** Builds a favorite-toggle payload from the current aircraft + view-model. */
 function buildFavoritePayload(aircraft: AircraftState, vm: FlightDetailsVM) {
   return {
-    id: aircraft.icao24,
+    id: favoriteId.flight(aircraft.icao24),
     type: 'flight' as const,
     label: aircraft.callsign ?? aircraft.icao24,
     addedAt: Date.now(),
@@ -65,7 +66,7 @@ export function FlightDetailsPanel() {
 
   if (!selectedAircraft || !viewModel) return null;
 
-  const isFav = favoriteItems.some((item) => item.id === selectedAircraft.icao24);
+  const isFav = favoriteItems.some((item) => item.id === favoriteId.flight(selectedAircraft.icao24));
   const altColor = getAltitudeColor(selectedAircraft.baroAltitude, selectedAircraft.onGround);
 
   const actions = (size: number) => (

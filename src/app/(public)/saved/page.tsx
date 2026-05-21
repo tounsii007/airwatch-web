@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
+import { useEnsurePolling } from '@/lib/hooks/useEnsurePolling';
 import { useRouter } from 'next/navigation';
 import { Pin, Calendar } from 'lucide-react';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
@@ -20,16 +21,13 @@ import { toast } from '@/components/ui/toast';
 export default function SavedPage() {
   const { items, removeFavorite, togglePin } = useFavoritesStore();
   const aircraftMap = useFlightStore((s) => s.aircraftMap);
-  const startPolling = useFlightStore((s) => s.startPolling);
   const selectAircraft = useFlightStore((s) => s.selectAircraft);
   const language = useSettingsStore((s) => s.language);
   const altitudeUnit = useSettingsStore((s) => s.altitudeUnit);
   const speedUnit = useSettingsStore((s) => s.speedUnit);
   const router = useRouter();
 
-  useEffect(() => {
-    if (aircraftMap.size === 0) startPolling();
-  }, [aircraftMap.size, startPolling]);
+  useEnsurePolling();
 
   const { pinned, flights, airports, airlines } = useSavedGroups(items);
 
@@ -78,13 +76,21 @@ export default function SavedPage() {
         speedUnit={speedUnit}
         onRemove={() => {
           removeFavorite(item.id);
-          toast({ title: `Removed "${item.label}"`, variant: 'default', duration: 3000 });
+          toast({
+            title: t('removed_toast', language).replace('{0}', item.label),
+            variant: 'default',
+            duration: 3000,
+          });
         }}
         onPin={() => {
           togglePin(item.id);
           const isPinned = pinned.some((p) => p.id === item.id);
+          // isPinned reflects state BEFORE the toggle, so the message
+          // describes the new state (inverted): if it was pinned, we
+          // just unpinned it; if not, we just pinned it.
+          const key = isPinned ? 'unpinned_toast' : 'pinned_toast';
           toast.info({
-            title: isPinned ? `Unpinned "${item.label}"` : `Pinned "${item.label}"`,
+            title: t(key, language).replace('{0}', item.label),
             duration: 2500,
           });
         }}

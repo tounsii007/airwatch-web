@@ -66,8 +66,8 @@ export default function GeoFencesPage() {
     await remove(pendingDelete.id);
     setPendingDelete(null);
     toast.success({
-      title: 'Fence deleted',
-      body: `"${name}" has been removed.`,
+      title: t('fence_deleted_toast', language),
+      body: t('removed_toast', language).replace('{0}', name),
     });
   }, [pendingDelete, remove]);
 
@@ -139,24 +139,24 @@ export default function GeoFencesPage() {
       <Dialog
         open={pendingDelete !== null}
         onClose={() => setPendingDelete(null)}
-        title="Delete fence?"
+        title={t('fence_delete_confirm_title', language)}
         description={
           pendingDelete
-            ? `"${pendingDelete.name}" will be removed permanently. Any scheduled alerts for this zone will stop.`
+            ? t('fence_delete_confirm_body', language).replace('{0}', pendingDelete.name)
             : undefined
         }
         size="sm"
         footer={
           <div className="flex gap-2">
             <Button variant="ghost" onClick={() => setPendingDelete(null)}>
-              Cancel
+              {t('cancel', language)}
             </Button>
             <Button
               variant="danger"
               leadingIcon={<Trash2 size={14} />}
               onClick={() => { void handleDeleteConfirm(); }}
             >
-              Delete
+              {t('delete', language)}
             </Button>
           </div>
         }
@@ -165,7 +165,7 @@ export default function GeoFencesPage() {
           <div className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
             <ShieldCheck size={20} className="text-[var(--error)] shrink-0" aria-hidden />
             <span>
-              Aircraft that enter the zone after deletion will no longer trigger notifications.
+              {t('fence_delete_aircraft_hint', language)}
             </span>
           </div>
         )}

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { useEnsurePolling } from '@/lib/hooks/useEnsurePolling';
 import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
@@ -13,16 +14,21 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
 import { t } from '@/lib/i18n/translations';
 
-const MapView = dynamic(() => import('@/components/map/MapView').then((m) => m.MapView), {
-  ssr: false,
-  loading: () => (
+function MapLoadingFallback() {
+  const language = useSettingsStore((s) => s.language);
+  return (
     <LoadingRadar
       size={96}
-      label="AIRWATCH"
-      hint="LOADING FLIGHT"
+      label={t('loading_radar_default_label', language)}
+      hint={t('replay_loading_track', language)}
       className="h-full bg-[var(--bg)]"
     />
-  ),
+  );
+}
+
+const MapView = dynamic(() => import('@/components/map/MapView').then((m) => m.MapView), {
+  ssr: false,
+  loading: () => <MapLoadingFallback />,
 });
 const FlightDetailsPanel = dynamic(() => import('@/components/flight/FlightDetailsPanel').then((m) => m.FlightDetailsPanel), { ssr: false });
 const SquawkAlertBanner = dynamic(() => import('@/components/map/SquawkAlertBanner').then((m) => m.SquawkAlertBanner), { ssr: false });
@@ -37,15 +43,12 @@ export default function FlightDeepLinkPage() {
 
   const aircraftMap = useFlightStore((s) => s.aircraftMap);
   const selectAircraft = useFlightStore((s) => s.selectAircraft);
-  const startPolling = useFlightStore((s) => s.startPolling);
   const selectedAircraft = useFlightStore((s) => s.selectedAircraft);
   const recordView = useStatsStore((s) => s.recordView);
   const language = useSettingsStore((s) => s.language);
 
   // Start polling if no data
-  useEffect(() => {
-    if (aircraftMap.size === 0) startPolling();
-  }, [aircraftMap.size, startPolling]);
+  useEnsurePolling();
 
   // Auto-select the aircraft when data is available
   useEffect(() => {

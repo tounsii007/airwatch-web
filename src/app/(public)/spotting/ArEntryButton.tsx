@@ -32,10 +32,10 @@ export function ArEntryButton() {
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-[var(--font-heading)] font-bold tracking-wider text-[var(--primary)]">
-            AR-MODUS
+            {t('ar_mode_title', language)}
           </div>
           <div className="text-[10px] text-[var(--text-muted)] font-[var(--font-body)]">
-            Kamera zum Himmel halten und Flüge live sehen
+            {t('ar_mode_body', language)}
           </div>
         </div>
         <ChevronRight size={14} className="text-[var(--primary)] shrink-0" aria-hidden />

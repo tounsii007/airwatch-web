@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useEnsurePolling } from '@/lib/hooks/useEnsurePolling';
 import { useRouter } from 'next/navigation';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
@@ -18,7 +19,8 @@ import { Tag } from '@/components/ui/Tag';
 const DEFAULT_RADIUS_KM = 500;
 
 export default function SpottingPage() {
-  const { aircraftMap, startPolling, selectAircraft } = useFlightStore();
+  const aircraftMap = useFlightStore((s) => s.aircraftMap);
+  const selectAircraft = useFlightStore((s) => s.selectAircraft);
   const { altitudeUnit, language } = useSettingsStore();
   const router = useRouter();
 
@@ -26,7 +28,7 @@ export default function SpottingPage() {
   const [geoRetry, setGeoRetry] = useState(0);
   const { userLat, userLon, geoError } = useUserLocation(language, geoRetry);
 
-  useEffect(() => { if (aircraftMap.size === 0) startPolling(); }, [aircraftMap.size, startPolling]);
+  useEnsurePolling();
 
   const entries = useMemo(() => {
     if (userLat == null || userLon == null) return [];

@@ -66,7 +66,7 @@ export function SavedFlightCard({
               {isLive && <StatusBadge status="en-route" />}
               {liveData?.onGround && <StatusBadge status="landed" />}
               {!liveData && (
-                <Tag variant="muted" size="sm">OFFLINE</Tag>
+                <Tag variant="muted" size="sm">{t('offline_badge', language)}</Tag>
               )}
             </div>
             {airlineName && (
@@ -89,7 +89,7 @@ export function SavedFlightCard({
             </div>
           )}
           <IconButton
-            aria-label={item.pinned ? 'Unpin' : 'Pin'}
+            aria-label={t(item.pinned ? 'unpin' : 'pin', language)}
             onClick={onPin}
             variant="ghost"
             size="sm"

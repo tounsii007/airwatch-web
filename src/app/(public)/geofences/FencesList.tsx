@@ -6,6 +6,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { AIRLINES } from '@/lib/data/airlines';
 import type { GeoFence } from '@/lib/flights/geofence';
 import { useGeoFenceStore } from '@/lib/stores/geofenceStore';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 import { FenceStatsBadge } from '@/app/(public)/geofences/FenceStatsBadge';
 
 interface Props {
@@ -172,10 +174,11 @@ function EmptyRow() {
 
 /** List of the user's active geo-fences with per-row delete. */
 export function FencesList({ fences, onDelete, toolbar }: Props) {
+  const language = useSettingsStore((s) => s.language);
   return (
     <GlassPanel className="p-4">
       <h2 className="text-xs font-[var(--font-heading)] font-bold tracking-wider text-[var(--primary)] mb-3 flex items-center justify-between">
-        <span>ACTIVE FENCES</span>
+        <span>{t('fences_active_section', language)}</span>
         {fences.length > 0 && (
           <span className="text-[var(--text-muted)] font-normal">
             {fences.length} total

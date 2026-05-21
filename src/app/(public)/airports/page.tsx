@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useFlightStore } from '@/lib/stores/flightStore';
+import { useEnsurePolling } from '@/lib/hooks/useEnsurePolling';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { t } from '@/lib/i18n/translations';
 import { AirportSearch } from '@/app/(public)/airports/AirportSearch';
@@ -20,11 +21,11 @@ import {
 import { PageContainer, FadeIn } from '@/components/ui';
 
 export default function AirportsPage() {
-  const { aircraftMap, startPolling } = useFlightStore();
+  const aircraftMap = useFlightStore((s) => s.aircraftMap);
   const { altitudeUnit, speedUnit, language } = useSettingsStore();
   const [search, setSearch] = useState('');
 
-  useEffect(() => { if (aircraftMap.size === 0) startPolling(); }, [aircraftMap.size, startPolling]);
+  useEnsurePolling();
 
   const stats = useMemo(() => computeAirborneStats(aircraftMap), [aircraftMap]);
   const recent = useMemo(() => collectRecentDepartures(aircraftMap), [aircraftMap]);

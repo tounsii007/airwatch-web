@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useMounted } from '@/lib/hooks/useMounted';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
+import { favoriteId } from '@/lib/stores/favoriteId';
 import { useFavoriteToggle } from '@/lib/hooks/useFavoriteToggle';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { AirportHeader } from '@/app/(public)/airports/[iata]/AirportHeader';
@@ -45,7 +46,7 @@ export default function AirportDetailPage() {
   );
 
   const handleFavorite = useFavoriteToggle({
-    id: `airport-${iata}`,
+    id: favoriteId.airport(iata),
     type: 'airport',
     label: iata,
     subtitle: airport?.name ?? '',
@@ -53,7 +54,7 @@ export default function AirportDetailPage() {
   });
 
   const mounted = useMounted();
-  const saved = mounted && isFavorite(`airport-${iata}`);
+  const saved = mounted && isFavorite(favoriteId.airport(iata));
 
   return (
     <div className="p-4 space-y-4">

@@ -28,13 +28,13 @@ function BackLink({ language }: { language: AppLanguage }) {
   );
 }
 
-function FavoriteButton({ saved, onToggle }: { saved: boolean; onToggle: () => void }) {
+function FavoriteButton({ saved, onToggle, language }: { saved: boolean; onToggle: () => void; language: AppLanguage }) {
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-pressed={saved}
-      aria-label={saved ? 'Remove from saved' : 'Save airport'}
+      aria-label={t(saved ? 'remove_from_saved' : 'save_airport', language)}
       className="p-2 rounded-xl hover:bg-[var(--primary)]/10 transition-colors active:scale-95"
     >
       <Star size={22} className={saved ? 'fill-[var(--accent)] text-[var(--accent)]' : 'text-[var(--text-muted)]'} />
@@ -64,7 +64,7 @@ export function AirportHeader({ iata, airport, language, saved, onToggleFavorite
             </p>
           </div>
         </div>
-        <FavoriteButton saved={saved} onToggle={onToggleFavorite} />
+        <FavoriteButton saved={saved} onToggle={onToggleFavorite} language={language} />
       </div>
     </>
   );
