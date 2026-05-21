@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useGeoFenceAlerts } from '@/lib/hooks/useGeoFenceAlerts';
+import { useGeoFenceToasts } from '@/lib/hooks/useGeoFenceToasts';
 import { loadAirports } from '@/lib/data/airports';
 import { loadCityI18n } from '@/lib/data/city-translations';
 import { dirAttr } from '@/lib/i18n/rtl';
@@ -23,6 +24,7 @@ import { useSettingsStore } from '@/lib/stores/settingsStore';
  */
 export function GlobalEffects(): null {
   useGeoFenceAlerts();
+  useGeoFenceToasts();
   const language = useSettingsStore((s) => s.language);
 
   // Warm the data caches once per session. Both are fetched with
