@@ -235,9 +235,11 @@ export default function ComparePage() {
       title={t('compare_title', language)}
       subtitle={
         selectedCount === 2 ? (
-          <Tag variant="success" size="sm">2 flights · ready to compare</Tag>
+          <Tag variant="success" size="sm">{t('compare_ready', language)}</Tag>
         ) : (
-          <Tag variant="default" size="sm">{selectedCount}/2 selected</Tag>
+          <Tag variant="default" size="sm">
+            {t('compare_progress', language).replace('{0}', String(selectedCount))}
+          </Tag>
         )
       }
     >
@@ -267,8 +269,8 @@ export default function ComparePage() {
           <GlassPanel className="mt-4">
             <EmptyState
               icon={<ArrowLeftRight size={28} />}
-              title="Pick two flights to start"
-              body="Search above by callsign or ICAO24. The comparison panel appears once both slots are filled."
+              title={t('compare_pick_title', language)}
+              body={t('compare_pick_body', language)}
               variant="info"
               bare
               className="py-10"
@@ -293,7 +295,7 @@ export default function ComparePage() {
           >
             <ComparisonRow label={t('alt_label', language)} valueA={altA} valueB={altB} unit=" ft" />
             <ComparisonRow label={t('spd_label', language)} valueA={spdA} valueB={spdB} unit=" kts" />
-            <ComparisonRow label="DISTANCE" valueA={distA} valueB={distB} unit=" km" higherIsBetter={false} />
+            <ComparisonRow label={t('compare_distance', language)} valueA={distA} valueB={distB} unit=" km" higherIsBetter={false} />
           </Card>
         </ScaleIn>
       )}

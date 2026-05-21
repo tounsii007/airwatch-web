@@ -4,6 +4,8 @@ import { Clock, History } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Tag } from '@/components/ui/Tag';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 import type { ReplayInfo } from '@/lib/flights/replay';
 
 interface Props {
@@ -41,9 +43,10 @@ function ListItem({ info, active, onClick }: { info: ReplayInfo; active: boolean
 
 /** Sidebar list of replayable flights for the 3D view. */
 export function ReplayList({ replays, selected, onSelect }: Props) {
+  const language = useSettingsStore((s) => s.language);
   return (
     <Card
-      title="Aufzeichnungen"
+      title={t('replay_3d_recordings', language)}
       badge={replays.length > 0 ? <Tag variant="info" size="sm">{replays.length}</Tag> : undefined}
       bare
       bodyClassName="px-3 pb-4 pt-2 max-h-[580px] overflow-y-auto"
@@ -51,8 +54,8 @@ export function ReplayList({ replays, selected, onSelect }: Props) {
       {replays.length === 0 ? (
         <EmptyState
           icon={<History size={22} />}
-          title="Noch keine Replays"
-          body="Der Backend-Poller zeichnet Positionsdaten alle paar Minuten auf."
+          title={t('replay_no_replays_title', language)}
+          body={t('replay_no_replays_body', language)}
           variant="default"
           bare
           className="py-6"
