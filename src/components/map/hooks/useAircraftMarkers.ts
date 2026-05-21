@@ -154,9 +154,14 @@ export function useAircraftMarkers({
           : isEmergency
             ? `filter:drop-shadow(0 0 8px ${color}) drop-shadow(0 0 16px ${color});`
             : `filter:drop-shadow(0 0 3px ${color});`;
+        // Emergency aircraft get a fast aggressive pulse; selected (non-emergency)
+        // aircraft get a slower radar-style ring that lets the user spot the
+        // active pick at a glance even when the panel is dismissed.
         const pulseRing = isEmergency
           ? `<div style="position:absolute;inset:-6px;border-radius:50%;border:2px solid ${color};opacity:0.7;animation:squawk-pulse 1.2s ease-in-out infinite;"></div>`
-          : '';
+          : isSelected
+            ? `<div style="position:absolute;inset:-10px;border-radius:50%;border:1.5px solid ${color};opacity:0.65;animation:ring-pulse 2.6s ease-out infinite;transform-origin:center;"></div>`
+            : '';
         marker = L.marker([aircraft.latitude, aircraft.longitude], {
           icon: L.divIcon({
             html: `<div style="position:relative;width:${size}px;height:${size}px;">${pulseRing}<div style="width:${size}px;height:${size}px;transform:rotate(${rotation}deg);${glow}"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${color}"><path d="M12 2L10 8L3 10L3 12L10 11L10 17L7 19L7 20.5L12 19L17 20.5L17 19L14 17L14 11L21 12L21 10L14 8Z"/></svg></div></div>`,
@@ -185,14 +190,28 @@ export function useAircraftMarkers({
         const label = info?.iata && aircraft.callsign.length > 3
           ? `${info.iata}${aircraft.callsign.slice(3)}`
           : aircraft.callsign;
+        // Compose an FL-style altitude marker (FL350 == 35 000 ft). Keeps
+        // the tooltip glanceable: the user sees the callsign + cruise level
+        // without having to open the side-panel.
+        const feet = aircraft.baroAltitude != null
+          ? aircraft.baroAltitude * CONVERSION.metersToFeet
+          : null;
+        const flLabel = feet != null && feet >= 1000
+          ? `FL${Math.round(feet / 100).toString().padStart(3, '0')}`
+          : aircraft.onGround
+            ? 'GND'
+            : null;
+        const altSpan = flLabel
+          ? `<span style="opacity:0.7;margin-left:6px;color:${color};">${flLabel}</span>`
+          : '';
         marker.bindTooltip(
           L.tooltip({
             permanent: true,
             direction: 'top',
-            offset: [0, -16],
+            offset: [0, -18],
             className: 'aircraft-tooltip',
           }).setContent(
-            `<span style="font-family:var(--font-heading);font-size:10px;font-weight:700;letter-spacing:1px;color:#E0F0FF;background:rgba(15,29,50,0.9);border:1px solid ${color};border-radius:4px;padding:2px 6px;">${label}</span>`
+            `<span style="font-family:var(--font-heading);font-size:10px;font-weight:700;letter-spacing:1px;color:#E0F0FF;background:rgba(15,29,50,0.92);border:1px solid ${color};border-radius:6px;padding:3px 8px;box-shadow:0 0 12px -4px ${color};display:inline-flex;align-items:center;">${label}${altSpan}</span>`
           )
         );
       }
