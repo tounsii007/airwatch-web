@@ -41,3 +41,7 @@ export { Tabs } from './Tabs';
 export type { TabsProps, TabItem } from './Tabs';
 export { Avatar } from './Avatar';
 export type { AvatarProps } from './Avatar';
+export { Card } from './Card';
+export type { CardProps } from './Card';
+export { Dialog } from './Dialog';
+export type { DialogProps } from './Dialog';
