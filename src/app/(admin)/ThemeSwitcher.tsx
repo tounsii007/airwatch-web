@@ -35,13 +35,13 @@ export const AVAILABLE_THEMES: readonly ThemeOption[] = [
     id: 'auto',
     label: 'Auto (system)',
     description: 'Follows your OS dark/light preference automatically.',
-    swatch: 'linear-gradient(135deg, #0A1628 0%, #0A1628 50%, #F5F7FA 50%, #F5F7FA 100%)',
+    swatch: 'linear-gradient(135deg, #0A0A0A 0%, #0A0A0A 50%, #FAFAFA 50%, #FAFAFA 100%)',
   },
   {
     id: 'dark',
     label: 'Dark (default)',
-    description: 'Deep navy. The original AirWatch admin look.',
-    swatch: 'linear-gradient(135deg, #0A1628 0%, #1A2E48 100%)',
+    description: 'Neutral charcoal. The default AirWatch admin look.',
+    swatch: 'linear-gradient(135deg, #0A0A0A 0%, #1F1F1F 100%)',
   },
   {
     id: 'light',

@@ -14,9 +14,11 @@ import { ResultsGroup } from '@/app/(public)/search/ResultsGroup';
 import { useAirlabsSuggest } from '@/app/(public)/search/useAirlabsSuggest';
 import { useDebouncedValue } from '@/app/(public)/search/useDebouncedValue';
 import { useSearchResults } from '@/app/(public)/search/useSearchResults';
+import { CountryMatchTile } from '@/app/(public)/search/CountryMatchTile';
 import { MIN_QUERY_LENGTH } from '@/app/(public)/search/searchTypes';
 import { PageContainer, Stagger, FadeIn, CountUp, LiveTicker } from '@/components/ui';
 import { Tag } from '@/components/ui/Tag';
+import { localizeCountry } from '@/lib/data/country-translations';
 
 export default function SearchPage() {
   const router = useRouter();
@@ -31,10 +33,15 @@ export default function SearchPage() {
 
   useEffect(() => { if (flightCount === 0) startPolling(); }, [flightCount, startPolling]);
 
-  const { flights, airlines } = useSearchResults(debouncedQuery);
+  const { flights, airlines, airports, country } = useSearchResults(debouncedQuery);
   const { items: suggestItems } = useAirlabsSuggest(debouncedQuery, 0);
   const hasQuery = debouncedQuery.length >= MIN_QUERY_LENGTH;
-  const hasResults = flights.length + airlines.length + suggestItems.length > 0;
+  const hasResults =
+    flights.length + airlines.length + airports.length + suggestItems.length > 0 || country !== null;
+
+  // Localised country name used in group titles when the country pivot fires
+  // — falls back to the canonical English name when no translation exists.
+  const localCountry = country ? localizeCountry(country.canonical, language) : '';
 
   // Routes for /suggest tiles — airports route to /airports/{IATA},
   // airlines to /airlines/{IATA}, cities don't have a dedicated page
@@ -51,6 +58,7 @@ export default function SearchPage() {
   }, [selectAircraft, router]);
 
   const handleAirlineClick = useCallback((icao: string) => router.push(`/airlines/${icao}`), [router]);
+  const handleAirportClick = useCallback((iata: string) => router.push(`/airports/${iata}`), [router]);
 
   // Live availability badge — animates in on mount, count tweens via
   // CountUp so the "live" feel matches the real-time WS feed.
@@ -91,9 +99,22 @@ export default function SearchPage() {
           </FadeIn>
         )}
 
+        {/* Country-pivot summary tile — only renders when the query
+            resolves to a known country in any of the nine app locales. */}
+        {country && (
+          <FadeIn delay={25}>
+            <CountryMatchTile country={country} language={language} />
+          </FadeIn>
+        )}
+
         {flights.length > 0 && (
           <FadeIn delay={50}>
-            <ResultsGroup title={t('live_flights', language)} count={flights.length}>
+            <ResultsGroup
+              title={country
+                ? t('flights_to_country', language).replace('{0}', localCountry)
+                : t('live_flights', language)}
+              count={flights.length}
+            >
               <Stagger>
                 {flights.map((r) => (
                   <div key={r.aircraft.icao24} className="animate-fade-up">
@@ -116,7 +137,12 @@ export default function SearchPage() {
 
         {airlines.length > 0 && (
           <FadeIn delay={100}>
-            <ResultsGroup title={t('airlines', language)} count={airlines.length}>
+            <ResultsGroup
+              title={country
+                ? t('airlines_from_country', language).replace('{0}', localCountry)
+                : t('airlines', language)}
+              count={airlines.length}
+            >
               <Stagger>
                 {airlines.map((r) => (
                   <div key={r.icao} className="animate-fade-up">
@@ -127,6 +153,29 @@ export default function SearchPage() {
                       query={debouncedQuery}
                       onClick={() => handleAirlineClick(r.icao)}
                       logoUrl={r.logoUrl}
+                    />
+                  </div>
+                ))}
+              </Stagger>
+            </ResultsGroup>
+          </FadeIn>
+        )}
+
+        {airports.length > 0 && (
+          <FadeIn delay={125}>
+            <ResultsGroup
+              title={t('airports_in_country', language).replace('{0}', localCountry)}
+              count={airports.length}
+            >
+              <Stagger>
+                {airports.map((r) => (
+                  <div key={r.iata} className="animate-fade-up">
+                    <ResultTile
+                      type="airport"
+                      title={r.title}
+                      subtitle={r.subtitle}
+                      query={debouncedQuery}
+                      onClick={() => handleAirportClick(r.iata)}
                     />
                   </div>
                 ))}

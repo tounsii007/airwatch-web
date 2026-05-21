@@ -69,7 +69,7 @@ export function AircraftMarker({ aircraft, isSelected, onClick }: AircraftMarker
               fontWeight: 700,
               letterSpacing: '1px',
               color: '#E0F0FF',
-              background: 'rgba(15, 29, 50, 0.9)',
+              background: 'rgba(21, 21, 21, 0.92)',
               border: `1px solid ${color}`,
               borderRadius: '4px',
               padding: '2px 6px',

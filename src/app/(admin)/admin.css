@@ -66,9 +66,12 @@
  * ThemeSwitcher.tsx.
  */
 :root {
-  --bg:             #0A1628;
-  --surface:        #0F1D32;
-  --surface-light:  #1A2E48;
+  /* Neutral charcoal base — was navy (#0A1628 / #0F1D32 / #1A2E48) which
+     read as "blue background" against the brand-blue accent. Neutral
+     greys keep the brand identity in the accent layer where it belongs. */
+  --bg:             #0A0A0A;
+  --surface:        #151515;
+  --surface-light:  #1F1F1F;
   --primary:        #7A9ABF;
   --primary-bright: #A4C4E8;
   --accent:         #D4A574;
@@ -97,9 +100,9 @@
    (KPI cards, charts, status pills) inherits via CSS variables so each
    page stays in lockstep with the active palette. */
 .admin-shell.theme-light {
-  --bg:             #F5F7FA;
+  --bg:             #FAFAFA;
   --surface:        #FFFFFF;
-  --surface-light:  #EDF1F7;
+  --surface-light:  #F4F4F5;
   --primary:        #2563EB;
   --primary-bright: #1D4ED8;
   --accent:         #C2410C;

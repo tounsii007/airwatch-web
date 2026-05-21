@@ -91,7 +91,7 @@ export const metadata: Metadata = {
 // matches the official Next 16 API.
 // https://nextjs.org/docs/app/api-reference/functions/generate-viewport
 export const viewport: Viewport = {
-  themeColor: "#0A1628",
+  themeColor: "#0A0A0A",
   width: "device-width",
   initialScale: 1,
 };
