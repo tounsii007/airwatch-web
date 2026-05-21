@@ -1,17 +1,15 @@
 'use client';
 
+/**
+ * Settings-section helpers. The previous `Toggle` primitive that lived
+ * here is gone — every call site now uses the shared `<Switch>` from
+ * `@/components/ui/Switch` so we have one source of truth for the
+ * on/off control instead of two.
+ *
+ * What remains: `<SettingRow>`, the labelled row layout used by every
+ * boolean / chip control in the settings page.
+ */
 import { ReactNode } from 'react';
-
-/** Toggle switch (on/off) for boolean settings. */
-export function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: (v: boolean) => void }) {
-  const track = enabled ? 'bg-[var(--primary)]' : 'bg-[var(--text-muted)]/30';
-  const thumb = enabled ? 'translate-x-5' : 'translate-x-0';
-  return (
-    <button onClick={() => onToggle(!enabled)} className={`relative w-11 h-6 rounded-full transition-colors ${track}`}>
-      <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${thumb}`} />
-    </button>
-  );
-}
 
 /** One labelled setting row with a control on the right.
  *  Optional `hint` renders a small explanatory line under the label —
