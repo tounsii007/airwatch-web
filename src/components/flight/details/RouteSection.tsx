@@ -1,6 +1,7 @@
 'use client';
 
 import { Plane } from 'lucide-react';
+import { Spinner } from '@/components/ui/Spinner';
 import { FlagImage } from '@/components/common/FlagImage';
 import { FlagAirport } from '@/components/flight/details/primitives';
 
@@ -20,7 +21,7 @@ interface Props {
 function LoadingRow() {
   return (
     <div className="flex items-center justify-center py-3 gap-2">
-      <div className="w-3 h-3 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+      <Spinner size={12} variant="primary" />
       <span className="text-[var(--text-muted)] text-[10px]">Loading...</span>
     </div>
   );

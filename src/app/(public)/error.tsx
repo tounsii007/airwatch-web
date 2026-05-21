@@ -12,6 +12,8 @@
  * the layout failed to render).
  */
 import { useEffect } from 'react';
+import { RotateCw } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 export default function Error({
   error,
@@ -56,13 +58,15 @@ export default function Error({
           ref: {error.digest}
         </code>
       )}
-      <button
-        type="button"
+      <Button
+        variant="primary"
+        size="md"
+        leadingIcon={<RotateCw size={14} />}
         onClick={reset}
-        className="glass-panel px-6 py-2 mt-4 hover:bg-white/10 transition-colors text-sm font-[var(--font-heading)] tracking-wider text-[var(--primary)]"
+        className="mt-4"
       >
         TRY AGAIN
-      </button>
+      </Button>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { Camera, Compass, MapPin, ScanEye } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { NeonText } from '@/components/ui/NeonText';
+import { Button } from '@/components/ui/Button';
 import { t } from '@/lib/i18n/translations';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 
@@ -64,13 +65,15 @@ export function ArPermissionPrompt({ busy, error, onStart }: Props) {
           </p>
         )}
 
-        <button
+        <Button
+          variant="primary"
+          size="lg"
           onClick={onStart}
-          disabled={busy}
-          className="w-full px-4 py-3 rounded-xl text-sm font-[var(--font-heading)] font-bold tracking-wider bg-[var(--primary)] text-[var(--bg)] disabled:opacity-40 hover:opacity-90 transition-opacity cursor-pointer"
+          loading={busy}
+          className="w-full"
         >
           {busy ? t('ar_starting', language) : t('ar_start_button', language)}
-        </button>
+        </Button>
       </GlassPanel>
     </div>
   );

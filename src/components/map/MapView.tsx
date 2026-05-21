@@ -2,14 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
-import { ZoomIn, ZoomOut, Locate, CloudRain, Info, Package } from 'lucide-react';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { CONFIG } from '@/lib/constants';
 import { useWeatherRadar } from '@/lib/hooks/useWeatherRadar';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
-import { MAP_STYLES } from '@/components/map/mapStyles';
-import { MapStylePicker } from '@/components/map/MapStylePicker';
-import { CountUp } from '@/components/ui';
+import { MapApiErrorBanner } from '@/components/map/MapApiErrorBanner';
+import { MapBrandOverlay } from '@/components/map/MapBrandOverlay';
+import { MapStatusOverlay } from '@/components/map/MapStatusOverlay';
+import { MapLegend } from '@/components/map/MapLegend';
+import { MapToolbar } from '@/components/map/MapToolbar';
 import { t } from '@/lib/i18n/translations';
 import { useLeafletMap } from '@/components/map/hooks/useLeafletMap';
 import { useBaseLayer } from '@/components/map/hooks/useBaseLayer';
@@ -150,138 +151,35 @@ export function MapView() {
          caught by the ResizeObserver in useLeafletMap which fires
          map.invalidateSize() on every container size change. */
     <div className="relative w-full h-full h-dvh">
-      <div className="absolute top-3 left-3 z-[1000] flex items-center gap-3 pointer-events-none animate-fade-in">
-        <span className="gradient-text font-[var(--font-heading)] font-bold tracking-[0.2em] text-lg">
-          AIRWATCH
-        </span>
-        <span
-          className="badge badge-success badge-dot animate-fade-in"
-          style={{ animationDelay: '120ms' }}
-          title={transport === 'websocket' ? 'WebSocket push' : transport === 'polling' ? 'HTTP polling' : ''}
-        >
-          LIVE{transport === 'websocket' ? ' · WS' : ''}
-        </span>
-      </div>
+      <MapBrandOverlay transport={transport} />
+      <MapStatusOverlay
+        count={aircraftMap.size}
+        isLoading={isLoading}
+        hasError={Boolean(flightError)}
+        language={language}
+      />
 
-      <div
-        className="absolute top-3 right-3 z-[1000] glass-panel px-3 py-1.5 pointer-events-none animate-fade-in"
-        style={{ animationDelay: '60ms' }}
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <div className="flex items-center gap-2">
-          {isLoading && (
-            <div
-              className="w-2 h-2 rounded-full bg-[var(--warning)] animate-pulse-glow"
-              aria-hidden="true"
-            />
-          )}
-          {flightError && (
-            <div
-              className="w-2 h-2 rounded-full bg-[var(--error)]"
-              aria-hidden="true"
-            />
-          )}
-          <span className="text-[var(--text-primary)] text-xs font-[var(--font-heading)] tracking-wider tabular">
-            <CountUp value={aircraftMap.size} />{' '}
-            <span className="text-[var(--text-muted)]">{t('flights_upper', language)}</span>
-          </span>
-        </div>
-      </div>
+      {/* API error banner — copy + tone mapping lives in MapApiErrorBanner. */}
+      <MapApiErrorBanner error={flightError} language={language} />
 
-      {/* API error banner */}
-      {flightError && (
-        <div className="absolute top-12 left-3 right-3 z-[999] glass-panel-elevated border border-[var(--error)]/40 bg-[var(--error)]/8 px-3 py-2 pointer-events-none animate-scale-in">
-          <p className="text-[10px] font-[var(--font-heading)] font-bold text-[var(--error)] tracking-wider">
-            {flightError.includes('month_limit') ? t('api_limit_reached', language)
-              : flightError === 'network_error' ? t('api_network_error', language)
-              : flightError.includes('proxy') ? t('api_proxy_error', language)
-              : flightError === 'rate_limited' ? t('api_rate_limited', language)
-              : t('api_error', language)}
-          </p>
-          <p className="text-[9px] font-[var(--font-body)] text-[var(--text-secondary)] mt-0.5">
-            {flightError.includes('month_limit') ? t('api_limit_hint', language)
-              : flightError === 'network_error' ? t('api_network_hint', language)
-              : flightError.includes('proxy') ? t('api_proxy_hint', language)
-              : flightError === 'rate_limited' ? t('api_rate_hint', language)
-              : t('api_error_hint', language)}
-          </p>
-        </div>
-      )}
-
-      <div
-        className="absolute top-16 right-3 z-[1000] flex flex-col gap-1.5 animate-fade-in"
-        style={{ animationDelay: '180ms' }}
-        role="toolbar"
-        aria-label="Map controls"
-      >
-        <button
-          type="button"
-          onClick={handleZoomIn}
-          aria-label="Zoom in"
-          className="glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-        >
-          <ZoomIn size={18} className="text-[var(--primary)]" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          onClick={handleZoomOut}
-          aria-label="Zoom out"
-          className="glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-        >
-          <ZoomOut size={18} className="text-[var(--primary)]" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          onClick={handleCenter}
-          aria-label="Reset view to default location"
-          className="glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-        >
-          <Locate size={18} className="text-[var(--primary)]" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowRadar(!showRadar)}
-          aria-pressed={showRadar}
-          aria-label={showRadar ? 'Hide weather radar' : 'Show weather radar'}
-          className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] ${showRadar ? 'bg-[var(--info)]/15 border-[var(--info)]/30' : ''}`}
-        >
-          <CloudRain size={18} className={showRadar && !radarShouldShow ? 'text-[var(--info)] opacity-40' : showRadar ? 'text-[var(--info)]' : 'text-[var(--primary)]'} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          onClick={() => setCargoOnly(!cargoOnly)}
-          aria-pressed={cargoOnly}
-          aria-label={cargoOnly ? t('cargo_only_off', language) : t('cargo_only_on', language)}
-          title={cargoOnly ? t('cargo_only_off', language) : t('cargo_only_on', language)}
-          className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] ${cargoOnly ? 'bg-[var(--accent)]/15 border-[var(--accent)]/30' : ''}`}
-        >
-          <Package size={18} className={cargoOnly ? 'text-[var(--accent)]' : 'text-[var(--primary)]'} aria-hidden="true" />
-        </button>
-        <MapStylePicker mapStyle={mapStyle} onChange={setMapStyle} />
-        <button
-          type="button"
-          onClick={() => setShowLegend((v) => !v)}
-          aria-pressed={showLegend}
-          aria-label={showLegend ? 'Hide legend' : 'Show legend'}
-          className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer lg:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] ${showLegend ? 'bg-[var(--primary)]/15' : ''}`}
-        >
-          <Info size={18} className="text-[var(--primary)]" aria-hidden="true" />
-        </button>
-      </div>
+      <MapToolbar
+        language={language}
+        mapStyle={mapStyle}
+        onMapStyle={setMapStyle}
+        showRadar={showRadar}
+        radarShouldShow={radarShouldShow}
+        onToggleRadar={() => setShowRadar(!showRadar)}
+        cargoOnly={cargoOnly}
+        onToggleCargo={() => setCargoOnly(!cargoOnly)}
+        showLegend={showLegend}
+        onToggleLegend={() => setShowLegend((v) => !v)}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onCenter={handleCenter}
+      />
 
       {/* Legend — always on desktop, toggle on mobile */}
-      {showLegend && (
-        <div className="absolute bottom-14 lg:bottom-4 right-3 z-[1000] glass-panel px-3 py-2">
-          <div className="flex flex-col gap-1.5 text-[9px] font-[var(--font-heading)] tracking-wider">
-            <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: MAP_STYLES[mapStyle].colors.low }} /> LOW &lt;10k ft</div>
-            <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: MAP_STYLES[mapStyle].colors.med }} /> MED 10-30k ft</div>
-            <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: MAP_STYLES[mapStyle].colors.high }} /> HIGH &gt;30k ft</div>
-            <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: MAP_STYLES[mapStyle].colors.ground }} /> GROUND</div>
-          </div>
-        </div>
-      )}
+      {showLegend && <MapLegend mapStyle={mapStyle} />}
 
       <VoiceButton />
 

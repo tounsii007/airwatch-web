@@ -24,7 +24,8 @@
  */
 import { useEffect, useState } from 'react';
 import { AlertOctagon, ChevronDown, ChevronUp } from 'lucide-react';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/ui/Card';
+import { Tag } from '@/components/ui/Tag';
 import { t } from '@/lib/i18n/translations';
 import type { AppLanguage } from '@/lib/types';
 
@@ -112,20 +113,18 @@ export function NotamPanel({ icao, language }: Props) {
   }
 
   return (
-    <GlassPanel className="p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <AlertOctagon size={14} className="text-[var(--warning)]" />
-        <span className="text-xs font-[var(--font-heading)] tracking-widest text-[var(--text-muted)]">
+    <Card
+      title={
+        <span className="flex items-center gap-2">
+          <AlertOctagon size={14} className="text-[var(--warning)]" aria-hidden />
           {t('notams', language)}
+          <span className="text-[10px] text-[var(--text-muted)] font-mono">{icao}</span>
         </span>
-        <span className="text-[10px] text-[var(--text-muted)] font-mono">{icao}</span>
-        {items && items.length > 0 && (
-          <span className="ml-auto text-[10px] font-[var(--font-heading)] text-[var(--warning)]">
-            {items.length}
-          </span>
-        )}
-      </div>
-
+      }
+      badge={items && items.length > 0 ? <Tag variant="warning" size="sm">{items.length}</Tag> : undefined}
+      bare
+      bodyClassName="px-4 pb-4 pt-2"
+    >
       {loading ? (
         <p className="text-xs text-[var(--text-muted)]">{t('loading', language)}…</p>
       ) : error || !items || items.length === 0 ? (
@@ -151,9 +150,7 @@ export function NotamPanel({ icao, language }: Props) {
                         {n.id}
                       </span>
                       {n.classification && (
-                        <span className="text-[9px] px-1 bg-[var(--warning)]/15 text-[var(--warning)] rounded">
-                          {n.classification}
-                        </span>
+                        <Tag variant="warning" size="sm">{n.classification}</Tag>
                       )}
                       {n.start && (
                         <span className="text-[10px] font-mono text-[var(--text-muted)]">
@@ -185,6 +182,6 @@ export function NotamPanel({ icao, language }: Props) {
           )}
         </ul>
       )}
-    </GlassPanel>
+    </Card>
   );
 }

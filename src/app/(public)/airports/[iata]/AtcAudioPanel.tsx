@@ -28,7 +28,8 @@
  */
 import { useEffect, useState } from 'react';
 import { Headphones, ExternalLink } from 'lucide-react';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/ui/Card';
+import { Tag } from '@/components/ui/Tag';
 import { t } from '@/lib/i18n/translations';
 import type { AppLanguage } from '@/lib/types';
 
@@ -82,20 +83,18 @@ export function AtcAudioPanel({ icao, language }: Props) {
   const active = data?.feeds.find((f) => f.mount === activeMount) ?? null;
 
   return (
-    <GlassPanel className="p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <Headphones size={14} className="text-[var(--primary)]" />
-        <span className="text-xs font-[var(--font-heading)] tracking-widest text-[var(--text-muted)]">
+    <Card
+      title={
+        <span className="flex items-center gap-2">
+          <Headphones size={14} className="text-[var(--primary)]" aria-hidden />
           {t('atc_audio_title', language)}
+          <span className="text-[10px] text-[var(--text-muted)] font-mono">{icao}</span>
         </span>
-        <span className="text-[10px] text-[var(--text-muted)] font-mono">{icao}</span>
-        {data && data.count > 0 && (
-          <span className="ms-auto text-[10px] font-[var(--font-heading)] text-[var(--primary)]">
-            {data.count}
-          </span>
-        )}
-      </div>
-
+      }
+      badge={data && data.count > 0 ? <Tag variant="info" size="sm">{data.count}</Tag> : undefined}
+      bare
+      bodyClassName="px-4 pb-4 pt-2"
+    >
       {loading ? (
         <p className="text-xs text-[var(--text-muted)]">{t('loading', language)}…</p>
       ) : !data || data.count === 0 ? (
@@ -164,6 +163,6 @@ export function AtcAudioPanel({ icao, language }: Props) {
           )}
         </>
       )}
-    </GlassPanel>
+    </Card>
   );
 }

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Button } from '@/components/ui/Button';
 import { t } from '@/lib/i18n/translations';
 import { useAirportSearch } from '@/app/(public)/dashboard/useAirportSearch';
 import type { AppLanguage } from '@/lib/types';
@@ -100,14 +101,15 @@ export function AddAirportInput({ language, value, onChange, onAdd, existing }: 
           aria-controls="iata-autocomplete-list"
           aria-activedescendant={showDropdown ? `iata-opt-${highlight}` : undefined}
         />
-        <button
+        <Button
+          variant="primary"
+          size="sm"
+          leadingIcon={<Plus size={11} />}
           onClick={() => commit(value.toUpperCase())}
           disabled={!value.trim()}
-          className="px-3 py-1 rounded-lg t-meta t-mono font-bold tracking-wider bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--primary)]/30 hover:bg-[var(--primary)]/25 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <Plus size={11} className="inline mr-1" aria-hidden />
           {t('add', language)}
-        </button>
+        </Button>
       </GlassPanel>
 
       {showDropdown && (

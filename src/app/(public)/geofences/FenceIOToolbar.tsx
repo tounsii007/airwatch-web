@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Download, Upload } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 import { t } from '@/lib/i18n/translations';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import type { GeoFence } from '@/lib/flights/geofence';
@@ -121,23 +122,26 @@ export function FenceIOToolbar({ fences, onImport }: Props) {
 
   return (
     <div className="mb-3 flex items-center gap-2 flex-wrap">
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
+        leadingIcon={<Download size={11} />}
         onClick={handleExport}
-        className="inline-flex items-center gap-1 text-[10px] font-[var(--font-heading)] tracking-wider px-2 py-1 border border-[var(--glass-border)] hover:border-[var(--primary)]/40 hover:text-[var(--primary)] text-[var(--text-muted)] rounded transition-colors"
         title={t('fence_export_tooltip', language)}
       >
-        <Download size={11} /> {t('export', language)}
-      </button>
-      <button
-        type="button"
+        {t('export', language)}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        leadingIcon={<Upload size={11} />}
         onClick={handleImportClick}
         disabled={busy}
-        className="inline-flex items-center gap-1 text-[10px] font-[var(--font-heading)] tracking-wider px-2 py-1 border border-[var(--glass-border)] hover:border-[var(--primary)]/40 hover:text-[var(--primary)] text-[var(--text-muted)] rounded transition-colors disabled:opacity-50"
+        loading={busy}
         title={t('fence_import_tooltip', language)}
       >
-        <Upload size={11} /> {busy ? t('fence_importing_button', language) : t('fence_import_button', language)}
-      </button>
+        {busy ? t('fence_importing_button', language) : t('fence_import_button', language)}
+      </Button>
       <input
         ref={fileRef}
         type="file"

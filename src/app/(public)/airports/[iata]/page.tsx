@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useMounted } from '@/lib/hooks/useMounted';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
+import { useFavoriteToggle } from '@/lib/hooks/useFavoriteToggle';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { AirportHeader } from '@/app/(public)/airports/[iata]/AirportHeader';
 import { ClockPanel } from '@/app/(public)/airports/[iata]/ClockPanel';
@@ -31,7 +32,7 @@ export default function AirportDetailPage() {
   const params = useParams();
   const iata = (params.iata as string).toUpperCase();
   const { language } = useSettingsStore();
-  const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const isFavorite = useFavoritesStore((s) => s.isFavorite);
 
   const { airport, weather, utcOffsetSec, departures, arrivals, loading } = useAirportDetail(iata);
   const [activeTab, setActiveTab] = useState<TabType>('departures');
@@ -43,15 +44,13 @@ export default function AirportDetailPage() {
     [departures, arrivals, activeTab, sortBy],
   );
 
-  const handleFavorite = useCallback(() => {
-    toggleFavorite({
-      id: `airport-${iata}`,
-      type: 'airport',
-      label: iata,
-      subtitle: airport?.name ?? '',
-      addedAt: Date.now(),
-    });
-  }, [iata, airport, toggleFavorite]);
+  const handleFavorite = useFavoriteToggle({
+    id: `airport-${iata}`,
+    type: 'airport',
+    label: iata,
+    subtitle: airport?.name ?? '',
+    displayName: airport?.name ?? iata,
+  });
 
   const mounted = useMounted();
   const saved = mounted && isFavorite(`airport-${iata}`);

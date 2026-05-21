@@ -7,7 +7,12 @@ import { resolveAirline, AIRLINES } from '@/lib/data/airlines';
 import { isFresh } from '@/lib/flights/aircraftFreshness';
 import type { AircraftState, MapStyle } from '@/lib/types';
 import { EMERGENCY_SQUAWKS, squawkColor } from '@/lib/hooks/useSquawkAlerts';
-import { MAP_STYLES, MAX_VISIBLE_MARKERS } from '@/components/map/mapStyles';
+import { MAP_STYLES } from '@/components/map/mapStyles';
+import {
+  buildMarkerIconHtml,
+  buildSelectedTooltipHtml,
+  gridSampleAircraft,
+} from '@/components/map/hooks/aircraftMarkerHelpers';
 
 export function useAircraftMarkers({
   aircraftMap,
@@ -84,40 +89,11 @@ export function useAircraftMarkers({
     });
 
     // Grid-based spatial sampling. The previous `index % step` filter
-    // dropped every Nth aircraft from the underlying Map — which maps
-    // well for a uniform random distribution but skews badly for the
-    // real-world data: dense regions (Europe rush hour) keep all their
-    // flights while sparse regions (Pacific) lose theirs entirely.
-    //
-    // Grid sampling: divide the visible bounds into a cell grid sized
-    // so the cell count is ~MAX_VISIBLE_MARKERS, then keep one
-    // representative aircraft per cell. Result: roughly even density
-    // across the visible area regardless of where the planes actually
-    // cluster, with a tunable count cap. Selected aircraft is always
-    // kept regardless of cell occupancy.
-    let toRender = visible;
-    if (visible.length > MAX_VISIBLE_MARKERS && zoom < 7) {
-      const latSpan = north - south;
-      const lonSpan = east - west;
-      // Cell side picked so total cells ~= MAX_VISIBLE_MARKERS — square
-      // root because we have a 2D grid.
-      const cellsPerSide = Math.ceil(Math.sqrt(MAX_VISIBLE_MARKERS));
-      const cellLat = latSpan / cellsPerSide;
-      const cellLon = lonSpan / cellsPerSide;
-      const grid = new Map<string, AircraftState>();
-      for (const ac of visible) {
-        const gy = Math.floor((ac.latitude! - south) / cellLat);
-        const gx = Math.floor((ac.longitude! - west) / cellLon);
-        const key = `${gy}:${gx}`;
-        // Prefer aircraft with a callsign over those without — gives
-        // identifiable representatives when cells overlap multiple flights.
-        const existing = grid.get(key);
-        if (!existing || (!existing.callsign && ac.callsign)) {
-          grid.set(key, ac);
-        }
-      }
-      toRender = Array.from(grid.values());
-    }
+    // dropped every Nth aircraft from the underlying Map — which skewed
+    // badly toward dense regions (Europe) at the expense of sparse ones
+    // (Pacific). Helper now lives in aircraftMarkerHelpers so the hook
+    // body stays readable.
+    const toRender = gridSampleAircraft(visible, { south, north, west, east, zoom });
 
     if (selectedAircraft && !toRender.some((aircraft) => aircraft.icao24 === selectedAircraft.icao24)) {
       toRender.push(selectedAircraft);
@@ -149,17 +125,9 @@ export function useAircraftMarkers({
       let marker: L.CircleMarker | L.Marker;
       if (usePlaneIcons || isSelected || isEmergency) {
         const size = isSelected ? 32 : (zoom >= 10 ? 26 : zoom >= 8 ? 22 : zoom >= 6 ? 18 : 14);
-        const glow = isSelected
-          ? `filter:drop-shadow(0 0 6px ${color}) drop-shadow(0 0 12px ${color});`
-          : isEmergency
-            ? `filter:drop-shadow(0 0 8px ${color}) drop-shadow(0 0 16px ${color});`
-            : `filter:drop-shadow(0 0 3px ${color});`;
-        const pulseRing = isEmergency
-          ? `<div style="position:absolute;inset:-6px;border-radius:50%;border:2px solid ${color};opacity:0.7;animation:squawk-pulse 1.2s ease-in-out infinite;"></div>`
-          : '';
         marker = L.marker([aircraft.latitude, aircraft.longitude], {
           icon: L.divIcon({
-            html: `<div style="position:relative;width:${size}px;height:${size}px;">${pulseRing}<div style="width:${size}px;height:${size}px;transform:rotate(${rotation}deg);${glow}"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${color}"><path d="M12 2L10 8L3 10L3 12L10 11L10 17L7 19L7 20.5L12 19L17 20.5L17 19L14 17L14 11L21 12L21 10L14 8Z"/></svg></div></div>`,
+            html: buildMarkerIconHtml({ size, rotation, color, isSelected, isEmergency }),
             className: '',
             iconSize: [size, size],
             iconAnchor: [size / 2, size / 2],
@@ -189,10 +157,15 @@ export function useAircraftMarkers({
           L.tooltip({
             permanent: true,
             direction: 'top',
-            offset: [0, -16],
+            offset: [0, -18],
             className: 'aircraft-tooltip',
           }).setContent(
-            `<span style="font-family:var(--font-heading);font-size:10px;font-weight:700;letter-spacing:1px;color:#E0F0FF;background:rgba(15,29,50,0.9);border:1px solid ${color};border-radius:4px;padding:2px 6px;">${label}</span>`
+            buildSelectedTooltipHtml({
+              label,
+              color,
+              baroAltitudeMeters: aircraft.baroAltitude,
+              onGround: Boolean(aircraft.onGround),
+            }),
           )
         );
       }

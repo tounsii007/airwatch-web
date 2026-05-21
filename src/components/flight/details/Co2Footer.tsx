@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, Leaf, Share2 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 import { t } from '@/lib/i18n/translations';
 import type { AppLanguage } from '@/lib/types';
 
@@ -19,11 +20,11 @@ interface Props {
 /** CO₂ footer with per-passenger emissions + share button. */
 export function Co2Footer({ language, co2Estimate, copied, onShare }: Props) {
   return (
-    <div className="px-4 py-4 border-b border-[var(--glass-border)] flex items-center justify-between">
+    <div className="px-4 py-4 border-b border-[var(--glass-border)] flex items-center justify-between gap-2">
       {co2Estimate ? (
-        <div className="flex items-center gap-2">
-          <Leaf size={14} className="text-[var(--success)]" />
-          <div>
+        <div className="flex items-center gap-2 min-w-0">
+          <Leaf size={14} className="text-[var(--success)] shrink-0" aria-hidden />
+          <div className="min-w-0">
             <span className="text-xs font-[var(--font-heading)] font-bold text-[var(--success)]">
               ~{co2Estimate.co2Kg} kg CO2
             </span>
@@ -34,18 +35,19 @@ export function Co2Footer({ language, co2Estimate, copied, onShare }: Props) {
         </div>
       ) : (
         <div className="flex items-center gap-1.5">
-          <Leaf size={12} className="text-[var(--text-muted)]" />
+          <Leaf size={12} className="text-[var(--text-muted)]" aria-hidden />
           <span className="text-[9px] text-[var(--text-muted)]">{t('co2_unavailable', language)}</span>
         </div>
       )}
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
+        leadingIcon={copied ? <Check size={12} /> : <Share2 size={12} />}
         onClick={onShare}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-[var(--font-heading)] font-bold tracking-wider bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)]/20 transition-colors cursor-pointer"
         aria-label={t('share', language)}
       >
-        {copied ? <Check size={12} /> : <Share2 size={12} />}
         {copied ? t('copied', language) : t('share', language)}
-      </button>
+      </Button>
     </div>
   );
 }

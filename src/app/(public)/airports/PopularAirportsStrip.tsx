@@ -18,8 +18,11 @@ function AirportChip({ airport, language }: { airport: PopularAirport; language:
   const label = localizeCity(airport.name, language);
   return (
     <Link href={`/airports/${airport.iata}`}>
-      <GlassPanel className="px-3 py-2 whitespace-nowrap cursor-pointer hover:bg-[var(--primary)]/10 transition-colors">
-        <span className="font-[var(--font-heading)] text-xs font-bold text-[var(--primary)]">{airport.iata}</span>
+      <GlassPanel
+        interactive
+        className="px-3 py-2 whitespace-nowrap rounded-lg hover:bg-[var(--primary)]/10 transition-colors"
+      >
+        <span className="font-[var(--font-heading)] text-xs font-bold text-[var(--primary)] tabular">{airport.iata}</span>
         <span className="text-[10px] text-[var(--text-secondary)] ml-1.5 font-[var(--font-body)]">{label}</span>
       </GlassPanel>
     </Link>

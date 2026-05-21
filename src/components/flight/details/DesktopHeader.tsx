@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { Tag } from '@/components/ui/Tag';
 import { AirlineLogo } from '@/components/flight/details/AirlineLogo';
 
 interface Props {
@@ -16,11 +17,7 @@ interface Props {
 
 function CountryPill({ country }: { country?: string }) {
   if (!country) return null;
-  return (
-    <span className="text-[10px] font-[var(--font-heading)] px-1.5 py-0.5 rounded bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20">
-      {country}
-    </span>
-  );
+  return <Tag variant="info" size="sm">{country}</Tag>;
 }
 
 function Title({ displayCallsign }: { displayCallsign: string }) {
@@ -38,7 +35,7 @@ function Title({ displayCallsign }: { displayCallsign: string }) {
 function SubLine({ icao24, flightStatus, airlineName }: { icao24: string; flightStatus: string | undefined; airlineName?: string }) {
   return (
     <div className="flex items-center gap-2 mt-0.5 min-w-0">
-      <span className="text-[var(--text-muted)] text-xs shrink-0">{icao24.toUpperCase()}</span>
+      <span className="text-[var(--text-muted)] text-xs shrink-0 tabular">{icao24.toUpperCase()}</span>
       <StatusBadge status={flightStatus} />
       {airlineName && <span className="text-[10px] text-[var(--text-secondary)] truncate">{airlineName}</span>}
     </div>

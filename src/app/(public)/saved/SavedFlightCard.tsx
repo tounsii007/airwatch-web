@@ -3,6 +3,8 @@
 import { Plane, Pin, PinOff, X, ArrowRight } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { IconButton } from '@/components/ui/IconButton';
+import { Tag } from '@/components/ui/Tag';
 import { t } from '@/lib/i18n/translations';
 import { resolveAirline, getAirlineLogoUrl } from '@/lib/data/airlines';
 import { airportCity } from '@/lib/data/airports';
@@ -64,9 +66,7 @@ export function SavedFlightCard({
               {isLive && <StatusBadge status="en-route" />}
               {liveData?.onGround && <StatusBadge status="landed" />}
               {!liveData && (
-                <span className="text-[8px] font-[var(--font-heading)] px-1 py-0.5 rounded bg-[var(--text-muted)]/10 text-[var(--text-muted)]">
-                  OFFLINE
-                </span>
+                <Tag variant="muted" size="sm">OFFLINE</Tag>
               )}
             </div>
             {airlineName && (
@@ -88,14 +88,25 @@ export function SavedFlightCard({
               </div>
             </div>
           )}
-          <button onClick={onPin} className="p-1.5 rounded-lg hover:bg-[var(--primary)]/10 transition-colors" title="Pin">
+          <IconButton
+            aria-label={item.pinned ? 'Unpin' : 'Pin'}
+            onClick={onPin}
+            variant="ghost"
+            size="sm"
+          >
             {item.pinned
               ? <Pin size={13} className="text-[var(--warning)] fill-[var(--warning)]" />
               : <PinOff size={13} className="text-[var(--text-muted)]" />}
-          </button>
-          <button onClick={onRemove} className="p-1.5 rounded-lg hover:bg-[var(--error)]/10 text-[var(--text-muted)] hover:text-[var(--error)] transition-colors" title={t('remove', language)}>
+          </IconButton>
+          <IconButton
+            aria-label={t('remove', language)}
+            onClick={onRemove}
+            variant="ghost"
+            size="sm"
+            className="hover:!bg-[var(--error)]/10 hover:!text-[var(--error)]"
+          >
             <X size={13} />
-          </button>
+          </IconButton>
         </div>
       </div>
 

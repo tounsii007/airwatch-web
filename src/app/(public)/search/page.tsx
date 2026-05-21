@@ -16,6 +16,7 @@ import { useDebouncedValue } from '@/app/(public)/search/useDebouncedValue';
 import { useSearchResults } from '@/app/(public)/search/useSearchResults';
 import { MIN_QUERY_LENGTH } from '@/app/(public)/search/searchTypes';
 import { PageContainer, Stagger, FadeIn, CountUp, LiveTicker } from '@/components/ui';
+import { Tag } from '@/components/ui/Tag';
 
 export default function SearchPage() {
   const router = useRouter();
@@ -54,9 +55,9 @@ export default function SearchPage() {
   // Live availability badge — animates in on mount, count tweens via
   // CountUp so the "live" feel matches the real-time WS feed.
   const liveBadge = flightCount > 0 ? (
-    <span className="badge badge-success badge-dot">
+    <Tag variant="success" size="sm" dot>
       <CountUp value={flightCount} /> {t('flights_available', language)}
-    </span>
+    </Tag>
   ) : null;
 
   return (

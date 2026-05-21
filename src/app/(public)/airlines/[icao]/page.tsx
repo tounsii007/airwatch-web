@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useMounted } from '@/lib/hooks/useMounted';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
+import { useFavoriteToggle } from '@/lib/hooks/useFavoriteToggle';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
-import { toast } from '@/components/ui/toast';
 import { AirlineHeader } from '@/app/(public)/airlines/[icao]/AirlineHeader';
 import { AirlineStatsGrid } from '@/app/(public)/airlines/[icao]/AirlineStatsGrid';
 import { FlightSearch } from '@/app/(public)/airlines/[icao]/FlightSearch';
@@ -20,7 +20,7 @@ export default function AirlineDetailPage() {
   const router = useRouter();
   const icao = (params.icao as string).toUpperCase();
   const language = useSettingsStore((s) => s.language);
-  const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const isFavorite = useFavoritesStore((s) => s.isFavorite);
   const mounted = useMounted();
 
   const aircraftMap = useFlightStore((s) => s.aircraftMap);
@@ -35,22 +35,13 @@ export default function AirlineDetailPage() {
   const stats = useMemo(() => computeAirlineStats(airlineFlights), [airlineFlights]);
 
   const saved = mounted && isFavorite(`airline-${icao}`);
-  const handleToggleFavorite = () => {
-    const wasSaved = isFavorite(`airline-${icao}`);
-    toggleFavorite({
-      id: `airline-${icao}`,
-      type: 'airline',
-      label: icao,
-      subtitle: airline?.name ?? icao,
-      addedAt: Date.now(),
-    });
-    const name = airline?.name ?? icao;
-    if (wasSaved) {
-      toast({ title: `Removed "${name}"`, variant: 'default', duration: 3000 });
-    } else {
-      toast.success({ title: `Saved "${name}"`, duration: 3000 });
-    }
-  };
+  const handleToggleFavorite = useFavoriteToggle({
+    id: `airline-${icao}`,
+    type: 'airline',
+    label: icao,
+    subtitle: airline?.name ?? icao,
+    displayName: airline?.name ?? icao,
+  });
 
   return (
     <div className="p-4 space-y-4">

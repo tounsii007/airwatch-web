@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Star } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Button } from '@/components/ui/Button';
 import { formatAltitude } from '@/lib/utils';
 import { resolveAirline } from '@/lib/data/airlines';
 import { t } from '@/lib/i18n/translations';
@@ -74,7 +75,9 @@ export function SpottingCard({ entry, altitudeUnit, language, onTrack }: Props) 
         </div>
         <div className="flex items-center gap-2.5">
           <AltDistance entry={entry} altitudeUnit={altitudeUnit} />
-          <button
+          <Button
+            variant="primary"
+            size="sm"
             onClick={(e) => {
               // Keep the TRACK action distinct from "open detail page".
               // stopPropagation prevents the wrapping <Link> from also
@@ -83,10 +86,9 @@ export function SpottingCard({ entry, altitudeUnit, language, onTrack }: Props) 
               e.stopPropagation();
               onTrack();
             }}
-            className="px-2 py-1 rounded-lg text-[9px] font-[var(--font-heading)] font-bold tracking-wider bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--primary)]/30 hover:bg-[var(--primary)]/25 transition-colors cursor-pointer"
           >
             {t('track', language)}
-          </button>
+          </Button>
         </div>
       </Link>
     </GlassPanel>

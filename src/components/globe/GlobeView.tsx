@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { MAP_STYLES } from '@/components/map/mapStyles';
-import { ArrowLeft } from 'lucide-react';
+import { Tag } from '@/components/ui/Tag';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { AlertTriangle, ArrowLeft, Plane } from 'lucide-react';
 import Link from 'next/link';
 
 // CesiumJS must be loaded dynamically — it does not support SSR
@@ -193,22 +195,34 @@ export function GlobeView() {
     <div className="relative w-full h-full bg-[var(--bg)]">
       {/* Back button */}
       <div className="absolute top-4 left-4 z-10">
-        <Link href="/" className="glass-panel px-3 py-1.5 flex items-center gap-1.5 text-[var(--primary)] text-sm hover:bg-white/10">
-          <ArrowLeft size={14} /> MAP
+        <Link
+          href="/"
+          className="glass-panel px-3 py-1.5 inline-flex items-center gap-1.5 text-[var(--primary)] text-xs font-[var(--font-heading)] tracking-wider hover:bg-white/10 transition-colors rounded-lg"
+        >
+          <ArrowLeft size={14} />
+          MAP
         </Link>
       </div>
 
-      {/* Stats */}
-      <div className="absolute top-4 right-4 z-10 glass-panel px-3 py-1.5">
-        <span className="text-xs font-[var(--font-heading)] text-[var(--text-secondary)]">
-          {aircraftMap.size.toLocaleString()} FLIGHTS
-        </span>
+      {/* Live flight count badge */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5">
+        <Plane size={12} className="text-[var(--text-muted)]" />
+        <Tag variant="info" size="sm">
+          <span className="tabular">{aircraftMap.size.toLocaleString()} FLIGHTS</span>
+        </Tag>
       </div>
 
-      {/* Error */}
+      {/* Error overlay */}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <p className="text-[var(--error)] font-[var(--font-body)]">{error}</p>
+        <div className="absolute inset-0 z-20 flex items-center justify-center p-6 bg-[var(--bg)]/80 backdrop-blur-sm">
+          <div className="max-w-md">
+            <EmptyState
+              icon={<AlertTriangle size={28} />}
+              title="CesiumJS konnte nicht geladen werden"
+              body={error}
+              variant="error"
+            />
+          </div>
         </div>
       )}
 

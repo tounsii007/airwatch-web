@@ -12,6 +12,7 @@ import { CargoStatsRow } from '@/app/(public)/cargo/CargoStatsRow';
 import { filterCargo, isCargoFlight, type CargoStatusFilter } from '@/app/(public)/cargo/cargoFilter';
 import { computeCargoStats } from '@/app/(public)/cargo/cargoStats';
 import { PageContainer, FadeIn, CountUp } from '@/components/ui';
+import { Tag } from '@/components/ui/Tag';
 
 function byAltitudeDesc(a: AircraftState, b: AircraftState): number {
   return (b.baroAltitude ?? 0) - (a.baroAltitude ?? 0);
@@ -47,9 +48,9 @@ export default function CargoPage() {
       title={t('cargo_tracking', language)}
       subtitle={
         cargoFlights.length > 0 ? (
-          <span className="badge badge-info">
+          <Tag variant="info" size="sm">
             <CountUp value={cargoFlights.length} /> cargo aircraft
-          </span>
+          </Tag>
         ) : null
       }
     >
