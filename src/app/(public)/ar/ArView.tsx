@@ -27,7 +27,7 @@ function isArReady(camera: ReturnType<typeof useCameraStream>, orientation: Retu
 
 export function ArView() {
   const router = useRouter();
-  const { altitudeUnit, speedUnit } = useSettingsStore();
+  const { altitudeUnit, speedUnit, language } = useSettingsStore();
   const selectAircraft = useFlightStore((s) => s.selectAircraft);
   const startPolling = useFlightStore((s) => s.startPolling);
   const aircraftMapSize = useFlightStore((s) => s.aircraftMap.size);
@@ -59,6 +59,7 @@ export function ArView() {
     orientationStatus: orientation.status,
     positionStatus: position.status,
     positionMessage: position.error,
+    language,
   });
 
   const handleSelect = (ac: AircraftState) => {

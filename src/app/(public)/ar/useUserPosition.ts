@@ -32,16 +32,23 @@ export function useUserPosition() {
 
   useEffect(() => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
-       
-      setState({ position: null, status: 'unsupported', error: 'Geolocation not available' });
+      // arSessionErrors picks a localised body for `unsupported` — no
+      // platform-specific detail to forward.
+      setState({ position: null, status: 'unsupported', error: null });
       return;
     }
 
-     
     setState((s) => ({ ...s, status: 'watching' }));
     const id = navigator.geolocation.watchPosition(
       (p) => setState({ position: toPosition(p), status: 'watching', error: null }),
-      (err) => setState((s) => ({ ...s, status: errorStatus(err.code), error: err.message })),
+      // `denied` always uses the localised body; `error` keeps the upstream
+      // GeolocationPositionError.message which usually carries useful detail
+      // (timeout, signal-loss). Null out on `denied` so the locale wins.
+      (err) => {
+        const status = errorStatus(err.code);
+        const detail = status === 'error' ? err.message : null;
+        setState((s) => ({ ...s, status, error: detail }));
+      },
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 15_000 },
     );
     return () => navigator.geolocation.clearWatch(id);
