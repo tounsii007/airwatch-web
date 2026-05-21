@@ -6,6 +6,7 @@ import { useSettingsStore } from '@/lib/stores/settingsStore';
 import { MAP_STYLES } from '@/components/map/mapStyles';
 import { Tag } from '@/components/ui/Tag';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { t } from '@/lib/i18n/translations';
 import { AlertTriangle, ArrowLeft, Plane } from 'lucide-react';
 import Link from 'next/link';
 
@@ -21,6 +22,7 @@ export function GlobeView() {
   const startPolling = useFlightStore((s) => s.startPolling);
   const selectedAircraft = useFlightStore((s) => s.selectedAircraft);
   const mapStyle = useSettingsStore((s) => s.mapStyle);
+  const language = useSettingsStore((s) => s.language);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -200,7 +202,7 @@ export function GlobeView() {
           className="glass-panel px-3 py-1.5 inline-flex items-center gap-1.5 text-[var(--primary)] text-xs font-[var(--font-heading)] tracking-wider hover:bg-white/10 transition-colors rounded-lg"
         >
           <ArrowLeft size={14} />
-          MAP
+          {t('globe_back_to_map', language)}
         </Link>
       </div>
 
@@ -208,7 +210,9 @@ export function GlobeView() {
       <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5">
         <Plane size={12} className="text-[var(--text-muted)]" />
         <Tag variant="info" size="sm">
-          <span className="tabular">{aircraftMap.size.toLocaleString()} FLIGHTS</span>
+          <span className="tabular">
+            {aircraftMap.size.toLocaleString()} {t('globe_flight_count_suffix', language)}
+          </span>
         </Tag>
       </div>
 
@@ -218,7 +222,7 @@ export function GlobeView() {
           <div className="max-w-md">
             <EmptyState
               icon={<AlertTriangle size={28} />}
-              title="CesiumJS konnte nicht geladen werden"
+              title={t('globe_cesium_failed_title', language)}
               body={error}
               variant="error"
             />

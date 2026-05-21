@@ -18,6 +18,8 @@
  */
 
 import type { ReactNode } from 'react';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 interface LoadingRadarProps {
   /** Side length of the rings in pixels. Defaults to 128 (matches the
@@ -25,9 +27,11 @@ interface LoadingRadarProps {
   size?: number;
   /** Caption shown below the radar. Pass an empty string or `null` to
    *  hide the text block entirely (e.g. when the radar lives inside a
-   *  card that already has its own header). */
+   *  card that already has its own header). When omitted, falls back to
+   *  the brand wordmark from the i18n dictionary. */
   label?: ReactNode;
-  /** Sub-caption rendered below the brand text. */
+  /** Sub-caption rendered below the brand text. When omitted, falls back
+   *  to a localised "initialising flight systems" string. */
   hint?: ReactNode;
   /** Container className — pass `h-full` etc. for full-bleed centring. */
   className?: string;
@@ -35,10 +39,15 @@ interface LoadingRadarProps {
 
 export function LoadingRadar({
   size = 128,
-  label = 'AIRWATCH',
-  hint = 'INITIALIZING FLIGHT SYSTEMS',
+  label,
+  hint,
   className = '',
 }: LoadingRadarProps) {
+  const language = useSettingsStore((s) => s.language);
+  // Locale-aware defaults — caller can still override with explicit text.
+  // Distinguish `undefined` (use locale default) from `null` / `''` (suppress).
+  const resolvedLabel = label === undefined ? t('loading_radar_default_label', language) : label;
+  const resolvedHint = hint === undefined ? t('loading_radar_default_hint', language) : hint;
   const px = `${size}px`;
   const inset1 = `${Math.round(size * 0.125)}px`;
   const inset2 = `${Math.round(size * 0.25)}px`;
@@ -96,22 +105,22 @@ export function LoadingRadar({
         </div>
       </div>
 
-      {(label || hint) && (
+      {(resolvedLabel || resolvedHint) && (
         <div className="text-center animate-fade-up" style={{ animationDelay: '120ms' }}>
-          {label && (
+          {resolvedLabel && (
             <span className="gradient-text font-[var(--font-heading)] font-bold tracking-[0.25em] text-3xl block animate-brand-pulse">
-              {label}
+              {resolvedLabel}
             </span>
           )}
-          {hint && (
+          {resolvedHint && (
             <p className="text-[var(--text-muted)] font-[var(--font-body)] text-[10px] mt-3 tracking-[0.4em] uppercase">
-              <span className="animate-pulse-glow inline-block">{hint}</span>
+              <span className="animate-pulse-glow inline-block">{resolvedHint}</span>
             </p>
           )}
         </div>
       )}
 
-      <span className="sr-only">Loading</span>
+      <span className="sr-only">{t('loading_radar_loading', language)}</span>
     </div>
   );
 }

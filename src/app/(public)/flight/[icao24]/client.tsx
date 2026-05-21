@@ -13,16 +13,21 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
 import { t } from '@/lib/i18n/translations';
 
-const MapView = dynamic(() => import('@/components/map/MapView').then((m) => m.MapView), {
-  ssr: false,
-  loading: () => (
+function MapLoadingFallback() {
+  const language = useSettingsStore((s) => s.language);
+  return (
     <LoadingRadar
       size={96}
-      label="AIRWATCH"
-      hint="LOADING FLIGHT"
+      label={t('loading_radar_default_label', language)}
+      hint={t('replay_loading_track', language)}
       className="h-full bg-[var(--bg)]"
     />
-  ),
+  );
+}
+
+const MapView = dynamic(() => import('@/components/map/MapView').then((m) => m.MapView), {
+  ssr: false,
+  loading: () => <MapLoadingFallback />,
 });
 const FlightDetailsPanel = dynamic(() => import('@/components/flight/FlightDetailsPanel').then((m) => m.FlightDetailsPanel), { ssr: false });
 const SquawkAlertBanner = dynamic(() => import('@/components/map/SquawkAlertBanner').then((m) => m.SquawkAlertBanner), { ssr: false });

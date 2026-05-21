@@ -10,10 +10,12 @@ describe('<LoadingRadar />', () => {
     expect(screen.getByText('INITIALIZING FLIGHT SYSTEMS')).toBeInTheDocument();
   });
 
-  it('exposes role=status with a sr-only "Loading" announcement', () => {
+  it('exposes role=status with a sr-only loading announcement', () => {
     render(<LoadingRadar />);
     const status = screen.getByRole('status');
-    expect(status).toHaveTextContent('Loading');
+    // Default locale (en) renders the sr-only as "LOADING" — the announcement
+    // travels through i18n now so screen readers see the localised string.
+    expect(status).toHaveTextContent('LOADING');
   });
 
   it('renders a custom label and hint when provided', () => {

@@ -14,6 +14,8 @@
 import { useEffect } from 'react';
 import { RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 export default function Error({
   error,
@@ -22,6 +24,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const language = useSettingsStore((s) => s.language);
+
   useEffect(() => {
     // Best-effort report to the server-side log sink. `keepalive` lets
     // the request survive a navigation away from this errored page so
@@ -47,11 +51,10 @@ export default function Error({
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
       <h1 className="text-2xl font-[var(--font-heading)] text-[var(--error)] tracking-wider">
-        SOMETHING WENT WRONG
+        {t('something_went_wrong', language)}
       </h1>
       <p className="text-[var(--text-secondary)] text-sm max-w-md font-[var(--font-body)]">
-        AirWatch hit an unexpected error rendering this page. The team&apos;s
-        log stack already received a report — you can retry below.
+        {t('error_page_body', language)}
       </p>
       {error.digest && (
         <code className="text-[10px] font-mono text-[var(--text-muted)] tracking-wider opacity-60">
@@ -65,7 +68,7 @@ export default function Error({
         onClick={reset}
         className="mt-4"
       >
-        TRY AGAIN
+        {t('try_again', language)}
       </Button>
     </div>
   );
