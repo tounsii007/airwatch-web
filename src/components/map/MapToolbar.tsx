@@ -74,7 +74,8 @@ export function MapToolbar({
         variant="solid"
         size="md"
         active={showRadar}
-        className={`glass-panel ${showRadar ? '!bg-[var(--info)]/15 !border-[var(--info)]/30' : ''}`}
+        tone="info"
+        className="glass-panel"
       >
         <CloudRain size={18} className={radarIconCls} aria-hidden="true" />
       </IconButton>
@@ -85,7 +86,8 @@ export function MapToolbar({
         variant="solid"
         size="md"
         active={cargoOnly}
-        className={`glass-panel ${cargoOnly ? '!bg-[var(--accent)]/15 !border-[var(--accent)]/30' : ''}`}
+        tone="accent"
+        className="glass-panel"
       >
         <Package size={18} className={cargoOnly ? 'text-[var(--accent)]' : 'text-[var(--primary)]'} aria-hidden="true" />
       </IconButton>
@@ -96,7 +98,8 @@ export function MapToolbar({
         variant="solid"
         size="md"
         active={showLegend}
-        className={`glass-panel lg:hidden ${showLegend ? '!bg-[var(--primary)]/15' : ''}`}
+        tone="primary"
+        className="glass-panel lg:hidden"
       >
         <Info size={18} className="text-[var(--primary)]" aria-hidden="true" />
       </IconButton>

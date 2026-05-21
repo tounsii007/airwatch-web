@@ -9,6 +9,16 @@
  *     <RefreshCcw size={14} />
  *   </IconButton>
  *
+ *   <IconButton aria-label="Radar" onClick={r} active={on} tone="info">
+ *     <CloudRain size={18} />
+ *   </IconButton>
+ *
+ * <h3>Variant vs tone</h3>
+ * `variant` is the visual chrome (solid panel, ghost, subtle primary).
+ * `tone` colours the active state — separate axis so a "solid" button
+ * can light up `info` (radar), `accent` (cargo), or `primary` (legend)
+ * without the caller pasting `!important` overrides into `className`.
+ *
  * <h3>Touch-target expansion</h3>
  * WCAG 2.5.5 / 2.5.8 want a minimum 44×44 px effective tap area for
  * pointer targets. Our visual chrome stays compact (28 / 36 px) because
@@ -23,6 +33,7 @@ import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 
 type Variant = 'solid' | 'ghost' | 'subtle';
 type Size = 'sm' | 'md' | 'lg';
+type Tone = 'primary' | 'info' | 'accent' | 'success' | 'warning' | 'error';
 
 const SIZE_DIM: Record<Size, string> = {
   sm: 'w-7 h-7',
@@ -53,11 +64,27 @@ const VARIANT_CLASS: Record<Variant, string> = {
     'bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary-bright)] hover:bg-[var(--primary)]/15 hover:border-[var(--primary)]/35',
 };
 
+/**
+ * Active-state tinting. Picks the colour the button lights up when
+ * `active={true}`. Lets MapToolbar say `tone="info"` for the radar
+ * toggle instead of pasting `!bg-[var(--info)]/15` into className.
+ */
+const TONE_ACTIVE: Record<Tone, string> = {
+  primary: 'text-[var(--primary)] bg-[var(--primary)]/12 border-[var(--primary)]/30',
+  info:    'text-[var(--info)]    bg-[var(--info)]/15    border-[var(--info)]/30',
+  accent:  'text-[var(--accent)]  bg-[var(--accent)]/15  border-[var(--accent)]/30',
+  success: 'text-[var(--success)] bg-[var(--success)]/15 border-[var(--success)]/30',
+  warning: 'text-[var(--warning)] bg-[var(--warning)]/15 border-[var(--warning)]/30',
+  error:   'text-[var(--error)]   bg-[var(--error)]/15   border-[var(--error)]/30',
+};
+
 export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** Required — icon-only buttons must announce their purpose. */
   'aria-label': string;
   variant?: Variant;
   size?: Size;
+  /** Active-state colour. Ignored when `active` is false. */
+  tone?: Tone;
   /** Show an indeterminate spinner and disable. */
   loading?: boolean;
   active?: boolean;
@@ -68,6 +95,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
   {
     variant = 'ghost',
     size = 'md',
+    tone = 'primary',
     loading = false,
     active = false,
     disabled,
@@ -81,9 +109,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
   const dim = SIZE_DIM[size];
   const hitArea = HIT_AREA_CLASS[size];
   const styles = VARIANT_CLASS[variant];
-  const activeCls = active
-    ? 'text-[var(--primary)] bg-[var(--primary)]/12 border-[var(--primary)]/30'
-    : '';
+  const activeCls = active ? TONE_ACTIVE[tone] : '';
 
   return (
     <button
