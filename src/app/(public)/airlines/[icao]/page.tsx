@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useMounted } from '@/lib/hooks/useMounted';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
+import { favoriteId } from '@/lib/stores/favoriteId';
 import { useFavoriteToggle } from '@/lib/hooks/useFavoriteToggle';
 import { useEnsurePolling } from '@/lib/hooks/useEnsurePolling';
 import { useFlightStore } from '@/lib/stores/flightStore';
@@ -34,9 +35,9 @@ export default function AirlineDetailPage() {
   const filtered = useMemo(() => filterFlights(airlineFlights, search), [airlineFlights, search]);
   const stats = useMemo(() => computeAirlineStats(airlineFlights), [airlineFlights]);
 
-  const saved = mounted && isFavorite(`airline-${icao}`);
+  const saved = mounted && isFavorite(favoriteId.airline(icao));
   const handleToggleFavorite = useFavoriteToggle({
-    id: `airline-${icao}`,
+    id: favoriteId.airline(icao),
     type: 'airline',
     label: icao,
     subtitle: airline?.name ?? icao,
