@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useMounted } from '@/lib/hooks/useMounted';
 import { useFavoritesStore } from '@/lib/stores/favoritesStore';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { toast } from '@/components/ui/toast';
 import { AirportHeader } from '@/app/(public)/airports/[iata]/AirportHeader';
 import { ClockPanel } from '@/app/(public)/airports/[iata]/ClockPanel';
 import { ScheduleList, type SortBy } from '@/app/(public)/airports/[iata]/ScheduleList';
@@ -44,6 +45,7 @@ export default function AirportDetailPage() {
   );
 
   const handleFavorite = useCallback(() => {
+    const wasSaved = isFavorite(`airport-${iata}`);
     toggleFavorite({
       id: `airport-${iata}`,
       type: 'airport',
@@ -51,7 +53,13 @@ export default function AirportDetailPage() {
       subtitle: airport?.name ?? '',
       addedAt: Date.now(),
     });
-  }, [iata, airport, toggleFavorite]);
+    const name = airport?.name ?? iata;
+    if (wasSaved) {
+      toast({ title: `Removed "${name}"`, variant: 'default', duration: 3000 });
+    } else {
+      toast.success({ title: `Saved "${name}"`, duration: 3000 });
+    }
+  }, [iata, airport, isFavorite, toggleFavorite]);
 
   const mounted = useMounted();
   const saved = mounted && isFavorite(`airport-${iata}`);
