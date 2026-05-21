@@ -50,7 +50,7 @@ export function LoadingRadar({
       aria-live="polite"
     >
       <div
-        className="relative"
+        className="relative animate-float"
         style={{ width: px, height: px }}
         aria-hidden
       >

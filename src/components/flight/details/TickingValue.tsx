@@ -14,6 +14,10 @@ interface Props {
   flashDurationMs?: number;
   /** Optional fallback rendered when value is null/undefined. */
   placeholder?: string;
+  /** When true, plays `animate-data-tick` (scale + brightness pop) instead
+   *  of only the colour transition. Suits bold numeric readouts in the
+   *  detail panel. Default false. */
+  tickAnimation?: boolean;
 }
 
 /**
@@ -41,8 +45,13 @@ export const TickingValue = memo(function TickingValue({
   flashClass = 'text-[var(--accent)]',
   flashDurationMs = 1400,
   placeholder = '—',
+  tickAnimation = false,
 }: Props) {
   const display = value === null || value === undefined ? placeholder : String(value);
+  // Use a generation counter as the animation key so re-mounting the
+  // keyframe animation is guaranteed even if the value changes twice to
+  // the same string within the flash window.
+  const [gen, setGen] = useState(0);
   const [flashing, setFlashing] = useState(false);
   const previousRef = useRef<string>(display);
 
@@ -50,12 +59,20 @@ export const TickingValue = memo(function TickingValue({
     if (previousRef.current === display) return;
     previousRef.current = display;
     setFlashing(true);
+    setGen((g) => g + 1);
     const id = setTimeout(() => setFlashing(false), flashDurationMs);
     return () => clearTimeout(id);
   }, [display, flashDurationMs]);
 
   return (
-    <span className={`${className} transition-colors duration-700 ${flashing ? flashClass : ''}`.trim()}>
+    <span
+      key={tickAnimation ? gen : undefined}
+      className={`${className} transition-colors duration-700 ${
+        flashing
+          ? `${flashClass}${tickAnimation ? ' animate-data-tick' : ''}`
+          : ''
+      }`.trim()}
+    >
       {display}
     </span>
   );

@@ -678,16 +678,102 @@ body [class*="text-[10px]"] {
   50%      { text-shadow: 0 0 14px rgba(122, 154, 191, 0.45), 0 0 28px rgba(212, 165, 116, 0.18); }
 }
 
-.animate-pulse-glow { animation: pulse-glow 1.5s ease-in-out infinite; }
-.animate-marquee   { animation: marquee 28s linear infinite; }
-.animate-orbit     { animation: orbit 14s linear infinite; }
-.animate-scan      { animation: scan-sweep 3.2s ease-in-out infinite; }
-.animate-brand-pulse { animation: brand-pulse 4s ease-in-out infinite; }
-.animate-radar { animation: radar-sweep 6s linear infinite; }
-.animate-slide-up { animation: slide-up var(--duration-slow) var(--ease-out); }
-.animate-fade-in { animation: fade-in var(--duration-base) var(--ease-out) both; }
-.animate-fade-up { animation: fade-up var(--duration-slow) var(--ease-out) both; }
-.animate-scale-in { animation: scale-in var(--duration-base) var(--ease-spring) both; }
+/* Gentle vertical float — ambient decoration (rings, loaders, icons). */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* Single-pass left-to-right glint. Use once on mount (fill-mode: both)
+   to signal a newly active surface without looping. */
+@keyframes shimmer-sweep {
+  0%   { background-position: -200% center; opacity: 0; }
+  10%  { opacity: 1; }
+  100% { background-position: 200% center; opacity: 0; }
+}
+
+/* Spring scale-up for count badges (+1, +N notifications). */
+@keyframes counter-pop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  80%  { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Brief highlight pulse for live data fields that just changed value.
+   Pairs with TickingValue — slightly scales the span and lifts
+   brightness so changed digits "pop" without shifting layout. */
+@keyframes data-tick {
+  0%   { transform: scale(1);    filter: brightness(1); }
+  25%  { transform: scale(1.06); filter: brightness(1.5); }
+  100% { transform: scale(1);    filter: brightness(1); }
+}
+
+/* Panel entry from right — used by desktop sidebars / drawers. */
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* Smooth entry from bottom — same as slide-up but slightly less far. */
+@keyframes lift-in {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Neon flicker — a rapid 3-step brightness spike to simulate a cold
+   cathode tube warming up. Apply once (animation-fill-mode: both). */
+@keyframes neon-flicker {
+  0%   { opacity: 0.4; }
+  10%  { opacity: 1; }
+  13%  { opacity: 0.5; }
+  16%  { opacity: 1; }
+  40%  { opacity: 0.85; }
+  42%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.animate-pulse-glow   { animation: pulse-glow 1.5s ease-in-out infinite; }
+.animate-marquee      { animation: marquee 28s linear infinite; }
+.animate-orbit        { animation: orbit 14s linear infinite; }
+.animate-scan         { animation: scan-sweep 3.2s ease-in-out infinite; }
+.animate-brand-pulse  { animation: brand-pulse 4s ease-in-out infinite; }
+.animate-radar        { animation: radar-sweep 6s linear infinite; }
+.animate-slide-up     { animation: slide-up var(--duration-slow) var(--ease-out); }
+.animate-slide-in-right { animation: slide-in-right var(--duration-slow) var(--ease-spring) both; }
+.animate-fade-in      { animation: fade-in var(--duration-base) var(--ease-out) both; }
+.animate-fade-up      { animation: fade-up var(--duration-slow) var(--ease-out) both; }
+.animate-scale-in     { animation: scale-in var(--duration-base) var(--ease-spring) both; }
+.animate-float        { animation: float 3.2s ease-in-out infinite; }
+.animate-shimmer-sweep { animation: shimmer-sweep 0.8s ease-out both; }
+.animate-counter-pop  { animation: counter-pop var(--duration-base) var(--ease-spring) both; }
+.animate-data-tick    { animation: data-tick 0.55s var(--ease-spring) both; }
+.animate-lift-in      { animation: lift-in var(--duration-slow) var(--ease-out) both; }
+.animate-neon-flicker { animation: neon-flicker 0.9s ease-in both; }
+
+/* ── ActivePill shimmer ─────────────────────────────────────────────
+   The nav active-pill gets a single left-to-right glint after it
+   slides into position. We drive it via ::before so the shimmer layer
+   sits inside the pill's own overflow:hidden without any extra DOM. */
+.nav-pill-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.nav-pill-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255,255,255,0.22) 45%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 0.65s ease-out both;
+  pointer-events: none;
+  border-radius: inherit;
+}
 
 /* Stagger helpers — N children get progressively delayed entry. We
    define delays for the first 24 explicitly. Beyond 24 the

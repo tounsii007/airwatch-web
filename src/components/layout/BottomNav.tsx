@@ -111,7 +111,7 @@ function NavLink({ item, isActive, language, favCount, variant }: NavLinkProps) 
           <Icon size={14} aria-hidden className={isActive ? 'drop-shadow-[0_0_6px_var(--primary)]' : ''} />
           {showFavBadge && (
             <span
-              className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-[var(--error)] text-white t-meta tabular px-1 animate-scale-in"
+              className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-[var(--error)] text-white t-meta tabular px-1 animate-counter-pop"
               aria-label={`${favCount} saved`}
             >
               {favCount}
@@ -144,7 +144,7 @@ function NavLink({ item, isActive, language, favCount, variant }: NavLinkProps) 
         />
         {showFavBadge && (
           <span
-            className="absolute -top-1 -right-2 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-[var(--error)] text-white t-meta tabular px-1 animate-scale-in"
+            className="absolute -top-1 -right-2 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-[var(--error)] text-white t-meta tabular px-1 animate-counter-pop"
             aria-label={`${favCount} saved`}
           >
             {favCount}
@@ -172,7 +172,7 @@ function ActivePill({
   return (
     <span
       aria-hidden
-      className={`pointer-events-none absolute ${radius} bg-[var(--primary)]/12 border border-[var(--primary)]/25 shadow-[0_0_24px_-8px_var(--primary)] transition-all duration-300 ease-[cubic-bezier(0.34,1.2,0.5,1)] z-0`}
+      className={`pointer-events-none absolute ${radius} nav-pill-shimmer bg-[var(--primary)]/12 border border-[var(--primary)]/25 shadow-[0_0_24px_-8px_var(--primary)] transition-all duration-300 ease-[cubic-bezier(0.34,1.2,0.5,1)] z-0`}
       style={{
         transform: `translate(${rect.x}px, ${rect.y}px)`,
         width: rect.w,
@@ -215,7 +215,7 @@ export function BottomNav() {
       {/* Desktop: top header bar */}
       <header className="hidden lg:flex fixed top-0 left-0 right-0 z-50 h-12 items-center px-6 glass-panel rounded-none border-b border-[var(--glass-border)] border-x-0 border-t-0">
         <Link href="/" className="flex items-center gap-2 mr-8" aria-label="AirWatch home">
-          <span className="neon-text font-[var(--font-heading)] t-label font-bold text-[var(--primary)] animate-brand-pulse">
+          <span className="neon-text font-[var(--font-heading)] t-label font-bold text-[var(--primary)] animate-brand-pulse animate-neon-flicker">
             AIRWATCH
           </span>
         </Link>
