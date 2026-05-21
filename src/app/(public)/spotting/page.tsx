@@ -13,6 +13,7 @@ import { TierStatsRow } from '@/app/(public)/spotting/TierStatsRow';
 import { buildSpottingEntries } from '@/app/(public)/spotting/buildEntries';
 import { ArEntryButton } from '@/app/(public)/spotting/ArEntryButton';
 import { PageContainer, FadeIn } from '@/components/ui';
+import { Tag } from '@/components/ui/Tag';
 
 const DEFAULT_RADIUS_KM = 500;
 
@@ -43,7 +44,7 @@ export default function SpottingPage() {
       title={t('spotting', language)}
       subtitle={
         entries.length > 0 ? (
-          <span className="badge badge-success">{entries.length} aircraft nearby</span>
+          <Tag variant="success" size="sm">{entries.length} aircraft nearby</Tag>
         ) : null
       }
     >

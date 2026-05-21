@@ -2,6 +2,7 @@
 
 import { Crosshair } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { SegmentedControl, type SegmentedOption } from '@/components/ui/SegmentedControl';
 import { t } from '@/lib/i18n/translations';
 import type { AppLanguage } from '@/lib/types';
 import { RADIUS_OPTIONS } from '@/app/(public)/spotting/spottingTypes';
@@ -18,7 +19,7 @@ interface Props {
 function LocationText({ userLat, userLon, geoError, language }: Pick<Props, 'userLat' | 'userLon' | 'geoError' | 'language'>) {
   if (userLat != null) {
     return (
-      <span className="text-xs font-[var(--font-body)] text-[var(--text-secondary)]">
+      <span className="text-xs font-[var(--font-body)] text-[var(--text-secondary)] tabular">
         {userLat.toFixed(2)}°, {userLon?.toFixed(2)}°
       </span>
     );
@@ -30,30 +31,25 @@ function LocationText({ userLat, userLon, geoError, language }: Pick<Props, 'use
   );
 }
 
-function RadiusChip({ value, active, onClick }: { value: number; active: boolean; onClick: () => void }) {
-  const cls = active
-    ? 'bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--primary)]/30'
-    : 'text-[var(--text-muted)] border border-transparent';
-  return (
-    <button onClick={onClick} className={`px-2 py-1 rounded-lg text-[9px] font-[var(--font-heading)] font-bold tracking-wider transition-colors cursor-pointer ${cls}`}>
-      {value}km
-    </button>
-  );
-}
-
-/** Location readout + radius-chip selector. */
+/** Location readout + radius segmented selector. */
 export function LocationBar(props: Props) {
+  const radiusOptions: SegmentedOption<string>[] = RADIUS_OPTIONS.map((r) => ({
+    value: String(r),
+    label: `${r}km`,
+  }));
+
   return (
-    <GlassPanel className="p-3 flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <Crosshair size={14} className="text-[var(--primary)]" />
+    <GlassPanel className="p-3 flex items-center justify-between gap-3 rounded-xl">
+      <div className="flex items-center gap-2 min-w-0">
+        <Crosshair size={14} className="text-[var(--primary)] shrink-0" aria-hidden />
         <LocationText userLat={props.userLat} userLon={props.userLon} geoError={props.geoError} language={props.language} />
       </div>
-      <div className="flex items-center gap-1">
-        {RADIUS_OPTIONS.map((r) => (
-          <RadiusChip key={r} value={r} active={props.maxRadius === r} onClick={() => props.onRadiusChange(r)} />
-        ))}
-      </div>
+      <SegmentedControl
+        options={radiusOptions}
+        value={String(props.maxRadius)}
+        onChange={(v) => props.onRadiusChange(Number(v))}
+        size="sm"
+      />
     </GlassPanel>
   );
 }
