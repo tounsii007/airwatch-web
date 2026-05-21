@@ -3,6 +3,7 @@
 import { Monitor, Moon, Palette, Sun } from 'lucide-react';
 import Image from 'next/image';
 import { t } from '@/lib/i18n/translations';
+import { SegmentedControl, type SegmentedOption } from '@/components/ui/SegmentedControl';
 import { ChipGroup, type ChipOption } from '@/app/(public)/settings/ChipGroup';
 import { LabeledBlock, SectionPanel } from '@/app/(public)/settings/SectionPanel';
 import type { AppLanguage, AppTheme } from '@/lib/types';
@@ -17,9 +18,7 @@ interface Props {
 /**
  * Tiny SVG flag rendered next to each language chip. Uses the same
  * /public/flags/ asset set the airport / cargo / saved pages already
- * pull from — no new image deps. Pinned at 4×3 aspect ratio (16×12 px)
- * with a 1 px border + rounded corners so it reads as a proper flag
- * even when the chip background is dark.
+ * pull from — no new image deps.
  */
 function FlagIcon({ country, alt }: { country: 'gb' | 'de' | 'fr' | 'es' | 'it' | 'sa' | 'pl' | 'nl' | 'tr'; alt: string }) {
   return (
@@ -29,8 +28,6 @@ function FlagIcon({ country, alt }: { country: 'gb' | 'de' | 'fr' | 'es' | 'it' 
       width={16}
       height={12}
       className="rounded-[2px] ring-1 ring-black/20 shadow-sm shrink-0"
-      // SVGs scale crisply; unoptimised flag is < 2 KB so we skip Next's
-      // image optimiser to avoid an extra round-trip on every render.
       unoptimized
       priority={false}
     />
@@ -46,16 +43,13 @@ const LANGUAGES: ChipOption<AppLanguage>[] = [
   { value: 'pl', label: 'PL', icon: <FlagIcon country="pl" alt="Polski" /> },
   { value: 'nl', label: 'NL', icon: <FlagIcon country="nl" alt="Nederlands" /> },
   { value: 'tr', label: 'TR', icon: <FlagIcon country="tr" alt="Türkçe" /> },
-  // Saudi flag stands in for the global Arabic locale — pan-Arab usage
-  // typically defaults to it; users in MA/EG/AE/etc. will recognise it
-  // as "Arabic" rather than country-specific.
   { value: 'ar', label: 'AR', icon: <FlagIcon country="sa" alt="العربية" /> },
 ];
 
-function themeOptions(language: AppLanguage): ChipOption<AppTheme>[] {
+function themeOptions(language: AppLanguage): SegmentedOption<AppTheme>[] {
   return [
-    { value: 'dark', label: t('theme_dark', language), icon: <Moon size={12} /> },
-    { value: 'light', label: t('theme_light', language), icon: <Sun size={12} /> },
+    { value: 'dark',   label: t('theme_dark', language),   icon: <Moon size={12} /> },
+    { value: 'light',  label: t('theme_light', language),  icon: <Sun size={12} /> },
     { value: 'system', label: t('theme_system', language), icon: <Monitor size={12} /> },
   ];
 }
@@ -66,7 +60,13 @@ export function AppearanceSection({ theme, language, onTheme, onLanguage }: Prop
     <SectionPanel icon={<Palette size={12} />} title={t('appearance', language)}>
       <div className="space-y-1">
         <LabeledBlock label={t('theme', language)}>
-          <ChipGroup options={themeOptions(language)} value={theme} onChange={onTheme} />
+          <SegmentedControl
+            options={themeOptions(language)}
+            value={theme}
+            onChange={onTheme}
+            fullWidth
+            size="sm"
+          />
         </LabeledBlock>
         <div className="border-t border-[var(--glass-border)]" />
         <LabeledBlock label={t('language', language)}>

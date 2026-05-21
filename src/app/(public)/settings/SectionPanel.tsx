@@ -1,7 +1,7 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { type ReactNode } from 'react';
+import { Card } from '@/components/ui/Card';
 
 interface Props {
   icon: ReactNode;
@@ -9,16 +9,21 @@ interface Props {
   children: ReactNode;
 }
 
-/** Reusable settings section with a header row + icon + content. */
+/** Reusable settings section — renders as a Card with an icon+title header. */
 export function SectionPanel({ icon, title, children }: Props) {
   return (
-    <GlassPanel className="p-4">
-      <h3 className="text-[10px] font-[var(--font-heading)] text-[var(--text-muted)] tracking-widest mb-3 flex items-center gap-2">
-        {icon}
-        {title}
-      </h3>
+    <Card
+      title={
+        <span className="flex items-center gap-2">
+          <span className="text-[var(--text-muted)]" aria-hidden>{icon}</span>
+          {title}
+        </span>
+      }
+      bare
+      bodyClassName="px-4 pb-4 pt-2"
+    >
       {children}
-    </GlassPanel>
+    </Card>
   );
 }
 
