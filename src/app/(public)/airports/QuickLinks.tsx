@@ -10,9 +10,14 @@ import type { AppLanguage } from '@/lib/types';
 function QuickLink({ href, icon, label }: { href: string; icon: ReactNode; label: string }) {
   return (
     <Link href={href} className="flex-1">
-      <GlassPanel className="px-3 py-2.5 flex items-center gap-2 hover:bg-[var(--primary)]/10 transition-colors">
+      <GlassPanel
+        interactive
+        className="px-3 py-2.5 flex items-center gap-2 rounded-xl hover:bg-[var(--primary)]/10 transition-colors"
+      >
         {icon}
-        <span className="text-[10px] font-[var(--font-heading)] font-bold tracking-wider text-[var(--text-secondary)]">{label}</span>
+        <span className="text-[10px] font-[var(--font-heading)] font-bold tracking-wider text-[var(--text-secondary)]">
+          {label}
+        </span>
       </GlassPanel>
     </Link>
   );
@@ -22,10 +27,26 @@ function QuickLink({ href, icon, label }: { href: string; icon: ReactNode; label
 export function QuickLinks({ language }: { language: AppLanguage }) {
   return (
     <div className="grid grid-cols-2 gap-2">
-      <QuickLink href="/dashboard" icon={<LayoutDashboard size={14} className="text-[var(--primary)]" />} label={t('dashboard', language)} />
-      <QuickLink href="/spotting"  icon={<Binoculars size={14} className="text-[var(--accent)]" />}      label={t('spotting', language)} />
-      <QuickLink href="/globe"     icon={<Globe2 size={14} className="text-[var(--info)]" />}            label="3D GLOBE" />
-      <QuickLink href="/compare"   icon={<GitCompareArrows size={14} className="text-[var(--success)]" />} label="COMPARE" />
+      <QuickLink
+        href="/dashboard"
+        icon={<LayoutDashboard size={14} className="text-[var(--primary)]" aria-hidden />}
+        label={t('dashboard', language)}
+      />
+      <QuickLink
+        href="/spotting"
+        icon={<Binoculars size={14} className="text-[var(--accent)]" aria-hidden />}
+        label={t('spotting', language)}
+      />
+      <QuickLink
+        href="/globe"
+        icon={<Globe2 size={14} className="text-[var(--info)]" aria-hidden />}
+        label="3D GLOBE"
+      />
+      <QuickLink
+        href="/compare"
+        icon={<GitCompareArrows size={14} className="text-[var(--success)]" aria-hidden />}
+        label="COMPARE"
+      />
     </div>
   );
 }
