@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Bell, ExternalLink, X, Filter } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
 import { t } from '@/lib/i18n/translations';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
 import type { GeoFenceAlert } from '@/lib/stores/geofenceStore';
@@ -35,13 +37,14 @@ function Header({
           {shown === total ? `${total} ${alertsWord}` : `${shown} / ${total} ${alertsWord}`}
         </span>
       </div>
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={onClear}
-        className="text-[10px] font-[var(--font-heading)] text-[var(--text-muted)] hover:text-[var(--text)] tracking-wider"
         title={t('clear_all_tooltip', language)}
       >
         {t('clear_all', language)}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -152,14 +155,16 @@ function AlertRow({
           </span>
         </div>
       </div>
-      <button
-        onClick={() => onDismiss(alert.icao24, alert.fenceId)}
-        className="text-[var(--text-muted)] hover:text-[var(--text)] p-1 flex-shrink-0"
+      <IconButton
         aria-label={t('dismiss', language)}
         title="Dismiss this alert (does not affect history)"
+        onClick={() => onDismiss(alert.icao24, alert.fenceId)}
+        variant="ghost"
+        size="sm"
+        className="shrink-0"
       >
         <X size={11} />
-      </button>
+      </IconButton>
     </li>
   );
 }
