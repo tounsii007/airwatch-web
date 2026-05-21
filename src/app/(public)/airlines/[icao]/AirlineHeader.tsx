@@ -73,7 +73,7 @@ export function AirlineHeader({ icao, airline, language, mounted, saved, onBack,
             src={API.airlineLogo(logoIata)}
             name={airline?.name ?? icao}
             alt={airline?.name ?? icao}
-            size="xl"
+            size={64}
             shape="squircle"
             className="bg-white/90 p-1 shadow-md shrink-0"
           />
