@@ -25,6 +25,8 @@
 import type { ReactNode } from 'react';
 import { CountUp } from './CountUp';
 import { Sparkline } from './Sparkline';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 type Status = 'default' | 'success' | 'warning' | 'error' | 'info';
 
@@ -82,6 +84,7 @@ export function StatCard({
   const tokens = STATUS[status];
   const loading = value === undefined;
   const isZero = value === 0;
+  const language = useSettingsStore((s) => s.language);
 
   // colour-mix lets us derive transparent tints from a single CSS var
   // without hard-coding every rgba in the theme. Falls back gracefully on
@@ -159,7 +162,7 @@ export function StatCard({
                 ? 'text-[var(--error)]'
                 : 'text-[var(--text-muted)]'
             }`}
-            aria-label={`Trend ${trend}`}
+            aria-label={t('aria_trend', language).replace('{0}', trend)}
           >
             {trend === 'up' ? '▲' : trend === 'down' ? '▼' : '–'}
           </span>

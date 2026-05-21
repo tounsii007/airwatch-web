@@ -28,6 +28,8 @@
 
 import { useMemo } from 'react';
 import { useFlightStore } from '@/lib/stores/flightStore';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 import { getAltitudeColor } from '@/lib/utils';
 import type { AircraftState } from '@/lib/types';
 
@@ -80,6 +82,7 @@ export function LiveTicker({
   compact = false,
 }: LiveTickerProps) {
   const aircraftMap = useFlightStore((s) => s.aircraftMap);
+  const language = useSettingsStore((s) => s.language);
 
   const items = useMemo(() => pickTickerSet(aircraftMap, maxItems), [aircraftMap, maxItems]);
 
@@ -92,7 +95,7 @@ export function LiveTicker({
     <div
       className={`relative overflow-hidden glass-panel rounded-xl ${padY} ${className}`}
       role="marquee"
-      aria-label="Live flights ticker"
+      aria-label={t('aria_live_flights_ticker', language)}
     >
       {showBadge && (
         <span

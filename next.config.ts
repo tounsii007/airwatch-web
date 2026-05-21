@@ -176,6 +176,16 @@ const nextConfig: NextConfig = {
         source: '/api/proxy/:path*',
         destination: `${INTERNAL_API_URL}/:path*`,
       },
+      // Public telemetry beacons. In prod nginx routes /admin/api/stats/
+      // ingest/* straight to the backend (AdminAuthFilter explicitly
+      // allow-lists this prefix). In dev we mirror that so beacons from
+      // <StatsBeacon> + Settings map-style change land at the backend
+      // instead of falling through to a Next.js 404. Keeps the dev
+      // network panel clean and the view-count metric accurate locally.
+      {
+        source: '/admin/api/stats/ingest/:path*',
+        destination: `${INTERNAL_API_URL}/admin/api/stats/ingest/:path*`,
+      },
     ];
   },
   // Stub out @spz-loader/core: Cesium's GltfSpzLoader imports it eagerly,

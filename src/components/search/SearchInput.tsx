@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { Spinner } from '@/components/ui/Spinner';
 import { Kbd } from '@/components/ui/Kbd';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 interface SearchInputProps {
   value: string;
@@ -41,6 +43,7 @@ export function SearchInput({
   onEscape,
 }: SearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const language = useSettingsStore((s) => s.language);
 
   useEffect(() => {
     if (autoFocus && inputRef.current) {
@@ -95,7 +98,7 @@ export function SearchInput({
         <button
           type="button"
           onClick={() => onChange('')}
-          aria-label="Clear search"
+          aria-label={t('aria_clear_search', language)}
           className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-white/5 active:scale-95 transition-all"
         >
           <X size={14} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]" aria-hidden />

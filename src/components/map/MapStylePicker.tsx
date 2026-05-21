@@ -4,6 +4,8 @@ import { Layers } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { MapStyle } from '@/lib/types';
 import { MAP_STYLES, STYLE_ORDER } from '@/components/map/mapStyles';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 /**
  * Compact style switcher: one click opens a vertical popover of all
@@ -30,6 +32,7 @@ export const MapStylePicker = memo(function MapStylePicker({
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const language = useSettingsStore((s) => s.language);
 
   // Close on outside click + Escape. Only attach handlers while open
   // so the picker is free when collapsed.
@@ -66,7 +69,7 @@ export const MapStylePicker = memo(function MapStylePicker({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={`Map style: ${current.label}`}
+        aria-label={t('aria_map_style_label', language).replace('{0}', current.label)}
         className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer relative ${
           open ? 'bg-[var(--primary)]/15 border-[var(--primary)]/30' : ''
         }`}
@@ -80,7 +83,7 @@ export const MapStylePicker = memo(function MapStylePicker({
       {open && (
         <div
           role="listbox"
-          aria-label="Choose map style"
+          aria-label={t('aria_choose_map_style', language)}
           className="absolute top-0 right-full mr-2 glass-panel py-1.5 px-1 flex flex-col gap-0.5 min-w-[64px]"
         >
           {STYLE_ORDER.map((id) => {

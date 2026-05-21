@@ -57,15 +57,15 @@ export function MapToolbar({
       className="absolute top-16 right-3 z-[1000] flex flex-col gap-1.5 animate-fade-in"
       style={{ animationDelay: '180ms' }}
       role="toolbar"
-      aria-label="Map controls"
+      aria-label={t('aria_map_controls', language)}
     >
-      <IconButton aria-label="Zoom in" onClick={onZoomIn} variant="solid" size="md" className="glass-panel">
+      <IconButton aria-label={t('aria_zoom_in', language)} onClick={onZoomIn} variant="solid" size="md" className="glass-panel">
         <ZoomIn size={18} className="text-[var(--primary)]" aria-hidden="true" />
       </IconButton>
-      <IconButton aria-label="Zoom out" onClick={onZoomOut} variant="solid" size="md" className="glass-panel">
+      <IconButton aria-label={t('aria_zoom_out', language)} onClick={onZoomOut} variant="solid" size="md" className="glass-panel">
         <ZoomOut size={18} className="text-[var(--primary)]" aria-hidden="true" />
       </IconButton>
-      <IconButton aria-label="Reset view to default location" onClick={onCenter} variant="solid" size="md" className="glass-panel">
+      <IconButton aria-label={t('aria_reset_view', language)} onClick={onCenter} variant="solid" size="md" className="glass-panel">
         <Locate size={18} className="text-[var(--primary)]" aria-hidden="true" />
       </IconButton>
       <IconButton

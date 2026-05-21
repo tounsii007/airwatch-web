@@ -83,16 +83,19 @@ export default function GeoFencesPage() {
     const ok = await create(result.payload);
     setSubmitting(false);
     if (!ok) {
-      const msg = 'Backend rejected the fence. Check the API is reachable.';
+      const msg = t('toast_fence_creation_failed_body', language);
       setSubmitError(msg);
-      toast.error({ title: 'Could not create fence', body: msg });
+      toast.error({
+        title: t('toast_fence_creation_failed_title', language),
+        body: msg,
+      });
       return;
     }
     setForm(BLANK_FORM);
     setDraft(null);
     toast.success({
-      title: `Fence created`,
-      body: `"${form.name}" is now active — you'll be notified when aircraft enter.`,
+      title: t('toast_fence_created_title', language),
+      body: t('toast_fence_created_body', language).replace('{0}', form.name),
       duration: 6000,
     });
   };

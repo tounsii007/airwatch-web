@@ -148,7 +148,7 @@ export function FenceIOToolbar({ fences, onImport }: Props) {
         accept="application/json,.json"
         className="hidden"
         onChange={handleFileChange}
-        aria-label="Import fences JSON file"
+        aria-label={t('aria_import_fences_json', language)}
       />
       {status && (
         <span className={`text-[10px] ${toneClass}`} role="status" aria-live="polite">

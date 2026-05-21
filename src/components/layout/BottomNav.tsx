@@ -214,13 +214,13 @@ export function BottomNav() {
     <>
       {/* Desktop: top header bar */}
       <header className="hidden lg:flex fixed top-0 left-0 right-0 z-50 h-12 items-center px-6 glass-panel rounded-none border-b border-[var(--glass-border)] border-x-0 border-t-0">
-        <Link href="/" className="flex items-center gap-2 mr-8" aria-label="AirWatch home">
+        <Link href="/" className="flex items-center gap-2 mr-8" aria-label={t('aria_airwatch_home', language)}>
           <span className="neon-text font-[var(--font-heading)] t-label font-bold text-[var(--primary)] animate-brand-pulse animate-neon-flicker">
             AIRWATCH
           </span>
         </Link>
 
-        <nav ref={desktopNavRef} className="relative flex items-center gap-1 flex-1" aria-label="Primary navigation">
+        <nav ref={desktopNavRef} className="relative flex items-center gap-1 flex-1" aria-label={t('aria_primary_navigation', language)}>
           <ActivePill rect={desktopRect} variant="desktop" />
           {PRIMARY_ITEMS.map((item) => (
             <NavLink
@@ -268,7 +268,7 @@ export function BottomNav() {
 
       {/* Mobile: top bar with brand + Cmd+K equivalent */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-40 h-11 flex items-center justify-between px-4 glass-panel rounded-none border-b border-[var(--glass-border)] border-x-0 border-t-0">
-        <Link href="/" className="flex items-center" aria-label="AirWatch home">
+        <Link href="/" className="flex items-center" aria-label={t('aria_airwatch_home', language)}>
           <span className="neon-text font-[var(--font-heading)] t-label font-bold text-[var(--primary)] tracking-widest animate-brand-pulse">
             AIRWATCH
           </span>

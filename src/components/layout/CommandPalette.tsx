@@ -110,14 +110,14 @@ export function CommandPalette({ open, onClose }: Props) {
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-24 px-4 animate-fade-in">
       <button
         type="button"
-        aria-label="Close command palette"
+        aria-label={t('aria_close_command_palette', language)}
         onClick={onClose}
         className="fixed inset-0 bg-black/50 backdrop-blur-sm cursor-default"
       />
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Command palette"
+        aria-label={t('aria_command_palette', language)}
         className="relative z-10 w-full max-w-xl glass-panel-floating overflow-hidden animate-scale-in"
       >
         <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--glass-border)]">
@@ -135,7 +135,7 @@ export function CommandPalette({ open, onClose }: Props) {
           <kbd className="t-meta t-mono px-1.5 py-0.5 rounded bg-white/5 text-[var(--text-muted)] border border-[var(--glass-border)]">
             ESC
           </kbd>
-          <button onClick={onClose} aria-label="Close" className="p-1 rounded hover:bg-white/10">
+          <button onClick={onClose} aria-label={t('aria_close', language)} className="p-1 rounded hover:bg-white/10">
             <X size={14} className="text-[var(--text-muted)]" aria-hidden />
           </button>
         </div>

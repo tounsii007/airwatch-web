@@ -42,7 +42,7 @@ export function SquawkAlertBanner() {
                 onClick={() => selectAircraft(ac)}
                 style={{ borderColor: `${color}60`, color }}
                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-[var(--font-heading)] font-bold tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
-                aria-label={`Track ${ac.callsign ?? ac.icao24} squawking ${label}`}
+                aria-label={t('aria_track_squawking', language).replace('{0}', ac.callsign ?? ac.icao24).replace('{1}', label)}
               >
                 <span
                   className="w-1.5 h-1.5 rounded-full animate-pulse"

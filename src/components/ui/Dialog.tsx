@@ -31,6 +31,8 @@
 
 import { useCallback, useEffect, useId, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 export interface DialogProps {
   open: boolean;
@@ -70,6 +72,7 @@ export function Dialog({
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const descId = useId();
+  const language = useSettingsStore((s) => s.language);
 
   const close = useCallback(() => {
     if (dismissible) onClose();
@@ -151,7 +154,7 @@ export function Dialog({
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close dialog"
+                aria-label={t('aria_close_dialog', language)}
                 className="shrink-0 -mr-1 p-1.5 rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 active:scale-95 transition-all"
               >
                 <X size={16} aria-hidden />

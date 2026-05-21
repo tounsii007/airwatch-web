@@ -21,10 +21,18 @@ const REAR_CAMERA: MediaStreamConstraints = {
   },
 };
 
-function classifyError(err: unknown): { status: CameraStatus; message: string } {
-  if (!(err instanceof Error)) return { status: 'error', message: 'Unknown camera error' };
-  if (err.name === 'NotAllowedError') return { status: 'denied', message: 'Camera access denied' };
-  if (err.name === 'NotFoundError') return { status: 'unsupported', message: 'No camera found' };
+/**
+ * Convert a getUserMedia rejection into our domain-typed status. The
+ * `message` field exposes the raw browser string ONLY for the unclassified
+ * `error` branch — that's the only case where the upstream text carries
+ * useful detail (e.g. "Could not start video source"). All other branches
+ * return `null` so {@link arSessionErrors} can pick the localised body
+ * instead of falling back to a hard-coded English phrase.
+ */
+function classifyError(err: unknown): { status: CameraStatus; message: string | null } {
+  if (!(err instanceof Error)) return { status: 'error', message: null };
+  if (err.name === 'NotAllowedError') return { status: 'denied', message: null };
+  if (err.name === 'NotFoundError') return { status: 'unsupported', message: null };
   return { status: 'error', message: err.message };
 }
 
@@ -46,8 +54,9 @@ export function useCameraStream() {
     if (requestToken === 0) return; // wait until user triggers
 
     if (!isSupported()) {
-       
-      setState({ stream: null, status: 'unsupported', errorMessage: 'Camera API not available' });
+      // No platform-specific detail to share — let arSessionErrors pick
+      // the localised body for `unsupported`.
+      setState({ stream: null, status: 'unsupported', errorMessage: null });
       return;
     }
 

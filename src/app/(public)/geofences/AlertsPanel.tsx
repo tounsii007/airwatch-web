@@ -143,7 +143,7 @@ function AlertRow({
           <Link
             href={mapDeepLink(alert.icao24)}
             className="font-[var(--font-heading)] text-[var(--warning)] hover:underline inline-flex items-center gap-1"
-            title="Show this flight on the live map"
+            title={t('alert_show_on_map_tooltip', language)}
           >
             {callsign} <ExternalLink size={9} />
           </Link>
@@ -160,7 +160,7 @@ function AlertRow({
       </div>
       <IconButton
         aria-label={t('dismiss', language)}
-        title="Dismiss this alert (does not affect history)"
+        title={t('alert_dismiss_tooltip', language)}
         onClick={() => onDismiss(alert.icao24, alert.fenceId)}
         variant="ghost"
         size="sm"

@@ -2,6 +2,8 @@
 
 import { AlertTriangle, Check, RefreshCw, Star, X } from 'lucide-react';
 import { IconButton } from '@/components/ui/IconButton';
+import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { t } from '@/lib/i18n/translations';
 
 export type RefreshStatus = 'idle' | 'success' | 'error';
 
@@ -23,13 +25,14 @@ interface Props {
 export function DetailsHeaderActions({
   size, isRefreshing, refreshStatus, isFav, onRefresh, onToggleFavorite, onClose,
 }: Props) {
+  const language = useSettingsStore((s) => s.language);
   // IconButton size is the chrome dim (sm = 28px). The icon size prop is
   // independent — pass it through so the parent can still tune per-platform
   // (size=12 on mobile, size=16 on desktop) without us hard-coding either.
   return (
     <div className="flex items-center gap-0.5 shrink-0">
       <IconButton
-        aria-label="Refresh"
+        aria-label={t('aria_refresh', language)}
         onClick={onRefresh}
         variant="ghost"
         size="sm"
@@ -43,7 +46,7 @@ export function DetailsHeaderActions({
         )}
       </IconButton>
       <IconButton
-        aria-label="Toggle favorite"
+        aria-label={t('aria_toggle_favorite', language)}
         onClick={onToggleFavorite}
         variant="ghost"
         size="sm"
@@ -51,7 +54,7 @@ export function DetailsHeaderActions({
         <Star size={size} className={isFav ? 'text-[var(--accent)] fill-[var(--accent)]' : 'text-[var(--text-muted)]'} />
       </IconButton>
       <IconButton
-        aria-label="Close"
+        aria-label={t('aria_close', language)}
         onClick={onClose}
         variant="ghost"
         size="sm"
