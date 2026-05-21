@@ -8,6 +8,15 @@
  *   <IconButton aria-label="Refresh" onClick={refresh}>
  *     <RefreshCcw size={14} />
  *   </IconButton>
+ *
+ * <h3>Touch-target expansion</h3>
+ * WCAG 2.5.5 / 2.5.8 want a minimum 44×44 px effective tap area for
+ * pointer targets. Our visual chrome stays compact (28 / 36 px) because
+ * the design is dense by intent, but each button extends its hit
+ * region via a transparent `::after` pseudo-element so the actual
+ * touchable area meets WCAG even on `size="sm"`. The expanded area is
+ * invisible — it doesn't widen the surrounding layout — but the
+ * pointer-event resolver picks it up as part of the button.
  */
 
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
@@ -19,6 +28,20 @@ const SIZE_DIM: Record<Size, string> = {
   sm: 'w-7 h-7',
   md: 'w-9 h-9',
   lg: 'w-11 h-11',
+};
+
+/**
+ * Hit-area expansion. Renders an absolute, transparent `::after`
+ * shadowing the button so taps near its edge still register. The values
+ * are picked so the effective area hits 44×44 px:
+ *   * sm (28×28) → inset:-8px → 44×44 effective
+ *   * md (36×36) → inset:-4px → 44×44 effective
+ *   * lg (44×44) → already large enough, no expansion needed
+ */
+const HIT_AREA_CLASS: Record<Size, string> = {
+  sm: 'relative after:absolute after:content-[""] after:-inset-2',
+  md: 'relative after:absolute after:content-[""] after:-inset-1',
+  lg: '',
 };
 
 const VARIANT_CLASS: Record<Variant, string> = {
@@ -56,6 +79,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
   ref,
 ) {
   const dim = SIZE_DIM[size];
+  const hitArea = HIT_AREA_CLASS[size];
   const styles = VARIANT_CLASS[variant];
   const activeCls = active
     ? 'text-[var(--primary)] bg-[var(--primary)]/12 border-[var(--primary)]/30'
@@ -68,7 +92,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       aria-pressed={active || undefined}
-      className={`${dim} inline-flex items-center justify-center rounded-lg transition-all duration-150 ease-out ${styles} ${activeCls} disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 ${className}`.trim()}
+      className={`${dim} ${hitArea} inline-flex items-center justify-center rounded-lg transition-all duration-150 ease-out ${styles} ${activeCls} disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 ${className}`.trim()}
       {...rest}
     >
       {loading ? (
