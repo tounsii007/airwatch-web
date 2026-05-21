@@ -1,7 +1,8 @@
 'use client';
 
-import { Circle, Square, Trash2, MapPin, Plane, ArrowUp, ArrowDown } from 'lucide-react';
+import { Circle, Square, Trash2, MapPin, Plane, ArrowUp, ArrowDown, ShieldOff } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { AIRLINES } from '@/lib/data/airlines';
 import type { GeoFence } from '@/lib/flights/geofence';
 import { useGeoFenceStore } from '@/lib/stores/geofenceStore';
@@ -158,9 +159,14 @@ function FenceRow({ fence, onDelete }: { fence: GeoFence; onDelete: (id?: number
 
 function EmptyRow() {
   return (
-    <p className="text-xs text-[var(--text-muted)] font-[var(--font-body)]">
-      No fences yet. Create one above — alerts will appear here when an aircraft enters the zone.
-    </p>
+    <EmptyState
+      icon={<ShieldOff size={24} strokeWidth={1.5} />}
+      title="No fences yet"
+      body="Create one above — alerts will appear here when an aircraft enters the zone."
+      variant="default"
+      bare
+      className="py-4"
+    />
   );
 }
 

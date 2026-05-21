@@ -20,6 +20,13 @@ describe('<TypeToSearchState />', () => {
     rerender(<TypeToSearchState language="fr" />);
     expect(screen.getByText(/Saisissez au moins 2/i)).toBeInTheDocument();
   });
+
+  it('renders the keyboard shortcut hint', () => {
+    render(<TypeToSearchState language="en" />);
+    // The Kbd component renders ⌘ and K as separate <kbd> elements.
+    expect(screen.getByText('⌘')).toBeInTheDocument();
+    expect(screen.getByText('K')).toBeInTheDocument();
+  });
 });
 
 describe('<NoResultsState />', () => {
@@ -29,9 +36,19 @@ describe('<NoResultsState />', () => {
     expect(container.textContent).toMatch(/No results/i);
   });
 
-  it('renders the "try" hint as a separate paragraph', () => {
+  it('renders the "try" hint text', () => {
+    render(<NoResultsState query="x" language="en" />);
+    expect(screen.getByText(/callsign|ICAO/i)).toBeInTheDocument();
+  });
+
+  it('renders example search chips', () => {
     const { container } = render(<NoResultsState query="x" language="en" />);
-    const paragraphs = container.querySelectorAll('p');
-    expect(paragraphs.length).toBe(2);
+    expect(container.textContent).toContain('TU744');
+    expect(container.textContent).toContain('LH');
+  });
+
+  it('renders the title in a heading element', () => {
+    render(<NoResultsState query="ABC" language="en" />);
+    expect(screen.getByRole('heading', { name: /No results/i })).toBeInTheDocument();
   });
 });
