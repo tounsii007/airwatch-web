@@ -392,22 +392,34 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
   );
 }
 
+// Module-level constants for the two toggle states. The previous
+// function allocated a fresh CSSProperties object on every render of
+// every toggle button — the parent (AlertsPanel) re-renders on every
+// alert tick, so a 10 Hz feed plus two toggles = 20 fresh style
+// objects per second.
+const SELECT_TOGGLE_BASE: React.CSSProperties = {
+  fontFamily: 'var(--font-heading)',
+  fontSize: '0.625rem',
+  letterSpacing: '0.05em',
+  padding: '0.25rem 0.6rem',
+  borderRadius: 3,
+  cursor: 'pointer',
+};
+const SELECT_TOGGLE_ACTIVE: React.CSSProperties = {
+  ...SELECT_TOGGLE_BASE,
+  color: 'var(--primary-bright)',
+  background: 'color-mix(in srgb, var(--primary-bright) 14%, transparent)',
+  border: '1px solid color-mix(in srgb, var(--primary-bright) 32%, transparent)',
+};
+const SELECT_TOGGLE_INACTIVE: React.CSSProperties = {
+  ...SELECT_TOGGLE_BASE,
+  color: 'var(--text-secondary)',
+  background: 'var(--sunken)',
+  border: '1px solid var(--border)',
+};
+
 function selectToggleStyle(active: boolean): React.CSSProperties {
-  return {
-    fontFamily: 'var(--font-heading)',
-    fontSize: '0.625rem',
-    letterSpacing: '0.05em',
-    color: active ? 'var(--primary-bright)' : 'var(--text-secondary)',
-    background: active
-      ? 'color-mix(in srgb, var(--primary-bright) 14%, transparent)'
-      : 'var(--sunken)',
-    border: `1px solid ${active
-      ? 'color-mix(in srgb, var(--primary-bright) 32%, transparent)'
-      : 'var(--border)'}`,
-    padding: '0.25rem 0.6rem',
-    borderRadius: 3,
-    cursor: 'pointer',
-  };
+  return active ? SELECT_TOGGLE_ACTIVE : SELECT_TOGGLE_INACTIVE;
 }
 
 const bulkBarStyle: React.CSSProperties = {
