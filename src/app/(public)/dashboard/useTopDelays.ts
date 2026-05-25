@@ -36,7 +36,10 @@ export function useTopDelays(type: DelaysType, limit = 10): TopDelaysState {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    const controller = new AbortController();
+    // fetchAirlabsArray doesn't accept an AbortSignal — the previous
+    // AbortController was inert (controller.abort() didn't actually
+    // cancel the in-flight request). The boolean flag is the only
+    // thing keeping a late resolve from setState-after-unmounting.
     let cancelled = false;
 
     (async () => {
@@ -46,7 +49,7 @@ export function useTopDelays(type: DelaysType, limit = 10): TopDelaysState {
         DelayedFlightSchema,
         `delays:${type}`,
       );
-      if (cancelled || controller.signal.aborted) return;
+      if (cancelled) return;
 
       if (!result.ok) {
         setError(result.error);
@@ -62,7 +65,7 @@ export function useTopDelays(type: DelaysType, limit = 10): TopDelaysState {
       setLoading(false);
     })();
 
-    return () => { cancelled = true; controller.abort(); };
+    return () => { cancelled = true; };
   }, [type, limit, tick]);
 
   // Auto-refresh every 60 s — matches backend cache TTL.
