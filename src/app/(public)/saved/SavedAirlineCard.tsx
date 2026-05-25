@@ -32,6 +32,8 @@ export function SavedAirlineCard({ item, language, onRemove, onPin }: Props) {
             <div className="w-14 h-7 bg-white rounded shrink-0 shadow-sm overflow-hidden flex items-center justify-center px-1">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={getAirlineLogoUrl(iata, 'sm')} alt={name}
+                width={56} height={28}
+                loading="lazy" decoding="async"
                 className="max-w-full max-h-full object-contain"
                 onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }} />
             </div>

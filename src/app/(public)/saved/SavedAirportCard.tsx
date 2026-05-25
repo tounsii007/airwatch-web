@@ -30,6 +30,8 @@ export function SavedAirportCard({ item, language, onRemove, onPin }: Props) {
             {country ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={`/flags/${country.toLowerCase()}.svg`} alt=""
+                width={32} height={24}
+                loading="lazy" decoding="async"
                 className="w-8 h-6 rounded-sm object-cover shadow-sm"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
