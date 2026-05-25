@@ -369,10 +369,10 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
                         ? <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>(only one alert in group)</span>
                         : (members ?? []).slice(1).map(m => (
                             <div key={m.id} style={groupMemberStyle}>
-                              <span style={{ color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+                              <span style={GROUP_MEMBER_TIME_STYLE}>
                                 {new Date(m.fired_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
-                              <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+                              <span style={GROUP_MEMBER_TITLE_STYLE}>
                                 {m.title}
                               </span>
                             </div>
@@ -489,6 +489,14 @@ const groupMemberStyle: React.CSSProperties = {
   gap: 8,
   fontSize: '0.7rem',
   padding: '2px 4px',
+};
+const GROUP_MEMBER_TIME_STYLE: React.CSSProperties = {
+  color: 'var(--text-muted)',
+  fontVariantNumeric: 'tabular-nums',
+};
+const GROUP_MEMBER_TITLE_STYLE: React.CSSProperties = {
+  color: 'var(--text-secondary)',
+  fontFamily: 'var(--font-body)',
 };
 
 function AlertRow({ alert, canAct, selectMode, selected, expandable, expanded, onToggleExpand, onToggleSelect, onAck, onSnooze, onUnsnooze, onMute }: {
