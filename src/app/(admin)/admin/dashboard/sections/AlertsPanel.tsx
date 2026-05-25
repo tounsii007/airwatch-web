@@ -337,8 +337,16 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
             const isExpanded = !!a.fingerprint && a.fingerprint in expandedGroups;
             const members = a.fingerprint ? expandedGroups[a.fingerprint] : undefined;
             const expandable = groupedView && (a.group_count ?? 1) > 1 && !!a.fingerprint;
+            // Stable key includes the mutable fields React's diff cares
+            // about. After an ACK or snooze, the row's id is unchanged but
+            // its visual identity isn't — a plain id key let React reuse
+            // the same Fragment for a now-different row and skip remount,
+            // which can flash stale text into the new row's slot during
+            // animation. Threading ack_at + snooze_until into the key
+            // forces a clean remount on mutation.
+            const stableKey = `${a.id}:${a.ack_at ?? 'u'}:${a.snooze_until ?? 'u'}`;
             return (
-              <Fragment key={a.id}>
+              <Fragment key={stableKey}>
                 <AlertRow
                   alert={a}
                   canAct={!!csrfToken}
