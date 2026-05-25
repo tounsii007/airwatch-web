@@ -289,7 +289,13 @@ export function PhotoGallery({ icao24, onClose }: Props) {
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.src} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={p.src}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover"
+                />
               </button>
             ))}
           </div>
