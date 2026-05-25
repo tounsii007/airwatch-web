@@ -15,6 +15,10 @@ export function CargoRouteFlag({ iata }: { iata: string }) {
     <img
       src={`/flags/${country.toLowerCase()}.svg`}
       alt=""
+      width={16}
+      height={12}
+      loading="lazy"
+      decoding="async"
       className="w-4 h-3 rounded-sm object-cover shrink-0"
       onError={hideOnError}
     />
