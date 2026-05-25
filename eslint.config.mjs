@@ -24,6 +24,17 @@ const eslintConfig = defineConfig([
   // Both turned off project-wide. Revisit if React itself promotes
   // them to runtime warnings.
   {
+    // eslint-plugin-react 7.37.x calls the removed ESLint 9 API
+    // `context.getFilename()` inside its automatic React-version
+    // detection (resolveBasedir → version.js:31). ESLint 10 dropped
+    // that method, so any rule load throws
+    //   "contextOrFilename.getFilename is not a function".
+    // Pinning the version setting bypasses the detection path so the
+    // detection function never runs. Drop this `settings` block once
+    // eslint-plugin-react ships an ESLint-10-compatible release.
+    settings: {
+      react: { version: '19' },
+    },
     rules: {
       'react-hooks/purity': 'off',
       'react-hooks/set-state-in-effect': 'off',
