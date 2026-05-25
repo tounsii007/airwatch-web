@@ -61,7 +61,7 @@ jobs:
       # diff bundle sizes across PRs without re-running the build.
       - name: Upload admin perf report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: admin-perf-report
           path: admin-perf-budget.json
@@ -101,7 +101,7 @@ jobs:
 
       - name: Upload audit report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: npm-audit-report
           path: npm-audit-report.json
@@ -195,7 +195,7 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/
