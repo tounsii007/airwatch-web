@@ -82,7 +82,7 @@
     "lint-staged": "^17.0.5",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.6",
+    "vitest": "^4.1.7",
     "vitest-axe": "^0.1.0"
   }
 }
