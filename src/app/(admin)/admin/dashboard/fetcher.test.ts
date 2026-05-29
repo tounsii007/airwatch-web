@@ -3,7 +3,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/headers', () => ({
   cookies: async () => ({
-    getAll: () => [{ name: 'JSESSIONID', value: 'abc' }],
+    getAll: () => [
+      // Should be forwarded (matches whitelist)
+      { name: 'AIRWATCH_ADMIN_SID', value: 'sid-abc' },
+      { name: 'XSRF-TOKEN', value: 'csrf-xyz' },
+      // Should be stripped — not in whitelist, not AIRWATCH_*-prefixed
+      { name: 'JSESSIONID', value: 'leaky' },
+      { name: 'analytics_id', value: 'should-not-leak' },
+    ],
   }),
 }));
 
@@ -99,10 +106,16 @@ describe('fetchDashboardData — batched port histories', () => {
     expect(result.portsWithHistory[0].history).toEqual([]);
   });
 
-  it('forwards the user cookies to the api on the batched call', async () => {
+  it('forwards only whitelisted cookies to the api on the batched call', async () => {
     await fetchDashboardData();
     const historyCall = calls.find((c) => c.url.includes('/ports/history'));
-    expect((historyCall?.init?.headers as Record<string, string> | undefined)?.Cookie)
-      .toBe('JSESSIONID=abc');
+    const cookieHeader = (historyCall?.init?.headers as Record<string, string> | undefined)?.Cookie;
+    // Session + CSRF token are forwarded
+    expect(cookieHeader).toContain('AIRWATCH_ADMIN_SID=sid-abc');
+    expect(cookieHeader).toContain('XSRF-TOKEN=csrf-xyz');
+    // Backend session id and third-party cookies are stripped — privacy +
+    // request-smuggling defence-in-depth.
+    expect(cookieHeader).not.toContain('JSESSIONID');
+    expect(cookieHeader).not.toContain('analytics_id');
   });
 });

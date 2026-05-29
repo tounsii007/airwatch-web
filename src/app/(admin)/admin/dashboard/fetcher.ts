@@ -26,11 +26,37 @@ import type {
 
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || 'http://nginx:18080';
 
+// Defense-in-depth: INTERNAL_API_URL gets used as a fetch() base for
+// every server-side admin call. If a misconfigured deploy injected an
+// externally-reachable URL here, our forwarded cookies (incl. session +
+// CSRF) would leak to the wrong origin. Allowlist the in-cluster hosts;
+// outside of production we tolerate anything so local rigs keep working.
+const ALLOWED_INTERNAL_HOSTS = /^(http:\/\/(nginx|localhost|127\.0\.0\.1)(:\d+)?)$/;
+if (process.env.NODE_ENV === 'production' && !ALLOWED_INTERNAL_HOSTS.test(INTERNAL_API_URL.replace(/\/$/, ''))) {
+  console.warn('INTERNAL_API_URL has an unexpected host:', INTERNAL_API_URL);
+}
+
+/**
+ * Cookie-Whitelist: nur diese Cookies werden beim Server-Side-Fetch an das
+ * Backend weitergereicht. Verhindert Privacy-Leaks (z.B. Analytics-Cookies
+ * landen sonst in Backend-Logs) und reduziert Request-Smuggling-Restrisiko
+ * bei bösartig konstruierten Cookie-Werten Dritter.
+ */
+const FORWARDED_COOKIES = new Set(['AIRWATCH_ADMIN_SID', 'XSRF-TOKEN']);
+
+function buildForwardedCookieHeader(all: { name: string; value: string }[]): string {
+  return all
+    .filter((c) => FORWARDED_COOKIES.has(c.name) || c.name.startsWith('AIRWATCH_'))
+    .map((c) => `${c.name}=${c.value}`)
+    .join('; ');
+}
+
 /**
  * GET wrapper — never throws. Returns null on any failure (401, 404,
- * 500, network blip, malformed JSON). Forwards the user's incoming
- * cookies so AdminAuthFilter accepts the request — without this the
- * server-side fetch hits the api with no session and gets a 401.
+ * 500, network blip, malformed JSON). Forwards a *whitelisted* subset of
+ * the user's incoming cookies (Session + CSRF token) so AdminAuthFilter
+ * accepts the request — without this the server-side fetch hits the api
+ * with no session and gets a 401.
  *
  * The callers tolerate null and the page renders graceful "API
  * unreachable" states for each section separately, so a single broken
@@ -39,9 +65,7 @@ const INTERNAL_API_URL = process.env.INTERNAL_API_URL || 'http://nginx:18080';
 export async function fetchJson<T>(path: string): Promise<T | null> {
   try {
     const cookieStore = await cookies();
-    const cookieHeader = cookieStore.getAll()
-      .map((c) => `${c.name}=${c.value}`)
-      .join('; ');
+    const cookieHeader = buildForwardedCookieHeader(cookieStore.getAll());
     const res = await fetch(`${INTERNAL_API_URL}${path}`, {
       cache: 'no-store',
       headers: {

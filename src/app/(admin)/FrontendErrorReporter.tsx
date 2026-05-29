@@ -44,6 +44,37 @@ const ENDPOINT = '/admin/api/frontend-errors';
 const RECENT_WINDOW_MS = 5_000;
 const recentlySent = new Map<string, number>();
 
+// Token bucket: at most TB_CAPACITY error POSTs per TB_WINDOW_MS per tab.
+// `shouldReport` already dedupes by message, but a render loop that
+// throws a *new* exception each tick (e.g. a Date.now() in the message)
+// would still flood the api. This guards the network side regardless
+// of what shape the messages take.
+const TB_CAPACITY  = 5;
+const TB_WINDOW_MS = 1_000;
+let   tbTokens     = TB_CAPACITY;
+let   tbLastRefill = Date.now();
+let   blockedUntil = 0;
+
+function tokenBucketAllow(): boolean {
+  const now = Date.now();
+  if (now < blockedUntil) return false;
+  const elapsed = now - tbLastRefill;
+  if (elapsed > 0) {
+    // Refill proportionally — gives bursty error-after-deploy traffic
+    // room without a hard reset boundary.
+    tbTokens = Math.min(TB_CAPACITY, tbTokens + (elapsed / TB_WINDOW_MS) * TB_CAPACITY);
+    tbLastRefill = now;
+  }
+  if (tbTokens < 1) {
+    // Cool off for one full window — prevents per-frame retries from
+    // hammering the bucket boundary.
+    blockedUntil = now + TB_WINDOW_MS;
+    return false;
+  }
+  tbTokens -= 1;
+  return true;
+}
+
 const SESSION_ID_KEY = 'airwatch.admin.session-nonce';
 
 /** Persist a per-tab session id. New each tab open; survives within tab. */
@@ -103,6 +134,7 @@ function shouldReport(message: string): boolean {
 
 async function send(message: string, stack: string | undefined) {
   if (!shouldReport(message)) return;
+  if (!tokenBucketAllow()) return;
   // Drop a final breadcrumb so the trail captures the error itself —
   // operator opening the persisted record sees the explosion and the
   // few preceding actions in one continuous timeline.

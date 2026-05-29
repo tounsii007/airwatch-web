@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/app/(admin)/Toast';
+import { getCsrfToken } from '@/lib/csrfToken';
 
 /**
  * Manual "Run now" trigger for a single ScheduledJob.
@@ -31,17 +32,20 @@ import { useToast } from '@/app/(admin)/Toast';
  *
  * <h3>CSRF</h3>
  * /admin/jobs/{id}/run requires CSRF. We pull the live token from the
- * SessionHeartbeat-populated window slot at click time so a long-open
- * page that sat through a token rotation still uses the current value.
+ * SessionHeartbeat-populated module store ({@code lib/csrfToken}) at
+ * click time so a long-open page that sat through a token rotation
+ * still uses the current value. The token is intentionally kept off
+ * {@code window} so opportunistic readers (extensions, embedded
+ * scripts) can't lift it.
  */
 
 interface Props {
   jobId: string;
   /**
    * Initial CSRF token rendered into the page server-side. The
-   * heartbeat keeps {@code window.__AIRWATCH_CSRF__} in sync so we
-   * prefer the live value when present, but the SSR token covers
-   * the first-paint window before the heartbeat has fired.
+   * heartbeat keeps the module-scoped {@code lib/csrfToken} store in
+   * sync so we prefer the live value when present, but the SSR token
+   * covers the first-paint window before the heartbeat has fired.
    */
   csrfToken: string;
 }
@@ -54,8 +58,7 @@ export function JobRunButton({ jobId, csrfToken }: Props) {
 
   async function trigger() {
     setState('idle');
-    const liveToken =
-      (window as unknown as Record<string, string>).__AIRWATCH_CSRF__ || csrfToken;
+    const liveToken = getCsrfToken() || csrfToken;
     try {
       const body = new URLSearchParams({ _csrf: liveToken });
       const res = await fetch(`/admin/jobs/${encodeURIComponent(jobId)}/run`, {

@@ -84,6 +84,28 @@ function stripQuery(href: string | undefined | null): string {
 }
 
 /**
+ * Collapse numeric and UUID path segments to a `:id` placeholder so a
+ * breadcrumb trail like `/admin/jobs/42` is recorded as
+ * `/admin/jobs/:id`. Two reasons:
+ *   1. <b>Privacy</b> — operator-visible IDs may correlate to specific
+ *      tenants / records; persisting them in localStorage past the
+ *      session lifetime is more exposure than we need for forensics.
+ *   2. <b>Aggregation</b> — error reports become groupable by template
+ *      path. Without this, a 500 on `/admin/jobs/42` and `/admin/jobs/43`
+ *      look like two independent incidents.
+ */
+function anonymizeIds(path: string): string {
+  return path.replace(
+    /\/(\d+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?=\/|$)/gi,
+    '/:id',
+  );
+}
+
+function sanitizeUrl(href: string | undefined | null): string {
+  return anonymizeIds(stripQuery(href));
+}
+
+/**
  * Append one breadcrumb to the ring. Trims to {@link MAX_ENTRIES}.
  */
 export function pushBreadcrumb(kind: BreadcrumbKind, data: Record<string, unknown>): void {
@@ -126,7 +148,7 @@ export function installBreadcrumbAutoCapture(): void {
 
   // Initial route entry — operators want to see "they were on /admin/jobs"
   // in the breadcrumb trail even if they never navigated within the SPA.
-  pushBreadcrumb('route', { to: stripQuery(window.location.href) });
+  pushBreadcrumb('route', { to: sanitizeUrl(window.location.href) });
 
   // Route changes via History API. Next.js uses the same primitives, so
   // wrapping them captures every router.push / link click.
@@ -134,16 +156,16 @@ export function installBreadcrumbAutoCapture(): void {
   const origReplace = history.replaceState;
   history.pushState = function (...args: Parameters<typeof history.pushState>) {
     const result = origPush.apply(this, args);
-    pushBreadcrumb('route', { to: stripQuery(window.location.href) });
+    pushBreadcrumb('route', { to: sanitizeUrl(window.location.href) });
     return result;
   };
   history.replaceState = function (...args: Parameters<typeof history.replaceState>) {
     const result = origReplace.apply(this, args);
-    pushBreadcrumb('route', { to: stripQuery(window.location.href) });
+    pushBreadcrumb('route', { to: sanitizeUrl(window.location.href) });
     return result;
   };
   window.addEventListener('popstate', () => {
-    pushBreadcrumb('route', { to: stripQuery(window.location.href) });
+    pushBreadcrumb('route', { to: sanitizeUrl(window.location.href) });
   });
 
   // Click capture — best-effort CSS selector for the target.
@@ -168,13 +190,13 @@ export function installBreadcrumbAutoCapture(): void {
     const isAdminApi = typeof url === 'string' && url.includes('/admin/api/');
     const startTs = Date.now();
     if (isAdminApi) {
-      pushBreadcrumb('fetch:start', { url: stripQuery(url), method });
+      pushBreadcrumb('fetch:start', { url: sanitizeUrl(url), method });
     }
     try {
       const res = await origFetch.call(this, input, init);
       if (isAdminApi) {
         pushBreadcrumb('fetch:response', {
-          url: stripQuery(url),
+          url: sanitizeUrl(url),
           method,
           status: res.status,
           durationMs: Date.now() - startTs,
@@ -184,7 +206,7 @@ export function installBreadcrumbAutoCapture(): void {
     } catch (ex) {
       if (isAdminApi) {
         pushBreadcrumb('fetch:response', {
-          url: stripQuery(url),
+          url: sanitizeUrl(url),
           method,
           status: 0,
           durationMs: Date.now() - startTs,

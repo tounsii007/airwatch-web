@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { setCsrfToken } from '@/lib/csrfToken';
 
 /**
  * Activity-aware client-side keep-alive ping for the admin session.
@@ -22,12 +23,14 @@ import { useEffect } from 'react';
  *    we ping {@code /admin/api/csrf} to refresh the session. If the
  *    user has been idle longer, we DO NOT ping — letting the server
  *    expire the session as configured.
- * 3. The first ping always fires on mount so the CSRF token global
+ * 3. The first ping always fires on mount so the CSRF token closure
  *    slot is populated before any user action.
  *
  * <h3>What it does on response</h3>
- *   * 200 → stash the fresh CSRF token on {@code window.__AIRWATCH_CSRF__}
- *           for JS-driven action buttons.
+ *   * 200 → stash the fresh CSRF token in the module-scoped store
+ *           ({@code lib/csrfToken}) for JS-driven action buttons.
+ *           The token is NEVER attached to {@code window} — see
+ *           {@code lib/csrfToken.ts} header for the threat model.
  *   * 401 → session is gone (server expired, kicked from another tab,
  *           rebuild flushed Redis). Hard-redirect to /admin/login.
  *   * Anything else / network error → silent retry at next tick.
@@ -38,7 +41,6 @@ import { useEffect } from 'react';
 
 const CHECK_INTERVAL_MS    = 60 * 1000;       // wake-up cadence
 const ACTIVITY_WINDOW_MS   = 4 * 60 * 1000;   // ping if user touched the page in the last 4 min
-const CSRF_GLOBAL_SLOT     = '__AIRWATCH_CSRF__' as const;
 
 const ACTIVITY_EVENTS: readonly (keyof DocumentEventMap)[] = [
   'mousemove',
@@ -73,7 +75,7 @@ export function SessionHeartbeat() {
         if (res.ok) {
           const body = (await res.json()) as { token?: string; available?: boolean };
           if (body.available && body.token) {
-            (window as unknown as Record<string, string>)[CSRF_GLOBAL_SLOT] = body.token;
+            setCsrfToken(body.token);
           }
         }
       } catch {

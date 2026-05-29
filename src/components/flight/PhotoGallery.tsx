@@ -28,6 +28,7 @@ import { X, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 import { API } from '@/lib/constants';
 import { t } from '@/lib/i18n/translations';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { safeExternalUrl } from '@/lib/safeUrl';
 
 export interface Photo {
   src: string;
@@ -258,22 +259,25 @@ export function PhotoGallery({ icao24, onClose }: Props) {
 
       {/* Attribution + thumbnails */}
       <div className="p-4" onClick={(e) => e.stopPropagation()}>
-        {photo.photographer && (
-          <p className="text-white/40 text-[10px] text-center mb-3 font-[var(--font-body)]">
-            Photo by {photo.link ? (
-              <a
-                href={photo.link}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="underline hover:text-white/70"
-              >
-                {photo.photographer}
-              </a>
-            ) : (
-              photo.photographer
-            )} · planespotters.net
-          </p>
-        )}
+        {photo.photographer && (() => {
+          const safe = safeExternalUrl(photo.link);
+          return (
+            <p className="text-white/40 text-[10px] text-center mb-3 font-[var(--font-body)]">
+              Photo by {safe ? (
+                <a
+                  href={safe}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-white/70"
+                >
+                  {photo.photographer}
+                </a>
+              ) : (
+                photo.photographer
+              )} · planespotters.net
+            </p>
+          );
+        })()}
         {/* Thumbnail strip */}
         {photos.length > 1 && (
           <div role="tablist" aria-label={t('aria_photo_thumbnails', language)} className="flex gap-2 justify-center overflow-x-auto pb-2 scrollbar-none">

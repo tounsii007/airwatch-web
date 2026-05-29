@@ -8,7 +8,10 @@ import { getAuthHeaders } from '@/lib/apiSecurity';
  *   1. Gate — consult the client-side rate limiter before making the call.
  *      Returns a synthetic 429 response when backoff is active, so callers
  *      can treat it like any other HTTP error.
- *   2. Auth — attach HMAC headers when {@code NEXT_PUBLIC_API_SECRET} is set.
+ *   2. Auth — {@code getAuthHeaders} is a no-op stub (see apiSecurity.ts
+ *      header for why client-side HMAC signing was removed). Kept in the
+ *      call chain so a future server-side signing layer can re-introduce
+ *      headers without changing every consumer.
  *   3. Logging — expected upstream back-pressure (rate limits, monthly quota
  *      exceeded) goes to `console.warn` so the Next.js dev-overlay doesn't
  *      flag it as an "Issue" and leak memory on every poll; real errors
@@ -20,6 +23,11 @@ import { getAuthHeaders } from '@/lib/apiSecurity';
 type Severity = 'warn' | 'error';
 
 function emit(severity: Severity, message: string) {
+  // Explicit prod gate. The bundler usually strips console.* in
+  // production, but we don't want our error-classification strings
+  // (which include status codes + API-key error labels) to ride along
+  // in any inline RSC payload or source map by accident.
+  if (process.env.NODE_ENV === 'production') return;
   if (severity === 'warn') console.warn(message);
   else console.error(message);
 }
@@ -78,7 +86,7 @@ export async function apiFetch(url: string, options?: RequestInit): Promise<Resp
   const gate = checkRateLimit();
   if (!gate.allowed) return ratelimitResponse(gate.retryAfterMs);
 
-  // 2. HMAC auth (no-op when NEXT_PUBLIC_API_SECRET is unset).
+  // 2. Auth headers — currently a no-op stub. See apiSecurity.ts.
   const authHeaders = await getAuthHeaders(path);
   const mergedHeaders = { ...(options?.headers ?? {}), ...authHeaders };
   const res = await fetch(url, { ...options, headers: mergedHeaders });

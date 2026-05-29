@@ -44,10 +44,25 @@ interface VitalsBody {
 }
 
 export async function POST(req: Request) {
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown';
+  // Enforce JSON Content-Type — sendBeacon defaults to text/plain when
+  // misused, and we don't want to spend cycles parsing arbitrary blobs.
+  if (req.headers.get('content-type')?.split(';')[0]?.trim() !== 'application/json') {
+    return new Response('expected application/json', { status: 415 });
+  }
+
+  const xff = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  const xri = req.headers.get('x-real-ip');
+  const ip = xff || xri || 'unknown';
+
+  // Both forwarded-IP headers missing — reject unless this is a local
+  // dev call. Keeps a direct-to-origin attacker from sharing one
+  // `unknown` bucket with all other unforwarded traffic.
+  if (!xff && !xri) {
+    const host = req.headers.get('host') ?? '';
+    if (!/^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host)) {
+      return new Response('Bad Request', { status: 400 });
+    }
+  }
 
   if (!rateLimit(ip)) {
     // 204: don't waste bandwidth on a body the beacon won't read.

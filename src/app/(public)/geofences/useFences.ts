@@ -27,7 +27,7 @@ export function useFences() {
 
   const remove = useCallback(async (id?: number) => {
     if (!id) return;
-    await deleteFence(id);
+    await deleteFence(id, getOrCreateClientId());
     void refresh();
   }, [refresh]);
 

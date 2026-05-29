@@ -119,6 +119,15 @@ export function proxy(request: NextRequest) {
   const nonce = Buffer.from(rawUuid, 'hex').toString('base64')
     .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 
+  // 'unsafe-eval' is only emitted for routes that demonstrably need it
+  // (CesiumJS — see below). On every other route the directive is
+  // omitted entirely, which is the single biggest XSS attack-surface
+  // reduction we can make without breaking Cesium. `cesium` is matched
+  // as a path substring so any subroute that mounts the globe (debug
+  // pages, embedded views) still loads.
+  const path_lc = path.toLowerCase();
+  const needsEval = path_lc.startsWith('/globe') || path_lc.includes('cesium');
+
   const csp = [
     "default-src 'self'",
     // 'strict-dynamic' lets a nonced script load further scripts without
@@ -129,11 +138,11 @@ export function proxy(request: NextRequest) {
     // shaders + GLTF expression strings via `new Function(...)` at runtime
     // — the spec doesn't have a narrower escape hatch, so the whole page
     // would EvalError and the globe stays blank without it. The risk
-    // (string-to-code execution) is acceptable here because the only
-    // strings Cesium evals are its own internal shader templates, never
-    // user input. If a future page-only feature needs eval, prefer a
-    // per-route CSP relaxation over widening this site-wide rule.
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-eval' 'wasm-unsafe-eval'`,
+    // (string-to-code execution) is acceptable on the globe page because
+    // the only strings Cesium evals are its own internal shader templates,
+    // never user input. Every other route gets a strict CSP without
+    // 'unsafe-eval'.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${needsEval ? " 'unsafe-eval'" : ''} 'wasm-unsafe-eval'`,
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     // Direct-CDN allowlist for every external image source.

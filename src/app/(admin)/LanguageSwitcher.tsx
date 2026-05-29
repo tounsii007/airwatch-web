@@ -16,7 +16,8 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
     if (next === current) return;
     // Cookie scoped to /admin so the public app isn't affected.
     // 1-year lifetime — the operator chose this consciously, no need to expire it.
-    document.cookie = `${LOCALE_COOKIE_NAME}=${next}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+    const isSecure = window.location.protocol === 'https:';
+    document.cookie = `${LOCALE_COOKIE_NAME}=${next}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=strict${isSecure ? '; secure' : ''}`;
     // Full reload (not router.refresh) because the i18n context is set
     // by the layout's server render — refresh re-renders pages but not
     // the layout itself.

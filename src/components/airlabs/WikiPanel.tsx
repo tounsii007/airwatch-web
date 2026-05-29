@@ -7,6 +7,7 @@ import { t } from '@/lib/i18n/translations';
 import { API } from '@/lib/constants';
 import { fetchAirlabsOne } from '@/lib/airlabs/fetch';
 import { WikiSchema, type Wiki } from '@/lib/airlabs/schemas';
+import { safeExternalUrl } from '@/lib/safeUrl';
 
 interface Props {
   /** Either pass {@code airportIata} (3-letter) OR {@code airlineIata} (2-letter), not both. */
@@ -77,16 +78,19 @@ export function WikiPanel({ airportIata, airlineIata }: Props) {
               {wiki.summary}
             </p>
           )}
-          {wiki.wiki_url && (
-            <a
-              href={wiki.wiki_url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-block mt-2 text-[10px] text-[var(--primary)] hover:underline"
-            >
-              {t('read_on_wikipedia', language)} →
-            </a>
-          )}
+          {(() => {
+            const safe = safeExternalUrl(wiki.wiki_url);
+            return safe ? (
+              <a
+                href={safe}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 text-[10px] text-[var(--primary)] hover:underline"
+              >
+                {t('read_on_wikipedia', language)} →
+              </a>
+            ) : null;
+          })()}
         </div>
       </div>
     </GlassPanel>

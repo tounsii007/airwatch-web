@@ -126,8 +126,13 @@ export type ReplayInfo = z.infer<typeof ReplayInfoSchema>;
 export function safeParse<T>(schema: z.ZodType<T>, value: unknown, label?: string): T | null {
   const result = schema.safeParse(value);
   if (!result.success) {
-     
-    console.error(`[schema:${label ?? 'unknown'}]`, result.error.issues.slice(0, 3));
+    // Explicit dev-only guard. Webpack drops console.* in prod builds,
+    // but the optimizer is keyed off NODE_ENV and isn't guaranteed to
+    // strip when bundled by a different toolchain (e.g. tests, RSC).
+    // Belt + braces keeps backend field names out of any prod surface.
+    if (process.env.NODE_ENV !== 'production') {
+      console.error(`[schema:${label ?? 'unknown'}]`, result.error.issues.slice(0, 3));
+    }
     return null;
   }
   return result.data;

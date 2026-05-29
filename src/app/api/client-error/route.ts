@@ -66,11 +66,28 @@ interface ClientErrorReport {
 }
 
 export async function POST(req: Request) {
+  // Enforce JSON Content-Type at the boundary — drops form-encoded or
+  // multipart probes before we touch the body.
+  if (req.headers.get('content-type')?.split(';')[0]?.trim() !== 'application/json') {
+    return new Response('expected application/json', { status: 415 });
+  }
+
   // Coarse client identifier — IP from forwarded headers or socket.
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown';
+  const xff = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  const xri = req.headers.get('x-real-ip');
+  const ip = xff || xri || 'unknown';
+
+  // If both forwarded-IP headers are missing the request didn't come
+  // through our ingress — reject unless we're talking to localhost
+  // (dev / smoke-test). Without this an attacker that reaches the
+  // origin directly would share a single `unknown` bucket with everyone
+  // else and trivially DOS the log sink.
+  if (!xff && !xri) {
+    const host = req.headers.get('host') ?? '';
+    if (!/^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host)) {
+      return new Response('Bad Request', { status: 400 });
+    }
+  }
 
   if (!rateLimit(ip)) {
     return NextResponse.json({ ok: false, reason: 'rate_limited' }, { status: 429 });

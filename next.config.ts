@@ -87,24 +87,24 @@ const nextConfig: NextConfig = {
   // to ~150 MB and means the runtime container has no compiler / package
   // manager to weaponise if something gets RCE.
   output: 'standalone',
-  // Phase 3 — emit .js.map files alongside production JS chunks so the
-  // admin shell's FrontendErrorReporter can resolve minified stack
-  // traces back to original source positions. The maps are referenced
-  // by the JS files via `//# sourceMappingURL=...`, which the browser
-  // ignores in production but the reporter (sourceMapResolver.ts) uses
-  // to rewrite the stack before POSTing.
+  // Production sourcemaps are DISABLED for the public bundle.
   //
-  // Trade-off: maps are ~2-3× the JS size and are publicly fetchable
-  // from /_next/static/chunks/*.js.map. Source code structure is
-  // exposed to anyone who fetches the maps. Acceptable here because:
-  //   1. The admin shell is gated behind /admin/login on a loopback
-  //      nginx (13099) — non-admin traffic never reaches it.
-  //   2. The public app's secrets aren't in the source — all secrets
-  //      come from server-side env vars at runtime.
-  //   3. Server-side resolution would need a Java sourcemap parser,
-  //      which is more code surface than the trade-off justifies for
-  //      the current threat model.
-  productionBrowserSourceMaps: true,
+  // Why: when emitted, .js.map files are publicly fetchable from
+  // /_next/static/chunks/*.js.map and reveal the original variable
+  // names, file paths, and module structure of the entire client app.
+  // That information aids attackers in reconnaissance — auth helpers,
+  // CSRF flow internals, validator regexes and rate-limit thresholds
+  // all become trivially readable, when the whole point of minification
+  // is to make them merely *harder* to extract.
+  //
+  // The admin shell's FrontendErrorReporter previously used these maps
+  // to symbolicate minified stack traces client-side before POSTing.
+  // That can be re-introduced server-side (resolve the maps in the
+  // Next.js server using @ts-stack/source-map or similar, keeping the
+  // .map files OFF the public asset path) if the symbolicated stacks
+  // become genuinely necessary again. Until then: ship minified
+  // stacks and look them up against a private build artefact.
+  productionBrowserSourceMaps: false,
   // Cap the per-request body Next.js buffers when the proxy runs. Default
   // is 10 MB which is generous for our log-sink endpoints (web-vitals +
   // client-error each ship a few KB at most). 64 KB is comfortably above

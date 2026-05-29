@@ -16,6 +16,37 @@
 import { useEffect, useState } from 'react';
 import { useToast } from '@/app/(admin)/Toast';
 
+// Mask the path portion of a webhook URL so a shoulder-surfer or screen
+// share can't capture the secret token segments. The host is left intact
+// (operators need to know which sink it points at — Slack vs Discord vs
+// generic), but everything after it collapses to *** placeholders.
+//
+// Example input:  https://hooks.slack.com/services/T123/B456/abc
+// Example output: https://hooks.slack.com/services/T***/B***/***
+function maskWebhookUrl(url: string): string {
+  if (!url) return '';
+  try {
+    const u = new URL(url);
+    const masked = u.pathname
+      .split('/')
+      .map((segment) => {
+        if (!segment) return segment;
+        // Preserve a one-character prefix (e.g. Slack's T/B route hints)
+        // so the channel type is still recognisable without leaking
+        // the token suffix.
+        const first = segment[0];
+        return /[A-Za-z]/.test(first) && segment.length > 1
+          ? `${first}***`
+          : '***';
+      })
+      .join('/');
+    return `${u.origin}${masked}`;
+  } catch {
+    // Not a parseable URL — fully redact rather than risk leaking.
+    return '***';
+  }
+}
+
 interface WebhookStatus {
   enabled: boolean;
   url:     string;
@@ -95,7 +126,7 @@ export function WebhookCard({ csrfToken }: { csrfToken: string }) {
           <div style={infoRowStyle('var(--success)')}>
             <span style={{ ...badgeStyle, color: 'var(--success)' }}>ENABLED</span>
             <span style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-              <code style={inlineCode}>{status.url}</code>
+              <code style={inlineCode}>{maskWebhookUrl(status.url)}</code>
             </span>
             <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
               format: <strong>{status.format}</strong>
