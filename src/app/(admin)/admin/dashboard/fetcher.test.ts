@@ -7,7 +7,12 @@ vi.mock('next/headers', () => ({
       // Should be forwarded (matches whitelist)
       { name: 'AIRWATCH_ADMIN_SID', value: 'sid-abc' },
       { name: 'XSRF-TOKEN', value: 'csrf-xyz' },
-      // Should be stripped — not in whitelist, not AIRWATCH_*-prefixed
+      // Should be stripped — not in whitelist. Note the AIRWATCH_*
+      // entry below: the previous heuristic forwarded ANY cookie with
+      // that prefix, which would have leaked a future tracking /
+      // experiment cookie to the api. The strict 2-name whitelist
+      // means new AIRWATCH_-named cookies must be added explicitly.
+      { name: 'AIRWATCH_FUTURE_THING', value: 'should-not-leak-either' },
       { name: 'JSESSIONID', value: 'leaky' },
       { name: 'analytics_id', value: 'should-not-leak' },
     ],
@@ -117,5 +122,9 @@ describe('fetchDashboardData — batched port histories', () => {
     // request-smuggling defence-in-depth.
     expect(cookieHeader).not.toContain('JSESSIONID');
     expect(cookieHeader).not.toContain('analytics_id');
+    // AIRWATCH_*-prefixed cookies that aren't on the explicit whitelist
+    // must also be stripped — the previous startsWith('AIRWATCH_')
+    // heuristic let any future tracking/experiment cookie leak.
+    expect(cookieHeader).not.toContain('AIRWATCH_FUTURE_THING');
   });
 });

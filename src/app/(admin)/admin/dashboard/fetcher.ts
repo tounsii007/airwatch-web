@@ -41,12 +41,17 @@ if (process.env.NODE_ENV === 'production' && !ALLOWED_INTERNAL_HOSTS.test(INTERN
  * Backend weitergereicht. Verhindert Privacy-Leaks (z.B. Analytics-Cookies
  * landen sonst in Backend-Logs) und reduziert Request-Smuggling-Restrisiko
  * bei bösartig konstruierten Cookie-Werten Dritter.
+ *
+ * Strikte 2-Namen-Liste statt früherer AIRWATCH_*-Präfix-Heuristik: ein
+ * versehentlich später eingeführtes AIRWATCH_TRACKING (o.ä.) würde sonst
+ * stillschweigend ans Backend leaken. Neue Cookies müssen hier explizit
+ * eingetragen werden — bewusste Hürde, kein Versehen.
  */
 const FORWARDED_COOKIES = new Set(['AIRWATCH_ADMIN_SID', 'XSRF-TOKEN']);
 
 function buildForwardedCookieHeader(all: { name: string; value: string }[]): string {
   return all
-    .filter((c) => FORWARDED_COOKIES.has(c.name) || c.name.startsWith('AIRWATCH_'))
+    .filter((c) => FORWARDED_COOKIES.has(c.name))
     .map((c) => `${c.name}=${c.value}`)
     .join('; ');
 }
