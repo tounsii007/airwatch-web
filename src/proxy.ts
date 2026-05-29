@@ -122,11 +122,21 @@ export function proxy(request: NextRequest) {
   // 'unsafe-eval' is only emitted for routes that demonstrably need it
   // (CesiumJS — see below). On every other route the directive is
   // omitted entirely, which is the single biggest XSS attack-surface
-  // reduction we can make without breaking Cesium. `cesium` is matched
-  // as a path substring so any subroute that mounts the globe (debug
-  // pages, embedded views) still loads.
+  // reduction we can make without breaking Cesium.
+  //
+  // Substring 'cesium' anywhere would have given /admin/users/cesium
+  // unsafe-eval; trailing-slash on /globe avoids /globefake matching.
+  // We therefore enumerate the exact paths that Cesium actually serves:
+  //   * /globe          — the page itself
+  //   * /globe/*        — any nested route inside the globe layout
+  //   * /_next/static/chunks/cesium*           — Cesium's webpack chunks
+  //   * /_next/static/chunks/pages/globe*      — the globe page chunk
   const path_lc = path.toLowerCase();
-  const needsEval = path_lc.startsWith('/globe') || path_lc.includes('cesium');
+  const needsEval =
+    path_lc === '/globe' ||
+    path_lc.startsWith('/globe/') ||
+    path_lc.startsWith('/_next/static/chunks/cesium') ||
+    path_lc.startsWith('/_next/static/chunks/pages/globe');
 
   const csp = [
     "default-src 'self'",

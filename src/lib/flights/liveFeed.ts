@@ -73,11 +73,19 @@ export function startLiveFeed(options: LiveFeedOptions, callbacks: LiveFeedCallb
   let disposed = false;
   let ws: WebSocket | null = null;
   let pollTimer: ReturnType<typeof setInterval> | null = null;
+  let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   let currentTransport: FeedTransport | null = null;
   /** Once the WS has pushed at least one frame, the initial REST snapshot
    *  (whose response may still be in flight) becomes pure waste — drop
    *  it on arrival to avoid a stale-overwrite race. */
   let firstWsFrameArrived = false;
+
+  // Exponential backoff for WS reconnect — previously a fixed 10 s loop
+  // would hammer a down backend ~360 times/hour. Capped at 5 min so a
+  // long outage doesn't drain the user's battery / mobile data while
+  // polling continues to deliver frames at the regular interval.
+  const BACKOFF_STEPS = [10_000, 30_000, 60_000, 120_000, 300_000];
+  let reconnectAttempts = 0;
 
   const setTransport = (next: FeedTransport) => {
     if (currentTransport === next) return;
@@ -150,6 +158,9 @@ export function startLiveFeed(options: LiveFeedOptions, callbacks: LiveFeedCallb
     }
 
     ws.onopen = () => {
+      // Reset backoff — a stable open means the next unexpected close
+      // shouldn't inherit the previous outage's long delay.
+      reconnectAttempts = 0;
       stopPolling();
       setTransport('websocket');
     };
@@ -174,10 +185,16 @@ export function startLiveFeed(options: LiveFeedOptions, callbacks: LiveFeedCallb
       ws = null;
       if (disposed) return;
       startPolling();
-      // Try to reconnect after 10s; while disconnected, polling keeps data flowing.
-      setTimeout(() => {
+      // Exponential backoff for the reconnect — 10s → 30s → 60s → 120s → 300s,
+      // reset to 10s on the next successful onopen. Polling continues to
+      // deliver frames in the meantime, so the user still sees live data.
+      if (reconnectTimer) return;
+      const delay = BACKOFF_STEPS[Math.min(reconnectAttempts, BACKOFF_STEPS.length - 1)];
+      reconnectAttempts++;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
         if (!disposed && ws === null) connectWs();
-      }, 10_000);
+      }, delay);
     };
   };
 
@@ -187,6 +204,10 @@ export function startLiveFeed(options: LiveFeedOptions, callbacks: LiveFeedCallb
     stop: () => {
       disposed = true;
       stopPolling();
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
       ws?.close();
       ws = null;
     },

@@ -31,6 +31,16 @@ export function useGeoFenceAlerts() {
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     let disposed = false;
 
+    // Exponentieller Backoff für Reconnect-Versuche. Vorher: fixe 10 s
+    // Re-Try-Schleife → bei längerem Backend-Ausfall hämmern wir den
+    // Browser mit ~360 Reconnects/Stunde, was Akku und mobile Datenrate
+    // unnötig belastet. Mit dem Backoff bleibt die Klick-Reaktion am
+    // Anfang schnell (10 s) und wird bei dauerhaftem Ausfall ruhig
+    // (300 s = 5 min Pause). Bei jeder erfolgreichen `onopen`-Verbindung
+    // setzen wir den Zähler zurück.
+    const BACKOFF_STEPS = [10_000, 30_000, 60_000, 120_000, 300_000];
+    let attempts = 0;
+
     // Tell the backend which client id we are so it knows which fence
     // alerts belong to us. (Backend correlates via fence.clientId.)
     const clientId = getOrCreateClientId();
@@ -45,6 +55,9 @@ export function useGeoFenceAlerts() {
       }
 
       ws.onopen = () => {
+        // Reset backoff — a stable connection means we shouldn't punish
+        // the *next* unexpected close with a 5-minute timeout.
+        attempts = 0;
         // Handshake: send our client id so the backend can route alerts.
         ws?.send(JSON.stringify({ type: 'hello', clientId }));
       };
@@ -68,10 +81,12 @@ export function useGeoFenceAlerts() {
 
     const scheduleReconnect = () => {
       if (disposed || reconnectTimer) return;
+      const delay = BACKOFF_STEPS[Math.min(attempts, BACKOFF_STEPS.length - 1)];
+      attempts++;
       reconnectTimer = setTimeout(() => {
         reconnectTimer = null;
         connect();
-      }, 10_000);
+      }, delay);
     };
 
     connect();

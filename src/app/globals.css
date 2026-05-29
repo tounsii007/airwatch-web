@@ -631,6 +631,15 @@ body [class*="text-[10px]"] {
   to { transform: rotate(360deg); }
 }
 
+/* Admin "Run now" button spinner. Hoisted out of JobRunButton.tsx so the
+   component stops shipping an inline <style> tag on every render — the
+   keyframe definition is identical to radar-sweep but kept under its own
+   name so it can be retuned (speed, easing) independently of the radar. */
+@keyframes admin-job-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 @keyframes slide-up {
   from { transform: translateY(100%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }

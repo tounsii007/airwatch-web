@@ -134,18 +134,16 @@ export function JobRunButton({ jobId, csrfToken }: Props) {
         style={{
           display: 'inline-block',
           fontSize: '0.85rem',
+          // The `admin-job-spin` keyframe lives in globals.css so every
+          // button instance no longer ships its own <style> tag — this
+          // also lets us tighten style-src in CSP without losing the
+          // spinner animation.
           animation: inFlight ? 'admin-job-spin 0.9s linear infinite' : 'none',
         }}
       >
         {icon}
       </span>
       {label}
-      <style>{`
-        @keyframes admin-job-spin {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-      `}</style>
     </button>
   );
 }
