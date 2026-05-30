@@ -182,6 +182,23 @@ jobs:
         run: |
           if [ -f docker-compose.yml ]; then
             cp .env.example .env
+            # Wave-1 compose hardening turned the `.env.example` defaults
+            # into __REQUIRED_SET_IN_DOT_ENV__ placeholders and forced the
+            # critical services through ${VAR:?...} boot-guards. The api
+            # additionally validates ADMIN_PASSWORD_HASH as a real BCrypt
+            # hash at startup. Inject CI-only test credentials here so the
+            # Playwright stack can come up. These are NOT production
+            # credentials — they exist only for this workflow run.
+            cat >> .env <<'CIENV'
+          # --- CI overrides (appended; last assignment wins for docker-compose) ---
+          POSTGRES_PASSWORD=ci-test-pg
+          POSTGRES_REPLICATION_PASSWORD=ci-test-replication
+          AIRWATCH_API_SECRET=ci-test-hmac-secret-which-is-at-least-32-characters-long
+          GRAFANA_ADMIN_PASSWORD=ci-test-grafana
+          REDIS_PASSWORD=ci-test-redis
+          # BCrypt of "ci-test-admin" (cost 10).
+          ADMIN_PASSWORD_HASH=$$2a$$10$$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+          CIENV
             docker compose up -d --wait postgres api nginx web || true
             # Give the stack ~30 s to settle. CI runners are slow.
             timeout 60 bash -c 'until curl -sf http://localhost:13000/ > /dev/null; do sleep 2; done' || true
