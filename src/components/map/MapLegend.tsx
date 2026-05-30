@@ -17,7 +17,7 @@ interface LegendRowProps {
 
 function LegendRow({ color, label }: LegendRowProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" role="listitem">
       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} aria-hidden />
       {label}
     </div>
