@@ -5,6 +5,17 @@ on:
     branches: [main, master, develop]
   pull_request:
 
+# Least-privilege default token — every job only reads the repo and uploads
+# build artifacts. No job mutates repo state or needs write scopes.
+permissions:
+  contents: read
+
+# One in-flight run per ref; a new push cancels the previous run instead of
+# piling up duplicate builds.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint-test-build:
     name: Lint, test, build, size-check
