@@ -551,5 +551,6 @@
   "legend_alt_ground": "GROUND",
   "fence_tooltip_airline_named": "Only {0} ({1}) flights trigger this fence",
   "fence_tooltip_airline": "Airline filter: {0}",
-  "fence_empty_body": "Create one above — alerts will appear here when an aircraft enters the zone."
+  "fence_empty_body": "Create one above — alerts will appear here when an aircraft enters the zone.",
+  "photo_by": "Photo by"
 }

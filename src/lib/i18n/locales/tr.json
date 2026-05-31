@@ -550,5 +550,6 @@
   "legend_alt_ground": "YERDE",
   "fence_tooltip_airline_named": "Yalnızca {0} ({1}) uçuşları bu bölgeyi tetikler",
   "fence_tooltip_airline": "Havayolu filtresi: {0}",
-  "fence_empty_body": "Yukarıda bir tane oluştur — uçaklar bölgeye girdiğinde uyarılar burada görünecek."
+  "fence_empty_body": "Yukarıda bir tane oluştur — uçaklar bölgeye girdiğinde uyarılar burada görünecek.",
+  "photo_by": "Foto\u011fraf taraf\u0131ndan"
 }

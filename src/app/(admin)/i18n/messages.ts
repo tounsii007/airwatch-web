@@ -321,6 +321,12 @@ export const MESSAGES: Record<LocaleCode, Record<string, string>> = {
     'page.users.kpi.peak':        'peak',
     'page.users.section.chart':   'Sessions',
     'page.users.section.admin':   'Authenticated admin sessions',
+    'page.users.section.active_client_sessions': 'Active client sessions',
+    'page.users.col.user':        'User',
+    'page.users.col.session_id':  'Session ID',
+    'page.users.col.logged_in':   'Logged in',
+    'page.users.col.last_seen':   'Last seen',
+    'page.users.col.action':      'Action',
     'page.users.empty':           'No admin sessions',
 
     // ─── Page: Settings ───────────────────────────────────────────────
@@ -660,6 +666,12 @@ export const MESSAGES: Record<LocaleCode, Record<string, string>> = {
     'page.users.kpi.peak':        'Spitze',
     'page.users.section.chart':   'Sitzungen',
     'page.users.section.admin':   'Authentifizierte Admin-Sitzungen',
+    'page.users.section.active_client_sessions': 'Aktive Client-Sitzungen',
+    'page.users.col.user':        'Benutzer',
+    'page.users.col.session_id':  'Sitzungs-ID',
+    'page.users.col.logged_in':   'Angemeldet',
+    'page.users.col.last_seen':   'Zuletzt gesehen',
+    'page.users.col.action':      'Aktion',
     'page.users.empty':           'Keine Admin-Sitzungen',
 
     // ─── Page: Settings ───────────────────────────────────────────────
