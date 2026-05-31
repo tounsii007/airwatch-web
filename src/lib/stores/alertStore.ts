@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+/** Max flight alerts kept in memory; older alerts drop off to bound growth. */
+const MAX_FLIGHT_ALERTS = 50;
+
 export type AlertType = 'landing' | 'takeoff' | 'delay' | 'squawk';
 
 export interface WatchedFlight {
@@ -65,7 +68,7 @@ export const useAlertStore = create<AlertStore>()(
           timestamp: Date.now(),
           read: false,
         };
-        set({ alerts: [newAlert, ...get().alerts].slice(0, 50) }); // cap at 50
+        set({ alerts: [newAlert, ...get().alerts].slice(0, MAX_FLIGHT_ALERTS) });
 
         // Send browser notification
         if (get().notificationsGranted && typeof Notification !== 'undefined' && Notification.permission === 'granted') {

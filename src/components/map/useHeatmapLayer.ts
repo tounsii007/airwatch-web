@@ -48,7 +48,7 @@ interface HeatPoint {
  * @param enabled  When false, the layer is removed. Cheap to toggle.
  * @param radius   Radius in pixels of each Gaussian dot (default 25).
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Leaflet exposes no public map type for the plugin handle
 export function useHeatmapLayer(map: any | null, points: HeatPoint[], enabled: boolean, radius = 25) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const layerRef = useRef<any>(null);

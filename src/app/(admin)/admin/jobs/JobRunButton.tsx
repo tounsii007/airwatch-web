@@ -70,7 +70,7 @@ export function JobRunButton({ jobId, csrfToken }: Props) {
         // it transparently. fetch() defaults to redirect:'follow' so
         // res.ok will reflect the final response.
       });
-      if (res.ok || res.status === 200) {
+      if (res.ok) {
         setState('success');
         toast.success(`Job "${jobId}" triggered.`);
         // Pull the updated job state into the surrounding card.
