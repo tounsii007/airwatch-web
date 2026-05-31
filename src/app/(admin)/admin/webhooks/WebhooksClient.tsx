@@ -94,11 +94,10 @@ export function WebhooksClient({ initialWebhooks, csrfToken }: Props) {
     if (!name.trim() || !url.trim() || !csrfToken) return;
     setBusy(true);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken });
-      const res = await fetch(`/admin/api/webhooks?${params}`, {
+      const res = await fetch(`/admin/api/webhooks`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
         body: JSON.stringify({
           name: name.trim(),
           url: url.trim(),
@@ -128,11 +127,10 @@ export function WebhooksClient({ initialWebhooks, csrfToken }: Props) {
 
   async function toggleEnable(w: Webhook) {
     if (!csrfToken) return;
-    const params = new URLSearchParams({ _csrf: csrfToken });
     const path = w.enabled ? 'disable' : 'enable';
     try {
-      const res = await fetch(`/admin/api/webhooks/${w.id}/${path}?${params}`,
-                              { method: 'POST', credentials: 'include' });
+      const res = await fetch(`/admin/api/webhooks/${w.id}/${path}`,
+                              { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       await reload();
     } catch (e) {
@@ -142,10 +140,9 @@ export function WebhooksClient({ initialWebhooks, csrfToken }: Props) {
 
   async function fireTest(w: Webhook) {
     if (!csrfToken) return;
-    const params = new URLSearchParams({ _csrf: csrfToken });
     try {
-      const res = await fetch(`/admin/api/webhooks/${w.id}/test?${params}`,
-                              { method: 'POST', credentials: 'include' });
+      const res = await fetch(`/admin/api/webhooks/${w.id}/test`,
+                              { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const out = (await res.json()) as TestOutcome;
       if (out.ok) {
@@ -162,10 +159,9 @@ export function WebhooksClient({ initialWebhooks, csrfToken }: Props) {
   async function remove(w: Webhook) {
     if (!csrfToken) return;
     if (!confirm(`Delete webhook "${w.name}"? Delivery history is dropped.`)) return;
-    const params = new URLSearchParams({ _csrf: csrfToken });
     try {
-      const res = await fetch(`/admin/api/webhooks/${w.id}?${params}`,
-                              { method: 'DELETE', credentials: 'include' });
+      const res = await fetch(`/admin/api/webhooks/${w.id}`,
+                              { method: 'DELETE', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       toast.success('Deleted');
       await reload();

@@ -84,14 +84,13 @@ export function ProbesClient({ initialProbes, csrfToken }: Props) {
     setBusy(true);
     try {
       const params = new URLSearchParams({
-        _csrf: csrfToken,
         name: name.trim(), method, url: url.trim(),
         expectStatus, expectBody, intervalMin, timeoutSec, failThreshold,
       });
       const res = await fetch('/admin/api/probes', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': csrfToken },
         body: params.toString(),
       });
       const body = await res.json();
@@ -110,8 +109,10 @@ export function ProbesClient({ initialProbes, csrfToken }: Props) {
   async function toggleEnabled(p: Probe) {
     setBusy(true);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken, enabled: String(!p.enabled) });
-      const res = await fetch(`/admin/api/probes/${p.id}/enabled?${params}`, { method: 'POST', credentials: 'include' });
+      const params = new URLSearchParams({ enabled: String(!p.enabled) });
+      const res = await fetch(`/admin/api/probes/${p.id}/enabled?${params}`, {
+        method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken },
+      });
       if (res.ok) { toast.success(p.enabled ? 'Disabled' : 'Enabled'); await reload(); }
       else        { toast.error('Toggle failed'); }
     } finally {
@@ -143,7 +144,6 @@ export function ProbesClient({ initialProbes, csrfToken }: Props) {
     setBusy(true);
     try {
       const params = new URLSearchParams({
-        _csrf: csrfToken,
         name:          editing.name,
         method:        editing.method,
         url:           editing.url,
@@ -156,7 +156,7 @@ export function ProbesClient({ initialProbes, csrfToken }: Props) {
       const res = await fetch(`/admin/api/probes/${editing.id}`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': csrfToken },
         body: params.toString(),
       });
       const body = await res.json();
@@ -176,8 +176,9 @@ export function ProbesClient({ initialProbes, csrfToken }: Props) {
     if (!confirm(`Delete probe "${p.name}"? Result history will be removed too.`)) return;
     setBusy(true);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken });
-      const res = await fetch(`/admin/api/probes/${p.id}?${params}`, { method: 'DELETE', credentials: 'include' });
+      const res = await fetch(`/admin/api/probes/${p.id}`, {
+        method: 'DELETE', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken },
+      });
       if (res.ok) { toast.success('Probe deleted'); await reload(); }
       else        { toast.error('Delete failed'); }
     } finally {

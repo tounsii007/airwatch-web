@@ -65,9 +65,9 @@ describe('<FeatureFlagsCard />', () => {
     render(<FeatureFlagsCard csrfToken="csrf-1" />);
     await waitFor(() => screen.getByText('Legacy logos'));
 
-    const calls: Array<{ url: string; method?: string }> = [];
+    const calls: Array<{ url: string; method?: string; csrf?: string }> = [];
     mockFetch((url, init) => {
-      calls.push({ url, method: init?.method });
+      calls.push({ url, method: init?.method, csrf: (init?.headers as Record<string, string> | undefined)?.['X-CSRF-Token'] });
       if (url.endsWith('/admin/api/features/flags')) {
         return new Response(JSON.stringify(sampleFlags), { status: 200 });
       }
@@ -81,7 +81,9 @@ describe('<FeatureFlagsCard />', () => {
       expect(post).toBeDefined();
       expect(post?.url).toContain('/admin/api/features/flags/legacy_logos');
       expect(post?.url).toContain('enabled=true');
-      expect(post?.url).toContain('_csrf=csrf-1');
+      // CSRF token must travel in the header, NOT the URL (log/referrer leak).
+      expect(post?.url).not.toContain('_csrf');
+      expect(post?.csrf).toBe('csrf-1');
     });
     expect(toastFns.success).toHaveBeenCalledOnce();
   });

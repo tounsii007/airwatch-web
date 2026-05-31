@@ -80,12 +80,10 @@ export function WebhookCard({ csrfToken }: { csrfToken: string }) {
     setBusy(true);
     setLastResult(null);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken });
       const res = await fetch('/admin/api/webhook/test', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params.toString(),
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       const body = await res.json() as TestResult;
       setLastResult(body);

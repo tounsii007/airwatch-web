@@ -70,7 +70,7 @@ describe('<WebhooksClient />', () => {
     expect(screen.getByText(sample.url)).toBeInTheDocument();
   });
 
-  it('POSTs the create form with _csrf in the URL + JSON body', async () => {
+  it('POSTs the create form with X-CSRF-Token header + JSON body (no _csrf in URL)', async () => {
     const calls = mockFetch({
       '/admin/api/webhooks': (init) => {
         if (init?.method === 'POST') {
@@ -91,7 +91,8 @@ describe('<WebhooksClient />', () => {
     await waitFor(() => {
       const post = calls.find((c) => c.method === 'POST');
       expect(post).toBeDefined();
-      expect(post!.url).toContain('_csrf=csrf-abc');
+      expect(post!.url).not.toContain('_csrf');
+      expect(post!.headers?.['X-CSRF-Token']).toBe('csrf-abc');
       expect(post!.headers?.['Content-Type']).toBe('application/json');
       const body = JSON.parse(post!.body!);
       expect(body.name).toBe('New hook');
@@ -129,15 +130,16 @@ describe('<WebhooksClient />', () => {
     await user.click(screen.getByRole('button', { name: /enable/i }));
 
     await waitFor(() => {
-      const post = calls.find((c) => c.method === 'POST' && c.url.includes('/enable?'));
+      const post = calls.find((c) => c.method === 'POST' && c.url.includes('/enable'));
       expect(post).toBeDefined();
-      expect(post!.url).toContain('_csrf=csrf-1');
+      expect(post!.url).not.toContain('_csrf');
+      expect(post!.headers?.['X-CSRF-Token']).toBe('csrf-1');
     });
   });
 
   it('test button shows error toast on a failed test outcome', async () => {
     const calls = mockFetch({
-      '/test?': () => new Response(JSON.stringify({
+      '/test': () => new Response(JSON.stringify({
         ok: false, status: 500, latencyMs: 150, attempts: 3, error: 'upstream timeout',
       }), { status: 200 }),
     });
@@ -151,10 +153,10 @@ describe('<WebhooksClient />', () => {
       const lastErrorCall = toastFns.error.mock.calls.at(-1)?.[0] as string;
       expect(lastErrorCall).toContain('upstream timeout');
     });
-    expect(calls.find((c) => c.url.includes('/test?'))).toBeDefined();
+    expect(calls.find((c) => c.url.includes('/test'))).toBeDefined();
   });
 
-  it('delete sends DELETE with _csrf in the URL', async () => {
+  it('delete sends DELETE with X-CSRF-Token header (no _csrf in URL)', async () => {
     const calls = mockFetch();
     const user = userEvent.setup();
     render(<WebhooksClient initialWebhooks={[sample]} csrfToken="csrf-1" />);
@@ -164,8 +166,9 @@ describe('<WebhooksClient />', () => {
     await waitFor(() => {
       const del = calls.find((c) => c.method === 'DELETE');
       expect(del).toBeDefined();
-      expect(del!.url).toContain('_csrf=csrf-1');
-      expect(del!.url).toContain('/admin/api/webhooks/1');
+      expect(del!.url).not.toContain('_csrf');
+      expect(del!.url).toBe('/admin/api/webhooks/1');
+      expect(del!.headers?.['X-CSRF-Token']).toBe('csrf-1');
     });
   });
 

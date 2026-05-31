@@ -70,7 +70,6 @@ export function MaintenanceSchedulesCard({ csrfToken }: { csrfToken: string }) {
     setBusy(true);
     try {
       const params = new URLSearchParams();
-      params.set('_csrf', csrfToken);
       params.set('name', name.trim());
       params.set('cron', cron.trim());
       params.set('durationMin', duration);
@@ -78,7 +77,7 @@ export function MaintenanceSchedulesCard({ csrfToken }: { csrfToken: string }) {
       const res = await fetch('/admin/api/maintenance/schedules', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': csrfToken },
         body: params.toString(),
       });
       const body = await res.json();
@@ -98,12 +97,11 @@ export function MaintenanceSchedulesCard({ csrfToken }: { csrfToken: string }) {
   async function handleToggle(id: string, enabled: boolean) {
     setBusy(true);
     try {
-      const params = new URLSearchParams();
-      params.set('_csrf', csrfToken);
-      params.set('enabled', String(enabled));
-      await fetch(`/admin/api/maintenance/schedules/${encodeURIComponent(id)}/enabled?${params.toString()}`, {
+      const toggleParams = new URLSearchParams({ enabled: String(enabled) });
+      await fetch(`/admin/api/maintenance/schedules/${encodeURIComponent(id)}/enabled?${toggleParams.toString()}`, {
         method: 'POST',
         credentials: 'include',
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       await reload();
     } finally {
@@ -115,11 +113,10 @@ export function MaintenanceSchedulesCard({ csrfToken }: { csrfToken: string }) {
     if (!confirm(`Delete schedule "${name}"?`)) return;
     setBusy(true);
     try {
-      const params = new URLSearchParams();
-      params.set('_csrf', csrfToken);
-      await fetch(`/admin/api/maintenance/schedules/${encodeURIComponent(id)}?${params.toString()}`, {
+      await fetch(`/admin/api/maintenance/schedules/${encodeURIComponent(id)}`, {
         method: 'DELETE',
         credentials: 'include',
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       await reload();
     } finally {

@@ -43,10 +43,14 @@ export function FeatureFlagsCard({ csrfToken }: { csrfToken: string }) {
     if (!csrfToken) return;
     setBusy(flag.key);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken, enabled: String(!flag.enabled) });
+      // CSRF token rides in the X-CSRF-Token header, never the URL — a
+      // query-string token leaks via access logs, the Referer header and
+      // browser history. The backend CsrfTokenService accepts the header.
+      const params = new URLSearchParams({ enabled: String(!flag.enabled) });
       const res = await fetch(`/admin/api/features/flags/${encodeURIComponent(flag.key)}?${params}`, {
         method: 'POST',
         credentials: 'include',
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       if (res.ok) { toast.success(`${flag.label} ${!flag.enabled ? 'enabled' : 'disabled'}`); await reload(); }
       else        { toast.error(`Could not toggle ${flag.key}`); }
@@ -59,10 +63,10 @@ export function FeatureFlagsCard({ csrfToken }: { csrfToken: string }) {
     if (!csrfToken) return;
     setBusy(flag.key);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken });
-      const res = await fetch(`/admin/api/features/flags/${encodeURIComponent(flag.key)}?${params}`, {
+      const res = await fetch(`/admin/api/features/flags/${encodeURIComponent(flag.key)}`, {
         method: 'DELETE',
         credentials: 'include',
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       if (res.ok) { toast.success(`${flag.label} reset to default`); await reload(); }
       else        { toast.error('Reset failed'); }
