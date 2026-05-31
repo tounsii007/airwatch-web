@@ -16,9 +16,9 @@ const full: AircraftMetadata = {
   built: 1998,
   age: 12,
   engine: 'turbofan',
-  engineCount: 2,
+  engineCount: '2',
   msn: '28000',
-} as AircraftMetadata;
+};
 
 describe('<MetadataSection />', () => {
   it('renders the manufacturer and model', () => {

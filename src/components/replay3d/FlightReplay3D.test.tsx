@@ -34,8 +34,8 @@ vi.mock('@/components/replay3d/useViewState', () => ({
 }));
 
 const snapshot = { position: [8, 50, 3000] as [number, number, number], headingDeg: 90 };
-const interp = vi.hoisted(() => ({ fn: vi.fn(() => ({ position: [8, 50, 3000], headingDeg: 90 })) }));
-vi.mock('@/components/replay3d/interpolateTrip', () => ({ interpolateAt: (...a: unknown[]) => interp.fn(...a) }));
+const interp = vi.hoisted(() => ({ fn: vi.fn((_trip: unknown, _tMs: number) => ({ position: [8, 50, 3000], headingDeg: 90 })) }));
+vi.mock('@/components/replay3d/interpolateTrip', () => ({ interpolateAt: (trip: unknown, tMs: number) => interp.fn(trip, tMs) }));
 
 // ── Child stubs: surface the props we assert on, expose callbacks as buttons ──
 type MapStub = { currentTimeMs: number; snapshot: unknown };

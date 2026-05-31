@@ -78,8 +78,8 @@ function renderPanel(opts: { ac?: AircraftState; vm?: FlightDetailsVM; copied?: 
       aircraft={opts.ac ?? makeAc()}
       viewModel={opts.vm ?? makeVM()}
       language="en"
-      altitudeUnit="ft"
-      speedUnit="kts"
+      altitudeUnit="feet"
+      speedUnit="knots"
       actions={<button type="button">act</button>}
       copied={opts.copied ?? false}
       onShare={opts.onShare ?? vi.fn()}
@@ -113,7 +113,7 @@ describe('<DesktopDetailsPanel />', () => {
 
   it('renders the times row only when a scheduled departure exists', () => {
     expect(screen.queryByTestId('d-times')).toBeNull();
-    renderPanel({ vm: makeVM({ routeInfo: { scheduledDep: 1700000000 } as FlightDetailsVM['routeInfo'] }) });
+    renderPanel({ vm: makeVM({ routeInfo: { scheduledDep: 1700000000 } as unknown as FlightDetailsVM['routeInfo'] }) });
     expect(screen.getByTestId('d-times')).toBeInTheDocument();
   });
 

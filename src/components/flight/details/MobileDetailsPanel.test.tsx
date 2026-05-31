@@ -63,8 +63,8 @@ function renderPanel(opts: { ac?: AircraftState; vm?: FlightDetailsVM; isLoading
       aircraft={opts.ac ?? makeAc()}
       viewModel={opts.vm ?? makeVM()}
       language="en"
-      altitudeUnit="ft"
-      speedUnit="kts"
+      altitudeUnit="feet"
+      speedUnit="knots"
       isLoading={opts.isLoading ?? false}
       actions={opts.actions ?? <button type="button">act</button>}
     />,
