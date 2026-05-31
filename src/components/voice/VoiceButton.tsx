@@ -141,7 +141,10 @@ export function VoiceButton() {
 
       {/* Mic button */}
       <button
+        type="button"
         onClick={toggleListening}
+        aria-pressed={isListening}
+        aria-label={isListening ? 'Stop voice command' : 'Start voice command'}
         className={`p-3 rounded-full shadow-lg transition-all cursor-pointer ${
           isListening
             ? 'bg-[var(--error)] text-white animate-pulse shadow-[0_0_20px_var(--error)]'
