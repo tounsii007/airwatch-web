@@ -89,7 +89,7 @@ export default async function AdminJobsPage() {
 
       <section className="admin-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-          <h2 style={{ margin: 0 }}>All jobs</h2>
+          <h2 style={{ margin: 0 }}>{t('page.jobs.section.all')}</h2>
           {ids.length > 0 && (
             <ExportButton href="/admin/api/export/jobs.csv" filename="jobs.csv" compact />
           )}
@@ -120,12 +120,12 @@ export default async function AdminJobsPage() {
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem', marginTop: '0.75rem', fontSize: '0.75rem' }}>
-                    <Stat label="Interval"     value={formatInterval(j.intervalMs)} />
-                    <Stat label="Last start"   value={j.lastStart ? <ClientTime iso={j.lastStart} mode="relative" /> : '—'} />
-                    <Stat label="Last finish"  value={j.lastFinish ? <ClientTime iso={j.lastFinish} mode="relative" /> : '—'} />
-                    <Stat label="Last took"    value={j.lastDurationMs > 0 ? `${j.lastDurationMs} ms` : '—'} />
-                    <Stat label="Runs"         value={j.runCount.toLocaleString()} />
-                    <Stat label="Errors"       value={<span style={{ color: j.errorCount > 0 ? 'var(--error)' : 'inherit' }}>{j.errorCount}</span>} />
+                    <Stat label={t('page.jobs.col.interval')} value={formatInterval(j.intervalMs)} />
+                    <Stat label={t('page.jobs.col.last_start')} value={j.lastStart ? <ClientTime iso={j.lastStart} mode="relative" /> : '—'} />
+                    <Stat label={t('page.jobs.col.last_finish')} value={j.lastFinish ? <ClientTime iso={j.lastFinish} mode="relative" /> : '—'} />
+                    <Stat label={t('page.jobs.col.last_took')} value={j.lastDurationMs > 0 ? `${j.lastDurationMs} ms` : '—'} />
+                    <Stat label={t('page.jobs.col.runs')} value={j.runCount.toLocaleString()} />
+                    <Stat label={t('page.jobs.col.errors')} value={<span style={{ color: j.errorCount > 0 ? 'var(--error)' : 'inherit' }}>{j.errorCount}</span>} />
                   </div>
                   {j.lastError && (
                     <pre style={errorBoxStyle}>{j.lastError}</pre>

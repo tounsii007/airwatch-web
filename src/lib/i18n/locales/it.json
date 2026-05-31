@@ -551,5 +551,6 @@
   "legend_alt_ground": "TERRA",
   "fence_tooltip_airline_named": "Solo i voli {0} ({1}) attivano questa zona",
   "fence_tooltip_airline": "Filtro compagnia: {0}",
-  "fence_empty_body": "Creane una sopra — gli avvisi appariranno qui quando un aereo entra nella zona."
+  "fence_empty_body": "Creane una sopra — gli avvisi appariranno qui quando un aereo entra nella zona.",
+  "photo_by": "Foto di"
 }

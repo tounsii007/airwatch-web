@@ -17,6 +17,10 @@ import { useGeoFenceStore, type GeoFenceAlert } from '@/lib/stores/geofenceStore
 import { toast } from '@/components/ui/toast';
 import { resolveAirlineName } from '@/app/(public)/geofences/alertFormat';
 
+/** How long a geofence-entry warning toast stays on screen (ms). Longer than
+ *  the 3s default because these alerts are safety-relevant and easy to miss. */
+const GEOFENCE_ALERT_DURATION_MS = 8000;
+
 /** Build a concise single-line summary for the toast title. */
 function formatAlertTitle(alert: GeoFenceAlert): string {
   const id = alert.callsign?.trim() || alert.icao24.toUpperCase();
@@ -72,7 +76,7 @@ export function useGeoFenceToasts(): void {
       toast.warning({
         title: formatAlertTitle(alert),
         body: formatAlertBody(alert),
-        duration: 8000,
+        duration: GEOFENCE_ALERT_DURATION_MS,
       });
     }
   }, [alerts]);

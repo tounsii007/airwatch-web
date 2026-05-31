@@ -550,5 +550,6 @@
   "legend_alt_ground": "GROND",
   "fence_tooltip_airline_named": "Alleen {0} ({1})-vluchten activeren deze zone",
   "fence_tooltip_airline": "Maatschappij-filter: {0}",
-  "fence_empty_body": "Maak er een aan boven — meldingen verschijnen hier wanneer een vliegtuig de zone binnenkomt."
+  "fence_empty_body": "Maak er een aan boven — meldingen verschijnen hier wanneer een vliegtuig de zone binnenkomt.",
+  "photo_by": "Foto door"
 }

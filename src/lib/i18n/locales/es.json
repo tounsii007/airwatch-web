@@ -551,5 +551,6 @@
   "legend_alt_ground": "SUELO",
   "fence_tooltip_airline_named": "Solo los vuelos {0} ({1}) activan esta zona",
   "fence_tooltip_airline": "Filtro de aerolínea: {0}",
-  "fence_empty_body": "Crea una arriba — las alertas aparecerán aquí cuando un avión entre en la zona."
+  "fence_empty_body": "Crea una arriba — las alertas aparecerán aquí cuando un avión entre en la zona.",
+  "photo_by": "Foto de"
 }

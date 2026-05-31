@@ -551,5 +551,6 @@
   "legend_alt_ground": "BODEN",
   "fence_tooltip_airline_named": "Nur Flüge von {0} ({1}) lösen diese Zone aus",
   "fence_tooltip_airline": "Airline-Filter: {0}",
-  "fence_empty_body": "Erstelle oben eine — Alarme erscheinen hier, sobald ein Flugzeug in die Zone eintritt."
+  "fence_empty_body": "Erstelle oben eine — Alarme erscheinen hier, sobald ein Flugzeug in die Zone eintritt.",
+  "photo_by": "Foto von"
 }

@@ -41,10 +41,22 @@ export function SavedFlightCard({
   const country = liveData?.originCountry ?? item.originCountry;
   const isLive = liveData && !liveData.onGround;
 
+  // The two click-to-track regions are role="button"; mirror native button
+  // keyboard activation (Enter/Space) so keyboard users can trigger tracking.
+  const onTrackKey = (e: { key: string; preventDefault: () => void }) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTrack(); }
+  };
+
   return (
     <GlassPanel className="p-3 space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer" onClick={onTrack}>
+        <div
+          className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
+          onClick={onTrack}
+          onKeyDown={onTrackKey}
+          role="button"
+          tabIndex={0}
+        >
           {airlineIata ? (
             <div className="w-12 h-6 bg-white rounded shrink-0 shadow-sm overflow-hidden flex items-center justify-center px-0.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -111,7 +123,13 @@ export function SavedFlightCard({
       </div>
 
       {(depIata || arrIata) && (
-        <div className="flex items-center gap-2 pt-1 border-t border-[var(--glass-border)] cursor-pointer" onClick={onTrack}>
+        <div
+          className="flex items-center gap-2 pt-1 border-t border-[var(--glass-border)] cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
+          onClick={onTrack}
+          onKeyDown={onTrackKey}
+          role="button"
+          tabIndex={0}
+        >
           {depIata && (
             <div className="flex items-center gap-1 flex-1 min-w-0">
               {country && (

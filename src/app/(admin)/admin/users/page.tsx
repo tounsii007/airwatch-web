@@ -186,11 +186,11 @@ export default async function AdminUsersPage() {
             <table style={tableStyle}>
               <thead>
                 <tr style={{ textAlign: 'left', color: 'var(--text-muted)' }}>
-                  <Th>User</Th>
-                  <Th>Session ID</Th>
-                  <Th align="right">Logged in</Th>
-                  <Th align="right">Last seen</Th>
-                  <Th align="right">Action</Th>
+                  <Th>{t('page.users.col.user')}</Th>
+                  <Th>{t('page.users.col.session_id')}</Th>
+                  <Th align="right">{t('page.users.col.logged_in')}</Th>
+                  <Th align="right">{t('page.users.col.last_seen')}</Th>
+                  <Th align="right">{t('page.users.col.action')}</Th>
                 </tr>
               </thead>
               <tbody>
@@ -220,7 +220,7 @@ export default async function AdminUsersPage() {
 
       <section className="admin-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-          <h2 style={{ margin: 0 }}>Active client sessions ({sessions.length})</h2>
+          <h2 style={{ margin: 0 }}>{t('page.users.section.active_client_sessions')} ({sessions.length})</h2>
           {sessions.length > 0 && (
             <ExportButton href="/admin/api/export/sessions.csv" filename="sessions.csv" compact />
           )}
