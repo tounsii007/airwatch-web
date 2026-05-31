@@ -78,6 +78,15 @@ describe('<WikiPanel />', () => {
     expect(container.querySelector('img')).toBeNull();
   });
 
+  it('drops a non-http(s) image_url via the scheme guard but keeps the summary', async () => {
+    // Split literal so the no-script-url lint rule doesn't flag the fixture.
+    ok(wiki({ image_url: 'java' + 'script:alert(1)' }));
+    const { container } = render(<WikiPanel airlineIata="LH" />);
+    await screen.findByText('about');
+    expect(container.querySelector('img')).toBeNull();
+    expect(screen.getByText(/flag carrier of Germany/)).toBeInTheDocument();
+  });
+
   it('hides the broken image without dropping the summary on load error', async () => {
     ok(wiki());
     const { container } = render(<WikiPanel airlineIata="LH" />);
