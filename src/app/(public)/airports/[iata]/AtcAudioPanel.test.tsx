@@ -107,4 +107,34 @@ describe('<AtcAudioPanel />', () => {
     // No clickable Tower chip — only the audio + attribution + link.
     expect(screen.queryByRole('button', { name: /Frankfurt Tower/i })).toBeNull();
   });
+
+  it('drops the external link when the feed URL is not http(s) (XSS guard)', async () => {
+    // Split literal so the no-script-url lint rule doesn't flag the fixture.
+    const unsafeUrl = 'java' + 'script:alert(document.cookie)';
+    mockFetch({
+      icao: 'EDDF', count: 1, attribution: 'x',
+      feeds: [{
+        kind: 'TOWER', label: 'Frankfurt Tower', mount: 'EDDF_TWR',
+        streamUrl: 'https://d.liveatc.net/eddf_twr', externalUrl: unsafeUrl,
+      }],
+    });
+    render(<AtcAudioPanel icao="EDDF" language="en" />);
+    await waitFor(() => screen.getByLabelText(/Frankfurt Tower live audio/i));
+    expect(screen.queryByRole('link', { name: /LiveATC.net/i })).toBeNull();
+  });
+
+  it('keeps the external link for a valid https feed URL', async () => {
+    mockFetch({
+      icao: 'EDDF', count: 1, attribution: 'x',
+      feeds: [{
+        kind: 'TOWER', label: 'Frankfurt Tower', mount: 'EDDF_TWR',
+        streamUrl: 'https://d.liveatc.net/eddf_twr',
+        externalUrl: 'https://www.liveatc.net/hlisten.php?mount=EDDF_TWR',
+      }],
+    });
+    render(<AtcAudioPanel icao="EDDF" language="en" />);
+    await waitFor(() => screen.getByLabelText(/Frankfurt Tower live audio/i));
+    expect(screen.getByRole('link', { name: /LiveATC.net/i }))
+      .toHaveAttribute('href', 'https://www.liveatc.net/hlisten.php?mount=EDDF_TWR');
+  });
 });

@@ -31,6 +31,7 @@ import { Headphones, ExternalLink } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Tag } from '@/components/ui/Tag';
 import { t } from '@/lib/i18n/translations';
+import { safeExternalUrl } from '@/lib/safeUrl';
 import type { AppLanguage } from '@/lib/types';
 
 interface Props {
@@ -149,15 +150,23 @@ export function AtcAudioPanel({ icao, language }: Props) {
               />
               <div className="flex items-center justify-between text-[10px] text-[var(--text-muted)]">
                 <span>{data.attribution}</span>
-                <a
-                  href={active.externalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[var(--primary)] hover:underline"
-                >
-                  LiveATC.net
-                  <ExternalLink size={10} />
-                </a>
+                {(() => {
+                  // Guard the upstream-sourced URL: a poisoned atc-feeds cache
+                  // could inject a javascript:/data: href (CSP doesn't block
+                  // those in <a href>). Render the link only when it's http(s).
+                  const safe = safeExternalUrl(active.externalUrl);
+                  return safe ? (
+                    <a
+                      href={safe}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[var(--primary)] hover:underline"
+                    >
+                      LiveATC.net
+                      <ExternalLink size={10} />
+                    </a>
+                  ) : null;
+                })()}
               </div>
             </div>
           )}
