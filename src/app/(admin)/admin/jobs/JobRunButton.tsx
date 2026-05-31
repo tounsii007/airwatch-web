@@ -60,12 +60,10 @@ export function JobRunButton({ jobId, csrfToken }: Props) {
     setState('idle');
     const liveToken = getCsrfToken() || csrfToken;
     try {
-      const body = new URLSearchParams({ _csrf: liveToken });
       const res = await fetch(`/admin/jobs/${encodeURIComponent(jobId)}/run`, {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body.toString(),
+        headers: { 'X-CSRF-Token': liveToken },
         // The api sendRedirects to /admin/jobs on success — we follow
         // it transparently. fetch() defaults to redirect:'follow' so
         // res.ok will reflect the final response.

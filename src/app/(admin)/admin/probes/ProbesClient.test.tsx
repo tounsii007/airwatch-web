@@ -30,7 +30,7 @@ const sample = {
   lastLatencyMs: 142,
 };
 
-interface FetchCall { url: string; method?: string; body?: string }
+interface FetchCall { url: string; method?: string; body?: string; headers?: Record<string, string> }
 
 function mockFetch(extra: Record<string, (init?: RequestInit) => Response | Promise<Response>> = {}) {
   const calls: FetchCall[] = [];
@@ -39,6 +39,7 @@ function mockFetch(extra: Record<string, (init?: RequestInit) => Response | Prom
       url,
       method: init?.method,
       body: typeof init?.body === 'string' ? init.body : undefined,
+      headers: init?.headers as Record<string, string> | undefined,
     });
     for (const [matcher, handler] of Object.entries(extra)) {
       if (url.includes(matcher)) return handler(init);
@@ -71,7 +72,7 @@ describe('<ProbesClient />', () => {
     expect(screen.getByText('airlabs reachability')).toBeInTheDocument();
   });
 
-  it('POSTs the create form with _csrf in the URL-encoded body', async () => {
+  it('POSTs the create form with X-CSRF-Token header + URL-encoded body (no _csrf in body)', async () => {
     const calls = mockFetch();
     const user = userEvent.setup();
     render(<ProbesClient initialProbes={[]} csrfToken="csrf-abc" />);
@@ -85,7 +86,8 @@ describe('<ProbesClient />', () => {
     await waitFor(() => {
       const post = calls.find((c) => c.method === 'POST' && c.url === '/admin/api/probes');
       expect(post).toBeDefined();
-      expect(post!.body).toContain('_csrf=csrf-abc');
+      expect(post!.headers?.['X-CSRF-Token']).toBe('csrf-abc');
+      expect(post!.body).not.toContain('_csrf');
       expect(post!.body).toContain('name=New+probe');
       expect(post!.body).toContain('url=https');
     });
@@ -104,7 +106,8 @@ describe('<ProbesClient />', () => {
       const post = calls.find((c) => c.method === 'POST' && c.url.includes('/enabled?'));
       expect(post).toBeDefined();
       expect(post!.url).toContain('enabled=false');
-      expect(post!.url).toContain('_csrf=csrf-1');
+      expect(post!.url).not.toContain('_csrf');
+      expect(post!.headers?.['X-CSRF-Token']).toBe('csrf-1');
     });
   });
 

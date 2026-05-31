@@ -27,7 +27,7 @@ const sample = {
   linked_alerts: 3,
 };
 
-interface FetchCall { url: string; method?: string; body?: string }
+interface FetchCall { url: string; method?: string; body?: string; headers?: Record<string, string> }
 
 function mockFetch() {
   const calls: FetchCall[] = [];
@@ -36,6 +36,7 @@ function mockFetch() {
       url,
       method: init?.method,
       body: typeof init?.body === 'string' ? init.body : undefined,
+      headers: init?.headers as Record<string, string> | undefined,
     });
     if (url.startsWith('/admin/api/incidents?')) {
       return new Response(JSON.stringify({ incidents: [sample] }), { status: 200 });
@@ -69,7 +70,7 @@ describe('<IncidentsClient />', () => {
     expect(screen.getByText(/3 linked alerts/)).toBeInTheDocument();
   });
 
-  it('POSTs the new-incident form with _csrf + URL-encoded body', async () => {
+  it('POSTs the new-incident form with X-CSRF-Token header + URL-encoded body', async () => {
     const calls = mockFetch();
     const user = userEvent.setup();
     render(<IncidentsClient initialIncidents={[]} csrfToken="csrf-1" />);
@@ -81,7 +82,8 @@ describe('<IncidentsClient />', () => {
     await waitFor(() => {
       const post = calls.find((c) => c.method === 'POST' && c.url === '/admin/api/incidents');
       expect(post).toBeDefined();
-      expect(post!.body).toContain('_csrf=csrf-1');
+      expect(post!.headers?.['X-CSRF-Token']).toBe('csrf-1');
+      expect(post!.body).not.toContain('_csrf');
       expect(post!.body).toContain('title=Disk+full');
       expect(post!.body).toContain('summary=pg+ran+out+of+space');
     });
@@ -100,7 +102,7 @@ describe('<IncidentsClient />', () => {
     expect(calls.find((c) => c.method === 'POST')).toBeUndefined();
   });
 
-  it('Close button POSTs to /close with _csrf, after a confirm() prompt', async () => {
+  it('Close button POSTs to /close with X-CSRF-Token header, after a confirm() prompt', async () => {
     const calls = mockFetch();
     const user = userEvent.setup();
     render(<IncidentsClient initialIncidents={[sample]} csrfToken="csrf-1" />);
@@ -108,15 +110,16 @@ describe('<IncidentsClient />', () => {
     await user.click(screen.getByRole('button', { name: /close incident/i }));
 
     await waitFor(() => {
-      const post = calls.find((c) => c.method === 'POST' && /\/close\?/.test(c.url));
+      const post = calls.find((c) => c.method === 'POST' && /\/close$/.test(c.url));
       expect(post).toBeDefined();
-      expect(post!.url).toContain('_csrf=csrf-1');
+      expect(post!.url).not.toContain('_csrf');
+      expect(post!.headers?.['X-CSRF-Token']).toBe('csrf-1');
     });
   });
 
   it('shows error toast on a 500 response from /close', async () => {
     globalThis.fetch = vi.fn(async (url: string, init?: RequestInit) => {
-      if (init?.method === 'POST' && /\/close\?/.test(url)) return new Response('boom', { status: 500 });
+      if (init?.method === 'POST' && /\/close$/.test(url)) return new Response('boom', { status: 500 });
       if (url.startsWith('/admin/api/incidents?')) return new Response(JSON.stringify({ incidents: [sample] }), { status: 200 });
       return new Response('{}', { status: 200 });
     }) as unknown as typeof fetch;

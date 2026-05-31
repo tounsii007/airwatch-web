@@ -147,7 +147,6 @@ export function ApiKeysCard({ csrfToken }: { csrfToken: string }) {
     setOpError(null);
     try {
       const params = new URLSearchParams();
-      params.set('_csrf', csrfToken);
       params.set('name', name.trim());
       params.set('role', role);
       if (expiresInDays.trim())   params.set('expiresInDays', expiresInDays.trim());
@@ -157,7 +156,7 @@ export function ApiKeysCard({ csrfToken }: { csrfToken: string }) {
       const res = await fetch('/admin/api/keys', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': csrfToken },
         body: params.toString(),
       });
       const body = await res.json();
@@ -193,11 +192,10 @@ export function ApiKeysCard({ csrfToken }: { csrfToken: string }) {
     };
     try {
       await live.mutate(async () => {
-        const params = new URLSearchParams();
-        params.set('_csrf', csrfToken);
-        const res = await fetch(`/admin/api/keys/${id}?${params.toString()}`, {
+        const res = await fetch(`/admin/api/keys/${id}`, {
           method: 'DELETE',
           credentials: 'include',
+          headers: { 'X-CSRF-Token': csrfToken },
         });
         if (!res.ok && res.status !== 404) {
           const body = await res.json().catch(() => ({}));
@@ -216,11 +214,10 @@ export function ApiKeysCard({ csrfToken }: { csrfToken: string }) {
     setBusy(true);
     setOpError(null);
     try {
-      const params = new URLSearchParams();
-      params.set('_csrf', csrfToken);
-      const res = await fetch(`/admin/api/keys/${id}/rotate?${params.toString()}`, {
+      const res = await fetch(`/admin/api/keys/${id}/rotate`, {
         method: 'POST',
         credentials: 'include',
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       const body = await res.json();
       if (!res.ok) {

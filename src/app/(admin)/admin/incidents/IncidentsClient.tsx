@@ -68,12 +68,12 @@ export function IncidentsClient({ initialIncidents, csrfToken }: Props) {
     if (!newTitle.trim() || !csrfToken) return;
     setBusy(true);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken, title: newTitle.trim(), severity: newSeverity });
+      const params = new URLSearchParams({ title: newTitle.trim(), severity: newSeverity });
       if (newSummary.trim()) params.set('summary', newSummary.trim());
       const res = await fetch('/admin/api/incidents', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': csrfToken },
         body: params.toString(),
       });
       if (res.ok) {
@@ -92,8 +92,9 @@ export function IncidentsClient({ initialIncidents, csrfToken }: Props) {
     if (!confirm('Close this incident?')) return;
     setBusy(true);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken });
-      const res = await fetch(`/admin/api/incidents/${id}/close?${params}`, { method: 'POST', credentials: 'include' });
+      const res = await fetch(`/admin/api/incidents/${id}/close`, {
+        method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken },
+      });
       if (res.ok) { toast.success('Closed'); await reload(); }
       else        { toast.error('Could not close'); }
     } finally {
@@ -104,10 +105,11 @@ export function IncidentsClient({ initialIncidents, csrfToken }: Props) {
   async function handleSavePostmortem(id: number) {
     setBusy(true);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken, postmortem: editText });
+      const params = new URLSearchParams({ postmortem: editText });
       const res = await fetch(`/admin/api/incidents/${id}/postmortem?${params}`, {
         method: 'POST',
         credentials: 'include',
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       if (res.ok) {
         toast.success('Postmortem saved');

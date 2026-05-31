@@ -31,13 +31,13 @@ export function JobOverrideControls({ jobId, csrfToken, currentPaused, currentMi
     setBusy(true);
     try {
       const params = new URLSearchParams({
-        _csrf: csrfToken,
         paused: String(paused),
         minIntervalMin: String(intervalMin),
       });
       const res = await fetch(`/admin/api/jobs/${encodeURIComponent(jobId)}/override?${params}`, {
         method: 'POST',
         credentials: 'include',
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       if (res.ok) {
         toast.success(paused ? 'Job paused' : intervalMin > 0 ? `Throttled to every ${intervalMin}min` : 'Override set');
@@ -54,10 +54,10 @@ export function JobOverrideControls({ jobId, csrfToken, currentPaused, currentMi
   async function clearOverride() {
     setBusy(true);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken });
-      const res = await fetch(`/admin/api/jobs/${encodeURIComponent(jobId)}/override?${params}`, {
+      const res = await fetch(`/admin/api/jobs/${encodeURIComponent(jobId)}/override`, {
         method: 'DELETE',
         credentials: 'include',
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       if (res.ok) { toast.success('Override cleared'); setMinInterval('0'); router.refresh(); }
       else        { toast.error('Could not clear'); }

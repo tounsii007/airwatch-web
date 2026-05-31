@@ -58,10 +58,10 @@ export function BackupSection({ csrfToken }: Props) {
     }
     setBusy(true);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken });
-      const res = await fetch(`/admin/api/system/backup?${params}`, {
+      const res = await fetch(`/admin/api/system/backup`, {
         credentials: 'include',
         cache: 'no-store',
+        headers: { 'X-CSRF-Token': csrfToken },
       });
       if (!res.ok) {
         const err = await res.text().catch(() => '');
@@ -110,11 +110,10 @@ export function BackupSection({ csrfToken }: Props) {
 
   async function runPreview(body: string) {
     if (!csrfToken) return;
-    const params = new URLSearchParams({ _csrf: csrfToken });
-    const res = await fetch(`/admin/api/system/backup/preview?${params}`, {
+    const res = await fetch(`/admin/api/system/backup/preview`, {
       method: 'POST',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
       body,
     });
     const result = (await res.json()) as PreviewResult;
@@ -127,11 +126,10 @@ export function BackupSection({ csrfToken }: Props) {
     if (!confirm('Apply this backup? Settings, mutes, probes and webhooks will be upserted.')) return;
     setBusy(true);
     try {
-      const params = new URLSearchParams({ _csrf: csrfToken });
-      const res = await fetch(`/admin/api/system/backup/restore?${params}`, {
+      const res = await fetch(`/admin/api/system/backup/restore`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
         body: stagedBody,
       });
       const result = (await res.json()) as RestoreResult;

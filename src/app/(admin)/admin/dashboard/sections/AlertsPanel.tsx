@@ -169,8 +169,7 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
     try {
       await live.mutate(async () => {
         await Promise.all([...ids].map(id => {
-          const params = new URLSearchParams({ _csrf: csrfToken });
-          return fetch(`/admin/api/alerts/${id}/ack?${params}`, { method: 'POST', credentials: 'include' });
+          return fetch(`/admin/api/alerts/${id}/ack`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken } });
         }));
       }, { optimisticData: optimistic });
       toast.success(`Acknowledged ${ids.size}`);
@@ -189,8 +188,8 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
     try {
       await live.mutate(async () => {
         await Promise.all([...ids].map(id => {
-          const params = new URLSearchParams({ _csrf: csrfToken, minutes: String(minutes) });
-          return fetch(`/admin/api/alerts/${id}/snooze?${params}`, { method: 'POST', credentials: 'include' });
+          const snoozeParams = new URLSearchParams({ minutes: String(minutes) });
+          return fetch(`/admin/api/alerts/${id}/snooze?${snoozeParams}`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken } });
         }));
       }, { optimisticData: optimistic });
       toast.success(`Snoozed ${ids.size} for ${minutes}min`);
@@ -202,7 +201,6 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
 
   async function ack(id: number) {
     if (!csrfToken) return;
-    const params = new URLSearchParams({ _csrf: csrfToken });
     // Optimistic patch: set ack_at to now so `acked` flips true and the
     // row dims + ACK badge appears the instant the operator clicks.
     const optimistic = patchRow(id, {
@@ -211,7 +209,7 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
     });
     try {
       await live.mutate(async () => {
-        const res = await fetch(`/admin/api/alerts/${id}/ack?${params}`, { method: 'POST', credentials: 'include' });
+        const res = await fetch(`/admin/api/alerts/${id}/ack`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken } });
         if (!res.ok) throw new Error('ack failed');
       }, { optimisticData: optimistic });
       toast.success('Acknowledged');
@@ -222,13 +220,13 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
 
   async function snooze(id: number, minutes: number) {
     if (!csrfToken) return;
-    const params = new URLSearchParams({ _csrf: csrfToken, minutes: String(minutes) });
+    const snoozeParams = new URLSearchParams({ minutes: String(minutes) });
     const optimistic = patchRow(id, {
       snooze_until: new Date(Date.now() + minutes * 60_000).toISOString(),
     });
     try {
       await live.mutate(async () => {
-        const res = await fetch(`/admin/api/alerts/${id}/snooze?${params}`, { method: 'POST', credentials: 'include' });
+        const res = await fetch(`/admin/api/alerts/${id}/snooze?${snoozeParams}`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken } });
         if (!res.ok) throw new Error('snooze failed');
       }, { optimisticData: optimistic });
       toast.success(`Snoozed ${minutes}min`);
@@ -239,11 +237,10 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
 
   async function unsnooze(id: number) {
     if (!csrfToken) return;
-    const params = new URLSearchParams({ _csrf: csrfToken });
     const optimistic = patchRow(id, { snooze_until: null });
     try {
       await live.mutate(async () => {
-        const res = await fetch(`/admin/api/alerts/${id}/unsnooze?${params}`, { method: 'POST', credentials: 'include' });
+        const res = await fetch(`/admin/api/alerts/${id}/unsnooze`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken } });
         if (!res.ok) throw new Error('unsnooze failed');
       }, { optimisticData: optimistic });
       toast.success('Snooze cleared');
@@ -256,14 +253,14 @@ export function AlertsPanel({ csrfToken = '' }: Props) {
     if (!csrfToken) return;
     const reason = prompt(`Mute reason for ${kind} (optional)`, '');
     if (reason === null) return;
-    const params = new URLSearchParams({ _csrf: csrfToken, kind, target, reason });
+    const muteParams = new URLSearchParams({ kind, target, reason });
     // Mark every matching kind+target row as muted right away.
     const optimistic = (rows ?? []).map(r =>
       r.kind === kind && r.target === target ? { ...r, was_muted: true } : r,
     );
     try {
       await live.mutate(async () => {
-        const res = await fetch(`/admin/api/alerts/mutes?${params}`, { method: 'POST', credentials: 'include' });
+        const res = await fetch(`/admin/api/alerts/mutes?${muteParams}`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken } });
         if (!res.ok) throw new Error('mute failed');
       }, { optimisticData: optimistic });
       toast.success('Muted');
