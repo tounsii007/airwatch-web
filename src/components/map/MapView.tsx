@@ -11,7 +11,6 @@ import { MapBrandOverlay } from '@/components/map/MapBrandOverlay';
 import { MapStatusOverlay } from '@/components/map/MapStatusOverlay';
 import { MapLegend } from '@/components/map/MapLegend';
 import { MapToolbar } from '@/components/map/MapToolbar';
-import { t } from '@/lib/i18n/translations';
 import { useLeafletMap } from '@/components/map/hooks/useLeafletMap';
 import { useBaseLayer } from '@/components/map/hooks/useBaseLayer';
 import { useRadarOverlay } from '@/components/map/hooks/useRadarOverlay';

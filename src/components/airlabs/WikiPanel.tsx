@@ -59,16 +59,22 @@ export function WikiPanel({ airportIata, airlineIata }: Props) {
   return (
     <GlassPanel className="p-4">
       <div className="flex items-start gap-3">
-        {wiki.image_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={wiki.image_url}
-            alt=""
-            className="w-20 h-20 object-cover rounded shrink-0 bg-[var(--surface-hover)]"
-            loading="lazy"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-          />
-        )}
+        {(() => {
+          // Guard the upstream image URL with the same scheme allowlist used
+          // for the wiki link, so a poisoned cache can't smuggle a non-http(s)
+          // src into the DOM.
+          const safeImg = safeExternalUrl(wiki.image_url);
+          return safeImg ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={safeImg}
+              alt=""
+              className="w-20 h-20 object-cover rounded shrink-0 bg-[var(--surface-hover)]"
+              loading="lazy"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+          ) : null;
+        })()}
         <div className="min-w-0">
           <h3 className="font-[var(--font-heading)] text-sm font-bold text-[var(--text-primary)] mb-1">
             {t('about', language)}

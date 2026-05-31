@@ -550,5 +550,6 @@
   "legend_alt_ground": "NA ZIEMI",
   "fence_tooltip_airline_named": "Tylko loty {0} ({1}) wyzwalają tę strefę",
   "fence_tooltip_airline": "Filtr linii: {0}",
-  "fence_empty_body": "Utwórz powyżej — alerty pojawią się tutaj, gdy samolot wleci do strefy."
+  "fence_empty_body": "Utwórz powyżej — alerty pojawią się tutaj, gdy samolot wleci do strefy.",
+  "photo_by": "Zdj\u0119cie autorstwa"
 }

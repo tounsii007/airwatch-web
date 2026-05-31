@@ -83,8 +83,13 @@ export const config = {
  * still works.
  */
 const ADMIN_HOST_PATTERNS = [
-  /:1?3099\b/, // dev: localhost:13099
-  /admin\./,    // prod hint: admin.airwatch.example
+  // The admin port must TERMINATE the host. Anchoring to end-of-string
+  // stops a spoofed `Host: x:13099.evil.com` (where :13099 sits mid-string)
+  // from slipping past the obscurity gate.
+  /:1?3099$/, // dev: localhost:13099
+  // `admin.` must be the FIRST label, not appear anywhere — otherwise
+  // `foo.admin.evil.com` would match.
+  /^admin\./, // prod hint: admin.airwatch.example
 ];
 
 export function proxy(request: NextRequest) {

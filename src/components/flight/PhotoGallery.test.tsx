@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PhotoGallery } from './PhotoGallery';
 
@@ -51,6 +51,12 @@ describe('<PhotoGallery />', () => {
   it('ArrowRight advances; ArrowLeft retreats; counter updates', async () => {
     render(<PhotoGallery icao24="abc123" onClose={() => {}} />);
     await waitFor(() => screen.getByText('1 / 3'));
+    // Flush the passive effect that re-binds the window keydown listener
+    // with the loaded photo count. Without this, a key dispatched between
+    // commit and effect-flush hits the stale (photos.length === 0)
+    // listener, where next()/prev() no-op — a race that surfaces only
+    // under parallel test load.
+    await act(async () => {});
 
     fireEvent.keyDown(window, { key: 'ArrowRight' });
     expect(screen.getByText('2 / 3')).toBeInTheDocument();
@@ -69,6 +75,8 @@ describe('<PhotoGallery />', () => {
   it('Home and End jump to the first / last photo', async () => {
     render(<PhotoGallery icao24="abc123" onClose={() => {}} />);
     await waitFor(() => screen.getByText('1 / 3'));
+    // See note above: settle the keydown-listener re-bind before dispatch.
+    await act(async () => {});
 
     fireEvent.keyDown(window, { key: 'End' });
     expect(screen.getByText('3 / 3')).toBeInTheDocument();
@@ -99,6 +107,8 @@ describe('<PhotoGallery />', () => {
   it('renders plain text photographer name when no link present', async () => {
     render(<PhotoGallery icao24="abc123" onClose={() => {}} />);
     await waitFor(() => screen.getByText('1 / 3'));
+    // See note above: settle the keydown-listener re-bind before dispatch.
+    await act(async () => {});
     fireEvent.keyDown(window, { key: 'ArrowRight' }); // → Bob (no link)
 
     expect(screen.queryByRole('link', { name: 'Bob' })).toBeNull();

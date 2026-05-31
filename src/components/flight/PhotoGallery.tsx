@@ -263,7 +263,7 @@ export function PhotoGallery({ icao24, onClose }: Props) {
           const safe = safeExternalUrl(photo.link);
           return (
             <p className="text-white/40 text-[10px] text-center mb-3 font-[var(--font-body)]">
-              Photo by {safe ? (
+              {t('photo_by', language)} {safe ? (
                 <a
                   href={safe}
                   target="_blank"

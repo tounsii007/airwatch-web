@@ -551,5 +551,6 @@
   "legend_alt_ground": "SOL",
   "fence_tooltip_airline_named": "Seuls les vols {0} ({1}) déclenchent cette zone",
   "fence_tooltip_airline": "Filtre compagnie : {0}",
-  "fence_empty_body": "Créez-en une ci-dessus — les alertes apparaîtront ici lorsqu'un avion entre dans la zone."
+  "fence_empty_body": "Créez-en une ci-dessus — les alertes apparaîtront ici lorsqu'un avion entre dans la zone.",
+  "photo_by": "Photo par"
 }

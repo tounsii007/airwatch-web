@@ -140,7 +140,12 @@ export function CommandPalette({ open, onClose }: Props) {
           </button>
         </div>
 
-        <div id="cmd-palette-list" role="listbox" className="max-h-96 overflow-auto">
+        <div
+          id="cmd-palette-list"
+          role="listbox"
+          aria-label={t('aria_command_palette', language)}
+          className="max-h-96 overflow-auto"
+        >
           {flat.length === 0 ? (
             <div className="px-4 py-8 text-center t-label text-[var(--text-muted)]">
               {t('command_palette_no_results', language)}

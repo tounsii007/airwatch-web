@@ -69,7 +69,7 @@ export default function GeoFencesPage() {
       title: t('fence_deleted_toast', language),
       body: t('removed_toast', language).replace('{0}', name),
     });
-  }, [pendingDelete, remove]);
+  }, [pendingDelete, remove, language]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

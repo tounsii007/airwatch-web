@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+/** Max geo-fence alerts retained in persisted history (oldest drop off). */
+const MAX_GEOFENCE_ALERTS = 100;
+
 export interface GeoFenceAlert {
   fenceId: number;
   fenceName: string;
@@ -32,7 +35,7 @@ export const useGeoFenceStore = create<GeoFenceStore>()(
   persist(
     (set, get) => ({
       alerts: [],
-      maxAlerts: 100,
+      maxAlerts: MAX_GEOFENCE_ALERTS,
 
       pushAlert: (alert: GeoFenceAlert) => {
         const { alerts, maxAlerts } = get();

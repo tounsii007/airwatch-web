@@ -47,7 +47,7 @@ function parseCoords(coordStr: string | undefined): [number, number][] | null {
   return points;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any -- AWC SIGMET JSON is untyped upstream */
 export function parseSigmetResponse(data: unknown): TurbulenceZone[] {
   if (!Array.isArray(data)) return [];
 
@@ -78,7 +78,7 @@ export function parseSigmetResponse(data: unknown): TurbulenceZone[] {
       polygon = d.area
         .filter((p: any) => p?.lat != null && p?.lon != null)
         .map((p: any) => [Number(p.lat), Number(p.lon)] as [number, number]);
-      if (polygon!.length < 3) polygon = null;
+      if (polygon.length < 3) polygon = null;
     }
 
     if (!polygon || polygon.length < 3) continue;

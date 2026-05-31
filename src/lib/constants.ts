@@ -32,12 +32,12 @@ export const API = {
     return `${PROXY_BASE_URL}/airlabs/routes?flight_icao=${params.flightIcao}`;
   },
   schedules: (iata: string, departures = true) =>
-    `${PROXY_BASE_URL}/airlabs/schedules?${departures ? 'dep_iata' : 'arr_iata'}=${iata}`,
+    `${PROXY_BASE_URL}/airlabs/schedules?${departures ? 'dep_iata' : 'arr_iata'}=${encodeURIComponent(iata)}`,
   scheduleByFlight: (params: { flightIcao?: string; flightIata?: string }) => {
     if (params.flightIata) return `${PROXY_BASE_URL}/airlabs/schedules?flight_iata=${params.flightIata}`;
     return `${PROXY_BASE_URL}/airlabs/schedules?flight_icao=${params.flightIcao}`;
   },
-  airport: (iata: string) => `${PROXY_BASE_URL}/airlabs/airports?iata_code=${iata}`,
+  airport: (iata: string) => `${PROXY_BASE_URL}/airlabs/airports?iata_code=${encodeURIComponent(iata)}`,
   /**
    * Airports within {@code distanceKm} km of (lat, lng). Powers the
    * "airports near me" feature on the airports page — the browser supplies

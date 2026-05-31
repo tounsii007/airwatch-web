@@ -173,6 +173,16 @@ describe('proxy() — CSP + admin host gate', () => {
       expect(r.status).toBe(200);
     });
 
+    it('blocks a spoofed host that only embeds :13099 mid-string', () => {
+      const r = proxy(req('/admin/dashboard', 'evil.com:13099.attacker.test') as never);
+      expect(r.status).toBe(404);
+    });
+
+    it('blocks a spoofed host where admin. is not the leading label', () => {
+      const r = proxy(req('/admin/dashboard', 'foo.admin.attacker.test') as never);
+      expect(r.status).toBe(404);
+    });
+
     it('lets the public stats-ingest beacon through on a public host', () => {
       const r = proxy(req('/admin/api/stats/ingest/view', 'app.example.com') as never);
       expect(r.status).toBe(200);
