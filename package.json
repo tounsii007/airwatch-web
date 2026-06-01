@@ -57,7 +57,7 @@
     "source-map-js": "^1.2.1",
     "swr": "^2.4.1",
     "zod": "^4.4.3",
-    "zustand": "^5.0.13"
+    "zustand": "^5.0.14"
   },
   "_optional_deps_note": "lightningcss-* native bins are pulled by lightningcss itself via its own optionalDependencies; we mirror the per-platform list here so a fresh `npm ci` on any host gets a working build. Without this, Windows installs miss the win32-x64 native and the dev server bombs at first compile with 'Cannot find module ../lightningcss.win32-x64-msvc.node'.",
   "optionalDependencies": {
