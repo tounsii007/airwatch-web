@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { skipIfStackDown } from './_stack';
 
 /**
  * Admin visual regression suite (Phase 4).
@@ -38,6 +39,10 @@ import { expect, test, type Page } from '@playwright/test';
 const ADMIN_BASE = process.env.ADMIN_BASE_URL ?? 'http://localhost:13099';
 const ADMIN_USER = process.env.ADMIN_TEST_USER ?? 'admin';
 const ADMIN_PASS = process.env.ADMIN_TEST_PASS ?? 'admin';
+
+// Skip when the admin stack isn't reachable (e.g. CI with no backend) so
+// the job stays green; runs in full once the stack is up.
+test.beforeAll(() => skipIfStackDown(ADMIN_BASE));
 
 async function login(page: Page) {
   await page.goto(`${ADMIN_BASE}/admin/login`);

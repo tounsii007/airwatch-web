@@ -163,12 +163,13 @@ jobs:
     # parallel, faster turnaround on PRs.
     #
     # Non-blocking on CI: the suite assumes the airwatch-api compose
-    # stack is reachable at localhost:13000, but the sibling
+    # stack is reachable at localhost:13000 / :13099, but the sibling
     # `working-directory: ../airwatch` doesn't exist on the GitHub
-    # runner (we don't checkout the API repo here). Run locally with
-    # the full stack up to actually exercise these specs. The job is
-    # kept on the workflow so PRs still get the Playwright report
-    # artifact for triage.
+    # runner (we don't checkout the API repo here). When the stack is
+    # unreachable each spec skips itself via `skipIfStackDown`
+    # (e2e/_stack.ts) instead of erroring, so the job passes here and
+    # runs in full locally with the stack up. continue-on-error is kept
+    # as a belt-and-braces guard so a future infra hiccup can't block PRs.
     continue-on-error: true
     steps:
       - uses: actions/checkout@v6
@@ -186,8 +187,8 @@ jobs:
 
       # Spin up the airwatch-api stack via docker compose. Tests assume
       # the full stack is available at localhost:13000 (nginx ingress).
-      # Without the api the Playwright fixtures auto-skip backend-
-      # dependent assertions via the `apiAvailable` helper.
+      # Without the api the specs auto-skip backend-dependent groups via
+      # the `skipIfStackDown` probe in e2e/_stack.ts.
       - name: Start backend stack
         working-directory: ../airwatch
         run: |

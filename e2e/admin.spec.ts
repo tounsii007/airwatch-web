@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { skipIfStackDown } from './_stack';
 
 /**
  * Admin dashboard E2E suite.
@@ -46,6 +47,11 @@ import { expect, test, type Page } from '@playwright/test';
 const ADMIN_BASE = process.env.ADMIN_BASE_URL ?? 'http://localhost:13099';
 const ADMIN_USER = process.env.ADMIN_TEST_USER ?? 'admin';
 const ADMIN_PASS = process.env.ADMIN_TEST_PASS ?? 'admin';
+
+// The admin surface is served by the airwatch-api backend on the admin
+// port. Skip every group in this file when that stack isn't reachable so
+// CI without a backend stays green; runs in full once it's up.
+test.beforeAll(() => skipIfStackDown(ADMIN_BASE));
 
 /** Every admin page link rendered in the layout nav. */
 const ADMIN_PAGES = [
