@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { skipIfStackDown } from './_stack';
 
 const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
 
@@ -17,6 +18,9 @@ const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
  * the full app shell. Here we just lock in the static fallback contract.
  */
 test.describe('Offline fallback', () => {
+  // /offline.html is served by the running app shell — skip when it's down.
+  test.beforeAll(() => skipIfStackDown(BASE));
+
   test('static /offline.html serves with 200 + HTML content-type', async ({ request }) => {
     const res = await request.get(`${BASE}/offline.html`);
     expect(res.status()).toBe(200);

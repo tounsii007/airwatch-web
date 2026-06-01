@@ -12,8 +12,11 @@ import { defineConfig, devices } from '@playwright/test';
  *   2. Against `next dev` — `PLAYWRIGHT_BASE_URL=http://localhost:3000
  *      npm run test:e2e`. Skips the docker stack; useful for fast
  *      iteration but the API + tile proxy paths obviously won't work.
- *      Tests should mark themselves `test.skip(!apiAvailable)` when
- *      they need the backend.
+ *
+ * When the targeted stack isn't reachable (e.g. CI with no backend, or
+ * a dev box that hasn't run `docker compose up`), each spec probes its
+ * base URL in a `beforeAll` via `skipIfStackDown` (see e2e/_stack.ts)
+ * and SKIPS rather than hard-failing on net::ERR_CONNECTION_REFUSED.
  *
  * CI: set `PLAYWRIGHT_BASE_URL` to whatever the CI's compose-up
  * exposes. Default of port 13000 matches a freshly-cloned dev box.

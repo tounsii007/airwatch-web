@@ -1,4 +1,8 @@
 import { expect, test } from '@playwright/test';
+import { skipIfStackDown } from './_stack';
+
+/** The public ingress the smoke suite drives — mirrors the config baseURL. */
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:13000';
 
 /**
  * Smoke-suite — covers the bug categories that bit us during the
@@ -15,6 +19,10 @@ import { expect, test } from '@playwright/test';
  */
 
 test.describe('AirWatch — Smoke', () => {
+  // Needs the full ingress (app + API + tile proxy + ws). Skip cleanly
+  // when the stack isn't up so CI without a backend stays green.
+  test.beforeAll(() => skipIfStackDown(BASE));
+
   test('home renders and shows the AIRWATCH brand', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('text=/AIRWATCH/i').first()).toBeVisible();
