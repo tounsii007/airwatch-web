@@ -23,6 +23,7 @@ export function useAircraftMarkers({
   showLabels,
   zoom,
   cargoOnly = false,
+  radarActive = false,
 }: {
   aircraftMap: Map<string, AircraftState>;
   mapRef: React.MutableRefObject<L.Map | null>;
@@ -33,12 +34,18 @@ export function useAircraftMarkers({
   zoom: number;
   /** When true, hide every flight whose operator's catalogue isCargo flag isn't true. */
   cargoOnly?: boolean;
+  /** When the weather-radar overlay is on, give dot markers a dark halo so
+   *  they stay visible against the rain tiles. */
+  radarActive?: boolean;
 }) {
-  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  // FeatureGroup (not plain LayerGroup) so MapView can call bringToFront() to
+  // re-stack the markers above the radar overlay — bringToFront lives on
+  // FeatureGroup and forwards to each child marker.
+  const markersLayerRef = useRef<L.FeatureGroup | null>(null);
 
   useEffect(() => {
     if (!markersLayerRef.current) {
-      markersLayerRef.current = L.layerGroup();
+      markersLayerRef.current = L.featureGroup();
     }
   }, []);
 
@@ -136,10 +143,10 @@ export function useAircraftMarkers({
       } else {
         marker = L.circleMarker([aircraft.latitude, aircraft.longitude], {
           radius: zoom >= 8 ? 5 : zoom >= 6 ? 4 : 3,
-          color: 'transparent',
+          color: radarActive ? 'rgba(7,15,30,0.9)' : 'transparent',
           fillColor: color,
           fillOpacity: 0.85,
-          weight: 0,
+          weight: radarActive ? 1 : 0,
         });
       }
 
@@ -172,7 +179,7 @@ export function useAircraftMarkers({
 
       marker.addTo(layer);
     }
-  }, [aircraftMap, mapRef, mapStyle, selectedAircraft, selectAircraft, showLabels, zoom, cargoOnly]);
+  }, [aircraftMap, mapRef, mapStyle, selectedAircraft, selectAircraft, showLabels, zoom, cargoOnly, radarActive]);
 
   return markersLayerRef;
 }

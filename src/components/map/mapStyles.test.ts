@@ -19,11 +19,8 @@ describe('MAP_STYLES registry', () => {
     }
   });
 
-  it('STYLE_ORDER covers every defined style', () => {
-    expect(STYLE_ORDER).toHaveLength(allStyles.length);
-    for (const key of allStyles) {
-      expect(STYLE_ORDER).toContain(key);
-    }
+  it('STYLE_ORDER exposes only satellite as the surface option', () => {
+    expect(STYLE_ORDER).toEqual(['satellite']);
   });
 
   it('STYLE_ORDER has no duplicates', () => {

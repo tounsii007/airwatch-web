@@ -125,14 +125,14 @@ describe('<AircraftMarker />', () => {
     expect(iconHtml()).not.toContain('pulse-glow');
   });
 
-  it('colors the icon grey for a grounded aircraft', () => {
+  it('colors the icon with the ground palette for a grounded aircraft', () => {
     render(<AircraftMarker aircraft={makeAc({ onGround: true })} isSelected={false} onClick={vi.fn()} />);
-    expect(iconHtml().toLowerCase()).toContain('#6b7280');
+    expect(iconHtml().toLowerCase()).toContain('#6b7f99');
   });
 
-  it('colors the icon blue when altitude data is missing', () => {
+  it('colors the icon with the primary palette when altitude data is missing', () => {
     render(<AircraftMarker aircraft={makeAc({ onGround: false, baroAltitude: undefined })} isSelected={false} onClick={vi.fn()} />);
-    expect(iconHtml().toLowerCase()).toContain('#7a9abf');
+    expect(iconHtml().toLowerCase()).toContain('#00d4ff');
   });
 
   it('rotates the icon to the aircraft heading, defaulting to 0', () => {

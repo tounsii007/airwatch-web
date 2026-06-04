@@ -22,10 +22,6 @@ function renderToolbar(
     onToggleRadar: vi.fn(),
     cargoOnly: false,
     onToggleCargo: vi.fn(),
-    showLegend: false,
-    onToggleLegend: vi.fn(),
-    onZoomIn: vi.fn(),
-    onZoomOut: vi.fn(),
     onCenter: vi.fn(),
     ...overrides,
   };
@@ -41,13 +37,11 @@ describe('<MapToolbar />', () => {
     ).toBeInTheDocument();
   });
 
-  it('wires the zoom and centre controls to their callbacks', () => {
+  it('wires the centre control to its callback', () => {
+    // Zoom (+/−) and the legend toggle moved to MapBottomBar; the top
+    // cluster now keeps only the centre/locate control here.
     const { props } = renderToolbar();
-    fireEvent.click(screen.getByRole('button', { name: 'aria_zoom_in' }));
-    fireEvent.click(screen.getByRole('button', { name: 'aria_zoom_out' }));
     fireEvent.click(screen.getByRole('button', { name: 'aria_reset_view' }));
-    expect(props.onZoomIn).toHaveBeenCalledTimes(1);
-    expect(props.onZoomOut).toHaveBeenCalledTimes(1);
     expect(props.onCenter).toHaveBeenCalledTimes(1);
   });
 
@@ -83,17 +77,11 @@ describe('<MapToolbar />', () => {
     ).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('labels and toggles the legend control', () => {
-    const { props } = renderToolbar({ showLegend: false });
-    fireEvent.click(screen.getByRole('button', { name: 'Show legend' }));
-    expect(props.onToggleLegend).toHaveBeenCalledTimes(1);
-  });
-
   it('embeds the map-style picker', () => {
     renderToolbar();
-    // The picker's collapsed toggle exposes a listbox popup.
+    // The picker's collapsed toggle ("Surface") exposes a listbox popup.
     expect(
-      screen.getByRole('button', { name: 'aria_map_style_label' }),
+      screen.getByRole('button', { name: 'Surface' }),
     ).toHaveAttribute('aria-haspopup', 'listbox');
   });
 

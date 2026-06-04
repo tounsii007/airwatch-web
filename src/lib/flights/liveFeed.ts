@@ -15,6 +15,21 @@ import type { AirlabsFlightResponse } from '@/lib/flights/airlabs';
 export type FeedTransport = 'websocket' | 'polling';
 
 /**
+ * How loud an {@link LiveFeedCallbacks.onError} report should be.
+ *
+ *   - `'fatal'`     — the feed has never delivered a single frame, so the
+ *                     map is empty and the user is genuinely looking at a
+ *                     dead app. Worth a blocking, full-bleed alarm.
+ *   - `'transient'` — a *secondary* fetch (the polling fallback) failed
+ *                     while live data is already flowing or has flowed at
+ *                     least once. The WS reconnect/backoff will recover;
+ *                     this should be a quiet, auto-dismissing nudge at
+ *                     most, never a red banner that contradicts the
+ *                     thousands of aircraft on screen.
+ */
+export type FeedErrorSeverity = 'fatal' | 'transient';
+
+/**
  * Outbound WebSocket frame the api emits on `/ws/flights`.
  *
  * Mirrors the Java {@code WsFlightFrame} record at
@@ -44,8 +59,15 @@ function isFlightFrame(value: unknown): value is WsFlightFrame {
 export interface LiveFeedCallbacks {
   /** Called for every successful frame. */
   onFlights: (flights: AirlabsFlightResponse[], transport: FeedTransport) => void;
-  /** Called on transport-level errors. Polling fetch errors are also reported here. */
-  onError?: (error: string) => void;
+  /**
+   * Called on transport-level errors. Polling fetch errors are also reported
+   * here. `severity` lets the consumer pick a presentation that matches
+   * reality: a `'transient'` failure happens while data is already on screen
+   * (downgrade to a toast); a `'fatal'` one means nothing has ever loaded
+   * (a blocking banner is warranted). Defaults to `'fatal'` for callers /
+   * tests that ignore the second argument.
+   */
+  onError?: (error: string, severity: FeedErrorSeverity) => void;
   /** Called when the active transport changes (ws↔polling). Good for UI indicators. */
   onTransportChange?: (transport: FeedTransport) => void;
 }
@@ -79,6 +101,16 @@ export function startLiveFeed(options: LiveFeedOptions, callbacks: LiveFeedCallb
    *  (whose response may still be in flight) becomes pure waste — drop
    *  it on arrival to avoid a stale-overwrite race. */
   let firstWsFrameArrived = false;
+  /** True once *any* path (snapshot, WS, or poll) has delivered a frame.
+   *  Drives error severity: a poll that fails after we've shown live data
+   *  is `'transient'` (the map already has aircraft); a poll that fails
+   *  before anything ever loaded is `'fatal'` (genuine total outage). */
+  let everDeliveredFrame = false;
+
+  const deliver = (flights: AirlabsFlightResponse[], transport: FeedTransport) => {
+    everDeliveredFrame = true;
+    callbacks.onFlights(flights, transport);
+  };
 
   // Exponential backoff for WS reconnect — previously a fixed 10 s loop
   // would hammer a down backend ~360 times/hour. Capped at 5 min so a
@@ -106,7 +138,7 @@ export function startLiveFeed(options: LiveFeedOptions, callbacks: LiveFeedCallb
       const result = await options.fetchPoll();
       if (disposed || firstWsFrameArrived) return;
       if (result.error) return;
-      callbacks.onFlights(result.flights, currentTransport ?? 'polling');
+      deliver(result.flights, currentTransport ?? 'polling');
     } catch {
       // Fail-soft. The WS path will deliver data once it lands; if
       // both fail the existing polling fallback below handles it.
@@ -122,13 +154,18 @@ export function startLiveFeed(options: LiveFeedOptions, callbacks: LiveFeedCallb
         const result = await options.fetchPoll();
         if (disposed) return;
         if (result.error) {
-          callbacks.onError?.(result.error);
+          // If live data has ever reached the user, a failed fallback poll
+          // is a transient blip — the map still shows aircraft and the WS
+          // reconnect loop is working in the background. Only escalate to a
+          // blocking alarm when nothing has ever loaded (true cold outage).
+          callbacks.onError?.(result.error, everDeliveredFrame ? 'transient' : 'fatal');
           return;
         }
-        callbacks.onFlights(result.flights, 'polling');
+        deliver(result.flights, 'polling');
       } catch (err) {
         if (disposed) return;
-        callbacks.onError?.((err as Error).message ?? 'polling_failed');
+        const message = (err as Error).message ?? 'polling_failed';
+        callbacks.onError?.(message, everDeliveredFrame ? 'transient' : 'fatal');
       }
     };
 
@@ -170,7 +207,7 @@ export function startLiveFeed(options: LiveFeedOptions, callbacks: LiveFeedCallb
         const msg: unknown = JSON.parse(event.data);
         if (isFlightFrame(msg)) {
           firstWsFrameArrived = true;
-          callbacks.onFlights(msg.data, 'websocket');
+          deliver(msg.data, 'websocket');
         }
       } catch {
         // ignore non-JSON / malformed frames

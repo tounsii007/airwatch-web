@@ -1,15 +1,22 @@
 'use client';
 
 /**
- * Top-left brand wordmark + transport-aware LIVE pill. Kept as a self-
- * contained overlay so the surrounding map component doesn't need to
- * know about the transport state machine just to render a label.
+ * Top-left transport-aware LIVE pill for the map.
  *
- * The wordmark uses two stacked animations:
- *   * `gradient-text` — the standing brand gradient sheen.
- *   * `animate-neon-flicker` — a slow per-frame opacity wobble that
- *     reads as "powered on and breathing" against the static map tiles
- *     behind it (added in iteration 17).
+ * Historically this also rendered an "AIRWATCH" wordmark, but that
+ * duplicated the brand lockup now shown in the desktop LeftSidebar (and
+ * the mobile BottomNav top strip), so the wordmark was removed. What
+ * remains is just the live-feed status pill.
+ *
+ * De-duplication across breakpoints:
+ *   - Desktop (`lg:` and up): the {@link TopBar} owns the LIVE pill in its
+ *     left area, so this overlay hides itself (`lg:hidden`) to avoid a
+ *     second copy on the map.
+ *   - Mobile / tablet: there is no TopBar, so this pill stays as a small,
+ *     unobtrusive map badge that still tells the user the feed is live.
+ *
+ * The pill keeps its `animate-fade-in` entrance so it reads as "powered on
+ * and breathing" against the static map tiles behind it.
  */
 import { Tag } from '@/components/ui/Tag';
 
@@ -23,15 +30,8 @@ function transportTitle(transport: Transport): string {
 
 export function MapBrandOverlay({ transport }: { transport: Transport }) {
   return (
-    <div className="absolute top-3 left-3 z-[1000] flex items-center gap-3 pointer-events-none animate-fade-in">
-      <span className="gradient-text font-[var(--font-heading)] font-bold tracking-[0.2em] text-lg animate-neon-flicker">
-        AIRWATCH
-      </span>
-      <span
-        className="animate-fade-in"
-        style={{ animationDelay: '120ms' }}
-        title={transportTitle(transport)}
-      >
+    <div className="absolute top-3 left-3 z-[1000] flex items-center pointer-events-none animate-fade-in lg:hidden">
+      <span title={transportTitle(transport)}>
         <Tag variant="success" size="sm" dot>
           LIVE{transport === 'websocket' ? ' · WS' : ''}
         </Tag>

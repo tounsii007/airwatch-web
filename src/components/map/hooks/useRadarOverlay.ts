@@ -15,7 +15,7 @@ import { TRANSPARENT_TILE } from '@/components/map/mapStyles';
  * z-stacked just above tilePane is filter-free and keeps the original
  * blue/yellow rain colors readable.
  *
- * z-index 400 sits above tilePane (200) and below overlayPane (400) +
+ * z-index 250 sits just above tilePane (200) and below overlayPane (400) +
  * markerPane (600) so flight icons stay on top of the rain.
  */
 export function useRadarOverlay({
@@ -37,7 +37,7 @@ export function useRadarOverlay({
     // existing pane on subsequent calls with the same name.
     if (!map.getPane('radar-pane')) {
       const pane = map.createPane('radar-pane');
-      pane.style.zIndex = '350';
+      pane.style.zIndex = '250';
       // Explicitly set `filter: none` so even if a parent stylesheet
       // tries to inherit the basemap's filter, our pane stays clean.
       pane.style.filter = 'none';

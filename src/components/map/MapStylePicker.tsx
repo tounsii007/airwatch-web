@@ -69,7 +69,8 @@ export const MapStylePicker = memo(function MapStylePicker({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={t('aria_map_style_label', language).replace('{0}', current.label)}
+        title="Surface"
+        aria-label="Surface"
         className={`glass-panel p-2 hover:bg-white/10 transition-colors cursor-pointer relative ${
           open ? 'bg-[var(--primary)]/15 border-[var(--primary)]/30' : ''
         }`}

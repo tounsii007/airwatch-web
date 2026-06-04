@@ -201,7 +201,35 @@ describe('startLiveFeed', () => {
     );
 
     await new Promise((r) => setTimeout(r, 60));
-    expect(onError).toHaveBeenCalledWith('rate_limited');
+    // No frame has ever been delivered (every poll errors), so the failure
+    // is fatal — the map is empty and a blocking alarm is warranted.
+    expect(onError).toHaveBeenCalledWith('rate_limited', 'fatal');
+    handle.stop();
+  });
+
+  it('downgrades a polling error to transient once a frame has been delivered', async () => {
+    // Pure polling (no WebSocket). The first tick succeeds and paints the
+    // map; a later tick fails. Because live data already reached the user,
+    // the failure must be reported as transient rather than fatal.
+    // @ts-expect-error — intentional teardown
+    globalThis.WebSocket = undefined;
+
+    const onError = vi.fn();
+    let call = 0;
+    const fetchPoll = vi.fn(async () => {
+      call += 1;
+      if (call === 1) return { flights: [{ hex: 'a', lat: 1, lng: 1 }], error: null as string | null };
+      return { flights: [] as AirlabsFlightResponse[], error: 'proxy_error' as string | null };
+    });
+
+    const handle = startLiveFeed(
+      { pollingIntervalMs: 20, fetchPoll },
+      { onFlights: () => {}, onError },
+    );
+
+    await new Promise((r) => setTimeout(r, 90));
+    expect(onError).toHaveBeenCalledWith('proxy_error', 'transient');
+    expect(onError).not.toHaveBeenCalledWith('proxy_error', 'fatal');
     handle.stop();
   });
 });

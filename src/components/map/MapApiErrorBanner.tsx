@@ -45,7 +45,7 @@ export function MapApiErrorBanner({ error, language }: Props) {
   const { title, hint } = lookup(error, language);
   return (
     <div
-      className="absolute top-12 left-3 right-3 z-[999] glass-panel-elevated border border-[var(--error)]/40 bg-[var(--error)]/8 px-3 py-2 pointer-events-none animate-scale-in rounded-lg"
+      className="absolute top-12 lg:top-0 left-3 right-3 z-[999] glass-panel-elevated border border-[var(--error)]/40 bg-[var(--error)]/8 px-3 py-2 pointer-events-none animate-scale-in rounded-lg"
       role="alert"
       aria-live="assertive"
     >

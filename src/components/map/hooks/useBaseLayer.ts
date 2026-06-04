@@ -95,13 +95,27 @@ export function useBaseLayer({
     baseLayerRef.current = layer;
 
     // Reset the tile-pane filter ON EVERY change. Otherwise switching
-    // away from a `dark: true` style leaves the invert+hue-rotate filter
-    // active under the new tiles, doubling the inversion.
+    // away from a filtered style leaves the previous tone active under the
+    // new tiles, doubling it up.
+    //
+    // Precedence:
+    //   1. An explicit `style.tileFilter` wins — used by PHOTOGRAPHIC dark
+    //      basemaps (satellite) that need a dim + cool-cast TONE rather
+    //      than the invert recipe (inverting a photo yields a negative).
+    //   2. Otherwise a `dark: true` vector style gets the legacy invert+
+    //      hue-rotate that turns LIGHT tiles dark.
+    //   3. Everything else: no filter.
+    //
+    // Scoped to `tilePane` only — the route-glow vectors (overlayPane) and
+    // aircraft markers (markerPane) live in sibling panes, and `filter`
+    // does not inherit, so they are never dimmed by this.
     const tilePane = map.getPane('tilePane');
     if (tilePane) {
-      tilePane.style.filter = style.dark
-        ? 'invert(1) hue-rotate(180deg) brightness(0.7) contrast(1.3) saturate(0.3)'
-        : 'none';
+      tilePane.style.filter =
+        style.tileFilter ??
+        (style.dark
+          ? 'invert(1) hue-rotate(180deg) brightness(0.7) contrast(1.3) saturate(0.3)'
+          : 'none');
     }
 
     // Force a redraw — `bringToBack()` reorders internally but doesn't

@@ -71,7 +71,7 @@ export function useLeafletMap(onMapClick: () => void) {
       inertiaMaxSpeed: 1500,
     });
 
-    const initialStyle = MAP_STYLES.dark;
+    const initialStyle = MAP_STYLES.satellite;
     baseLayerRef.current = L.tileLayer(initialStyle.url, {
       attribution: initialStyle.attr,
       maxZoom: CONFIG.maxZoom,

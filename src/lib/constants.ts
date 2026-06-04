@@ -128,19 +128,24 @@ export const API = {
   turbulence: () => `${PROXY_BASE_URL}/turbulence`,
 };
 
+// JS colour palette for canvas/SVG-drawn UI (map markers, route trails,
+// LiveTicker, panel altitude tint). Kept in lock-step with the CSS design
+// tokens in globals.css `:root` — markers are drawn programmatically, so they
+// can't read CSS vars; update both when the palette changes. Cyan = high,
+// mint = low, amber = mid.
 export const COLORS = {
-  primary: '#7A9ABF',
-  accent: '#D4A574',
-  background: '#0A0A0A',
-  surface: '#151515',
-  success: '#4ADE80',
+  primary: '#00D4FF',
+  accent: '#38F2A3',
+  background: '#06111F',
+  surface: '#081A2F',
+  success: '#34D399',
   warning: '#FBBF24',
-  error: '#F87171',
+  error: '#EF4444',
   info: '#60A5FA',
-  altitudeLow: '#4ADE80',
+  altitudeLow: '#38F2A3',
   altitudeMed: '#FBBF24',
-  altitudeHigh: '#E879A8',
-  ground: '#6B7280',
+  altitudeHigh: '#00D4FF',
+  ground: '#6B7F99',
   selected: '#E0F0FF',
 };
 

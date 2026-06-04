@@ -7,8 +7,47 @@ interface StyleDef {
   label: string;
   maxNative?: number;
   subdomains?: string;
+  /**
+   * Optional explicit CSS `filter` for this style's basemap tile pane.
+   *
+   * The `dark` flag alone maps to a single INVERT-based filter
+   * (`invert(1) hue-rotate(180deg)…`) that turns LIGHT vector tiles into a
+   * dark theme. That recipe is wrong for a photographic raster like Google
+   * satellite — inverting a photo yields a colour negative, not a night
+   * view. `tileFilter` lets a photographic style opt into a TONE-DOWN
+   * filter (dim + cool cast) instead of the invert path, while still
+   * being treated as a dark basemap (bright `ALT_ON_DARK` markers, etc.).
+   *
+   * When set it OVERRIDES the `dark ? invert : none` default in
+   * useBaseLayer. Applied only to `tilePane`, so route-glow vectors
+   * (overlayPane) and aircraft markers (markerPane) are never dimmed.
+   */
+  tileFilter?: string;
   url: string;
 }
+
+/**
+ * Night tone for the photographic satellite basemap. We DIM and slightly
+ * de-saturate the bright daytime imagery and lay a cool navy cast over it
+ * via `sepia → hue-rotate(to blue) → brightness boost-back` so it reads as
+ * an aviation night view that still matches the deep-navy UI shell
+ * (`--bg: #06111F`). No blur — coastlines and lit city areas stay legible.
+ *
+ *   brightness(0.55) — knock the daytime glare down to a night level
+ *   contrast(1.05)    — keep landmass/coast edges crisp after dimming
+ *   saturate(0.85)    — pull the vivid green terrain toward muted
+ *   sepia(0.45) + hue-rotate(176deg) + brightness(1.04) + saturate(1.25)
+ *                      — the cool/navy wash: sepia injects a tintable
+ *                        mono layer, hue-rotate spins it to blue, the
+ *                        small brightness/saturate restore offsets sepia's
+ *                        natural darken/wash so the cast stays subtle.
+ */
+const SATELLITE_NIGHT_FILTER =
+  // Calibrated live in Chrome against the mockup's dark-navy night view.
+  // Single hard dim (no second brightness to undo it — that was the old bug),
+  // muted saturation to kill the daytime green, and a cool navy cast via
+  // sepia → hue-rotate. Result reads as a true aviation night basemap.
+  'brightness(0.42) contrast(1.12) saturate(0.6) sepia(0.3) hue-rotate(185deg)';
 
 /**
  * Tile URLs point DIRECTLY at the upstream CDN — no server proxy hop.
@@ -50,6 +89,17 @@ interface StyleDef {
  * voyager family. For terrain we reach outside CARTO to OpenTopoMap
  * (the only public API-key-free terrain raster).
  */
+// ─── Brand altitude palettes ────────────────────────────────────────────
+// One shared palette per basemap brightness so markers + the MapLegend read
+// the same cyan/mint/amber language on every style (previously each style had
+// its own ad-hoc palette, which is why switching to STR/TER showed
+// blue/red/purple). Cyan = high, mint = low, amber = mid.
+//   ALT_ON_DARK  — bright, for the dark basemaps (dark / night / satellite).
+//   ALT_ON_LIGHT — darkened variants that keep contrast on light basemaps
+//                  (streets / terrain / toner).
+const ALT_ON_DARK = { low: '#38F2A3', med: '#FBBF24', high: '#00D4FF', ground: '#6B7F99', selected: '#E0F0FF' };
+const ALT_ON_LIGHT = { low: '#0FA968', med: '#B45309', high: '#0091C2', ground: '#64748B', selected: '#0B3B66' };
+
 export const MAP_STYLES: Record<MapStyle, StyleDef> = {
   dark: {
     // Pure dark, no labels. Best for "let the markers speak".
@@ -58,7 +108,7 @@ export const MAP_STYLES: Record<MapStyle, StyleDef> = {
     attr: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
     dark: false,
     label: 'DRK',
-    colors: { low: '#4ADE80', med: '#FBBF24', high: '#E879A8', ground: '#6B7280', selected: '#E0F0FF' },
+    colors: ALT_ON_DARK,
   },
   night: {
     // Dark base WITH city labels — visibly distinct from DRK. The
@@ -68,7 +118,7 @@ export const MAP_STYLES: Record<MapStyle, StyleDef> = {
     attr: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
     dark: false,
     label: 'NGT',
-    colors: { low: '#00FF88', med: '#FF9500', high: '#FF3B7A', ground: '#555555', selected: '#FFFFFF' },
+    colors: ALT_ON_DARK,
   },
   satellite: {
     // Google satellite tiles, public unauthenticated endpoint via
@@ -78,14 +128,19 @@ export const MAP_STYLES: Record<MapStyle, StyleDef> = {
     url: 'https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
     subdomains: '0123',
     attr: '&copy; <a href="https://www.google.com/maps">Google</a>',
-    dark: false,
+    // Treated as a DARK basemap so markers use the bright ALT_ON_DARK
+    // palette. The bright daytime imagery is toned to a night view via
+    // `tileFilter` below — NOT the default invert (which would negate the
+    // photo). See SATELLITE_NIGHT_FILTER for the recipe.
+    dark: true,
+    tileFilter: SATELLITE_NIGHT_FILTER,
     label: 'SAT',
     // 18 (not 19) to match CONFIG.maxZoom — Leaflet's TileLayer
     // doesn't fetch tiles beyond the user-visible zoom anyway, and
     // mapInteractions.test asserts maxNative <= CONFIG.maxZoom as a
     // sanity check.
     maxNative: 18,
-    colors: { low: '#00FF66', med: '#FFD700', high: '#FF4488', ground: '#AAAAAA', selected: '#FFFFFF' },
+    colors: ALT_ON_DARK,
   },
   streets: {
     // Voyager WITH labels — the typical "Google Maps look".
@@ -94,7 +149,7 @@ export const MAP_STYLES: Record<MapStyle, StyleDef> = {
     attr: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
     dark: false,
     label: 'STR',
-    colors: { low: '#0066FF', med: '#CC0000', high: '#9900CC', ground: '#333333', selected: '#FF6600' },
+    colors: ALT_ON_LIGHT,
   },
   terrain: {
     // OpenTopoMap — actual relief shading + contour lines + topo
@@ -108,7 +163,7 @@ export const MAP_STYLES: Record<MapStyle, StyleDef> = {
     dark: false,
     label: 'TER',
     maxNative: 17,
-    colors: { low: '#0000FF', med: '#FF0000', high: '#8B00FF', ground: '#000000', selected: '#FF6600' },
+    colors: ALT_ON_LIGHT,
   },
   toner: {
     // Light base, no labels — clean canvas for printing or for
@@ -119,10 +174,10 @@ export const MAP_STYLES: Record<MapStyle, StyleDef> = {
     attr: '&copy; <a href="https://carto.com/attributions">CARTO</a>',
     dark: false,
     label: 'LGT',
-    colors: { low: '#22C55E', med: '#EAB308', high: '#EC4899', ground: '#9CA3AF', selected: '#2563EB' },
+    colors: ALT_ON_LIGHT,
   },
 };
 
-export const STYLE_ORDER: MapStyle[] = ['dark', 'night', 'satellite', 'streets', 'terrain', 'toner'];
+export const STYLE_ORDER: MapStyle[] = ['satellite'];
 export const TRANSPARENT_TILE = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 export const MAX_VISIBLE_MARKERS = 800;

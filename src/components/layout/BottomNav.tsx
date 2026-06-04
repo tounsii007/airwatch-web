@@ -212,7 +212,13 @@ export function BottomNav() {
 
   return (
     <>
-      {/* Desktop: top header bar */}
+      {/* Desktop top header bar — retired now that the LeftSidebar owns
+          desktop navigation. Wrapped in `lg:hidden` so it never renders on
+          `lg:` and up; it was already `hidden` on mobile, so the net effect
+          is that this bar is gone on every breakpoint. The markup (and its
+          `desktopNavRef`/ActivePill wiring) is kept intact so the
+          active-pill logic and command-palette plumbing stay untouched. */}
+      <div className="lg:hidden">
       <header className="hidden lg:flex fixed top-0 left-0 right-0 z-50 h-12 items-center px-6 glass-panel rounded-none border-b border-[var(--glass-border)] border-x-0 border-t-0">
         <Link href="/" className="flex items-center gap-2 mr-8" aria-label={t('aria_airwatch_home', language)}>
           <span className="neon-text font-[var(--font-heading)] t-label font-bold text-[var(--primary)] animate-brand-pulse animate-neon-flicker">
@@ -265,6 +271,7 @@ export function BottomNav() {
           <kbd className="t-meta t-mono px-1.5 py-0.5 rounded bg-white/5 border border-[var(--glass-border)] group-hover:border-[var(--primary)]/40 transition-colors">⌘K</kbd>
         </button>
       </header>
+      </div>
 
       {/* Mobile: top bar with brand + Cmd+K equivalent */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-40 h-11 flex items-center justify-between px-4 glass-panel rounded-none border-b border-[var(--glass-border)] border-x-0 border-t-0">

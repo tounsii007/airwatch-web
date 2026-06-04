@@ -30,12 +30,12 @@ describe('<MapStylePicker />', () => {
   });
 
   it('marks the current style as the selected option', () => {
+    // STYLE_ORDER now exposes a single basemap (satellite), so the picker
+    // renders exactly that option and marks it selected when it is current.
     render(<MapStylePicker mapStyle="satellite" onChange={() => {}} />);
     openPicker();
     const sat = screen.getByRole('option', { name: MAP_STYLES.satellite.label });
     expect(sat).toHaveAttribute('aria-selected', 'true');
-    const drk = screen.getByRole('option', { name: MAP_STYLES.dark.label });
-    expect(drk).toHaveAttribute('aria-selected', 'false');
   });
 
   it('reports the picked style and closes the popover', () => {

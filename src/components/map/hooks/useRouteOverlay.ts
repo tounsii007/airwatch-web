@@ -45,15 +45,26 @@ function resolveEndpoints(ac: AircraftState): Endpoints | null {
 }
 
 function drawAirportDot(layer: L.LayerGroup, lat: number, lon: number, color: string, label: string) {
+  // Outer cyan halo — the `airport-glow` class supplies the drop-shadow bloom
+  // so endpoints visually match the lit route arc.
+  L.circleMarker([lat, lon], { radius: 11, color: GLOW_CYAN, fillColor: GLOW_CYAN, fillOpacity: 0.1, weight: 0, className: 'airport-glow' }).addTo(layer);
   L.circleMarker([lat, lon], { radius: 8, color, fillColor: color, fillOpacity: 0.12, weight: 2 }).addTo(layer);
   L.circleMarker([lat, lon], { radius: 4, color, fillColor: color, fillOpacity: 0.85, weight: 0 })
     .bindTooltip(label, { permanent: true, direction: 'bottom', className: 'aircraft-tooltip', offset: [0, 8] })
     .addTo(layer);
 }
 
-function drawCompleted(layer: L.LayerGroup, arc: [number, number][], color: string) {
-  L.polyline(arc, { color, weight: 6, opacity: 0.12, lineCap: 'round' }).addTo(layer);
-  L.polyline(arc, { color, weight: 2.5, opacity: 0.8, lineCap: 'round' }).addTo(layer);
+/** Cyan glow accent for the flown segment — the {@link GLOW_CYAN} hue is the
+ *  same #00D4FF used by the high-altitude palette, so the selected route reads
+ *  as "lit up" regardless of the aircraft's current altitude colour. */
+const GLOW_CYAN = '#00D4FF';
+
+function drawCompleted(layer: L.LayerGroup, arc: [number, number][]) {
+  // 3-layer cyan glow: a wide faint halo, a mid bloom, and a bright core.
+  // `glow-route` adds the CSS drop-shadow so the line appears to emit light.
+  L.polyline(arc, { color: GLOW_CYAN, weight: 10, opacity: 0.14, lineCap: 'round', className: 'glow-route' }).addTo(layer);
+  L.polyline(arc, { color: GLOW_CYAN, weight: 5, opacity: 0.35, lineCap: 'round', className: 'glow-route' }).addTo(layer);
+  L.polyline(arc, { color: GLOW_CYAN, weight: 2.5, opacity: 0.95, lineCap: 'round', className: 'glow-route' }).addTo(layer);
 }
 
 function drawRemaining(layer: L.LayerGroup, arc: [number, number][], color: string, opacity: number) {
@@ -68,10 +79,13 @@ function drawRemaining(layer: L.LayerGroup, arc: [number, number][], color: stri
  * (never extends beyond) and fades out during the final approach.
  */
 export function useRouteOverlay({ selectedAircraft, showTrails }: { selectedAircraft: AircraftState | null; showTrails: boolean }) {
-  const routeLayerRef = useRef<L.LayerGroup | null>(null);
+  // FeatureGroup (not plain LayerGroup) so MapView can call bringToFront() to
+  // keep the route above the radar overlay — bringToFront lives on
+  // FeatureGroup and forwards to each child polyline / airport dot.
+  const routeLayerRef = useRef<L.FeatureGroup | null>(null);
 
   useEffect(() => {
-    if (!routeLayerRef.current) routeLayerRef.current = L.layerGroup();
+    if (!routeLayerRef.current) routeLayerRef.current = L.featureGroup();
   }, []);
 
   useEffect(() => {
@@ -86,7 +100,7 @@ export function useRouteOverlay({ selectedAircraft, showTrails }: { selectedAirc
     const remainingKm = haversineDistance(e.acLat, e.acLon, e.arrLat, e.arrLon);
 
     const completedArc = generateArc(e.depLat, e.depLon, e.acLat, e.acLon, 30, e.heading);
-    drawCompleted(layer, completedArc, color);
+    drawCompleted(layer, completedArc);
 
     if (remainingKm >= FINAL_APPROACH_KM) {
       const remainingArc = generateArc(e.acLat, e.acLon, e.arrLat, e.arrLon, pointsFor(remainingKm), e.heading);

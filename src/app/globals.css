@@ -9,63 +9,66 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Surfaces ─────────────────────────────────────────────────────── */
-  /* Neutral near-black tones — previously the dark theme used deep-navy
-     (#0A1628 etc.) which read as "blue" against the brand-blue accent.
-     A neutral surface lets the accent colour earn its identity, and it's
-     what users explicitly asked for: "Schwarz (dunkel) oder hell". */
-  --bg: #0A0A0A;
-  --surface: #151515;
-  --surface-light: #1F1F1F;
+  /* ═══ AirWatch 2026 — Premium Aviation, Dark Luxury ═══════════════════
+     Vibrant cyan over deep-navy night, with a mint secondary. Tuned so
+     every text token clears WCAG AA on the glass surfaces below. Never
+     hard-code a colour in a component — reference these tokens. */
 
-  /* ── Brand + accents ──────────────────────────────────────────────── */
-  --primary: #7A9ABF;
-  --primary-dark: #4A6B8A;
-  --primary-bright: #A4C4E8;
-  --accent: #D4A574;
+  /* ── Surfaces — deep navy (premium aviation night) ────────────────── */
+  --bg: #06111F;
+  --surface: #081A2F;
+  --surface-light: #0A1D33;
 
-  /* ── Text ─────────────────────────────────────────────────────────── */
-  /* Lifted from 4A5F78 (≈ 3.8:1 on glass) to 6B85A4 (≈ 4.7:1) so muted
-     text passes WCAG AA on the dark glass background. The old value
-     showed up in screenshots as "almost-invisible grey" — the new one
-     reads cleanly without losing the visual hierarchy of muted vs
-     primary copy. */
-  --text-primary: #D0D8E4;
-  --text-secondary: #A2B3C8;
-  --text-muted: #6B85A4;
+  /* ── Brand + accents — cyan primary, mint secondary ───────────────── */
+  --primary: #00D4FF;
+  --primary-dark: #0094C7;     /* gradient floor + shadow tints */
+  --primary-bright: #6FE6FF;   /* primary used as text/on-dark + hover */
+  --secondary: #38F2A3;        /* mint — the second brand colour */
+  --secondary-dark: #16B981;
+  --accent: #38F2A3;           /* gradient-text + holographic sheen key */
+
+  /* ── Text — white-led, cool-grey hierarchy ────────────────────────── */
+  --text-primary: #FFFFFF;
+  --text-secondary: #D9E3F0;
+  --text-muted: #8EA6C5;       /* ≈ 6.5:1 on the navy glass — passes AA */
 
   /* ── Semantic state ───────────────────────────────────────────────── */
-  --success: #4ADE80;
+  --success: #34D399;
   --warning: #FBBF24;
-  --error: #F87171;
+  --error: #EF4444;
   --info: #60A5FA;
 
-  /* ── Glass panels ─────────────────────────────────────────────────── */
-  /* Glass surfaces also moved off the navy tint to match the neutral
-     base. Borders stay primary-tinted so the panels still feel "branded"
-     against the now-neutral background. */
-  --glass-bg: rgba(21, 21, 21, 0.8);
-  --glass-bg-strong: rgba(21, 21, 21, 0.92);
-  --glass-border: rgba(122, 154, 191, 0.2);
-  --glass-border-strong: rgba(122, 154, 191, 0.4);
-  --glass-blur: 14px;
+  /* ── Glass panels — navy fill, cyan-tinted edge ───────────────────── */
+  --glass-bg: rgba(10, 29, 51, 0.64);
+  --glass-bg-strong: rgba(8, 24, 44, 0.88);
+  --glass-border: rgba(0, 212, 255, 0.16);
+  --glass-border-strong: rgba(0, 212, 255, 0.34);
+  --glass-blur: 18px;
 
   /* ── Aircraft altitude palette ────────────────────────────────────── */
-  --alt-low: #4ADE80;
+  --alt-low: #38F2A3;
   --alt-med: #FBBF24;
-  --alt-high: #E879A8;
-  --ground: #6B7280;
+  --alt-high: #00D4FF;
+  --ground: #6B7F99;
 
-  /* ── Type scale ───────────────────────────────────────────────────── */
-  --font-heading: 'Orbitron', monospace;
-  --font-body: 'Rajdhani', sans-serif;
+  /* ── Type — Inter for UI, Geist Mono for data (wired in layout.tsx) ──
+     Reference the next/font CSS variables with a system fallback chain
+     (SF Pro arrives via -apple-system / system-ui) so text still renders
+     sanely before the web font swaps in. */
+  --font-body:    var(--font-inter, ui-sans-serif), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: var(--font-inter, ui-sans-serif), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-data:    var(--font-geist-mono, ui-monospace), 'SF Mono', 'Cascadia Code', 'Roboto Mono', monospace;
 
-  /* ── Elevation (dark-mode glow shadows) ───────────────────────────── */
-  --elev-1: 0 1px 3px rgba(0, 0, 0, 0.30), 0 0 0 1px var(--glass-border);
-  --elev-2: 0 4px 12px rgba(0, 0, 0, 0.40), 0 0 0 1px var(--glass-border-strong),
-            0 0 24px rgba(122, 154, 191, 0.05);
-  --elev-3: 0 12px 32px rgba(0, 0, 0, 0.50), 0 0 0 1px var(--glass-border-strong),
-            0 0 48px rgba(122, 154, 191, 0.08);
+  /* ── Elevation — depth + ambient cyan glow ────────────────────────── */
+  --elev-1: 0 1px 3px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--glass-border);
+  --elev-2: 0 6px 18px rgba(2, 8, 20, 0.50), 0 0 0 1px var(--glass-border-strong),
+            0 0 28px rgba(0, 212, 255, 0.06);
+  --elev-3: 0 16px 44px rgba(2, 8, 20, 0.60), 0 0 0 1px var(--glass-border-strong),
+            0 0 60px rgba(0, 212, 255, 0.10);
+
+  /* ── Glow primitives (reused by buttons, search bar, focal cards) ─── */
+  --glow-primary: 0 0 0 1px rgba(0, 212, 255, 0.35), 0 0 22px rgba(0, 212, 255, 0.28);
+  --glow-secondary: 0 0 0 1px rgba(56, 242, 163, 0.35), 0 0 22px rgba(56, 242, 163, 0.25);
 
   /* ── Motion timing (centralised so animations feel coherent) ──────── */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -77,48 +80,54 @@
 }
 
 .light {
-  /* Light theme — clean off-white. The previous #F0F4F8 carried a faint
-     blue cast that mismatched the new neutral dark theme. Pure-neutral
-     greys ensure both themes share the same "no blue background" rule. */
-  --bg: #FAFAFA;
+  /* Light theme — cool off-white with a faint sky tint that echoes the
+     cyan brand without going saturated. Cyan/mint are darkened so text
+     and chips clear WCAG AA on white surfaces. */
+  --bg: #EFF5FB;
   --surface: #FFFFFF;
-  --surface-light: #F4F4F5;
-  --primary: #0062A0;
-  --primary-dark: #004A7A;
-  --primary-bright: #1A8AD9;
-  --accent: #B07D4F;
-  --text-primary: #111827;
-  --text-secondary: #475569;
-  --text-muted: #5B6B7F;
-  --success: #16A34A;
-  --warning: #D97706;
+  --surface-light: #F3F8FD;
+  --primary: #0091C2;          /* darkened cyan — AA on white */
+  --primary-dark: #006C91;
+  --primary-bright: #00B4E6;
+  --secondary: #0FA968;
+  --secondary-dark: #0B8553;
+  --accent: #0FA968;
+  --text-primary: #0B1B2B;
+  --text-secondary: #38506B;
+  --text-muted: #5C7390;
+  --success: #15A05E;
+  --warning: #B45309;
   --error: #DC2626;
   --info: #2563EB;
-  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-bg: rgba(255, 255, 255, 0.92);
   --glass-bg-strong: rgba(255, 255, 255, 1);
-  --glass-border: rgba(0, 0, 0, 0.12);
-  --glass-border-strong: rgba(0, 0, 0, 0.20);
-  --glass-blur: 10px;
-  --alt-low: #16A34A;
-  --alt-med: #D97706;
-  --alt-high: #DB2777;
-  --ground: #6B7280;
-  --elev-1: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --elev-2: 0 4px 12px rgba(0, 0, 0, 0.10);
-  --elev-3: 0 12px 32px rgba(0, 0, 0, 0.15);
+  --glass-border: rgba(7, 38, 66, 0.12);
+  --glass-border-strong: rgba(7, 38, 66, 0.22);
+  --glass-blur: 12px;
+  --alt-low: #15A05E;
+  --alt-med: #B45309;
+  --alt-high: #0091C2;
+  --ground: #64748B;
+  --elev-1: 0 1px 3px rgba(15, 36, 60, 0.10);
+  --elev-2: 0 6px 18px rgba(15, 36, 60, 0.12);
+  --elev-3: 0 16px 40px rgba(15, 36, 60, 0.16);
+  --glow-primary: 0 0 0 1px rgba(0, 145, 194, 0.30), 0 0 18px rgba(0, 145, 194, 0.18);
+  --glow-secondary: 0 0 0 1px rgba(15, 169, 104, 0.30), 0 0 18px rgba(15, 169, 104, 0.18);
 }
 
 @theme inline {
   --color-background: var(--bg);
   --color-foreground: var(--text-primary);
   --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
   --color-accent: var(--accent);
   --color-surface: var(--surface);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
+  --color-info: var(--info);
   --font-sans: var(--font-body);
-  --font-mono: var(--font-heading);
+  --font-mono: var(--font-data);
 }
 
 html, body {
@@ -139,13 +148,13 @@ body {
      bleed into the viewport. Pure CSS = zero runtime cost. Dark mode
      only; light mode gets a flat surface.
 
-     Switched from blue-tinted ambient (rgba(122,154,191,…)) to a
-     neutral warm/cool grey pair so the background reads as charcoal
-     rather than navy. The amber accent on the bottom corner gives the
-     subtle warmth that the panel-blue used to provide. */
+     Two soft brand-tinted radials — cyan bleeding from the top-left,
+     mint from the bottom-right — give the deep-navy base a sense of
+     depth and "live signal" without distracting from content. Pure
+     CSS = zero runtime cost. Dark mode only; light mode stays flat. */
   background-image:
-    radial-gradient(ellipse 1200px 800px at 15% -10%, rgba(255, 255, 255, 0.04), transparent 60%),
-    radial-gradient(ellipse 1000px 700px at 85% 110%, rgba(212, 165, 116, 0.04), transparent 60%);
+    radial-gradient(ellipse 1200px 820px at 12% -8%, rgba(0, 212, 255, 0.10), transparent 60%),
+    radial-gradient(ellipse 1000px 720px at 88% 112%, rgba(56, 242, 163, 0.08), transparent 60%);
   background-attachment: fixed;
 }
 
@@ -207,11 +216,11 @@ body {
   inset: -25%;
   background: conic-gradient(
     from 0deg,
-    rgba(122, 154, 191, 0.18) 0deg,
-    rgba(212, 165, 116, 0.10) 90deg,
-    rgba(74, 222, 128, 0.10) 180deg,
-    rgba(96, 165, 250, 0.10) 270deg,
-    rgba(122, 154, 191, 0.18) 360deg
+    rgba(0, 212, 255, 0.20) 0deg,
+    rgba(56, 242, 163, 0.12) 90deg,
+    rgba(0, 212, 255, 0.10) 180deg,
+    rgba(56, 242, 163, 0.12) 270deg,
+    rgba(0, 212, 255, 0.20) 360deg
   );
   filter: blur(48px);
   opacity: 0.65;
@@ -311,14 +320,17 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: white;
-  box-shadow: 0 4px 12px rgba(122, 154, 191, 0.25);
+  background: linear-gradient(135deg, var(--primary-bright), var(--primary));
+  /* Bright cyan needs DARK text for contrast (white-on-cyan fails AA).
+     Deep-navy ink reads crisp and gives the modern "ink on neon" look. */
+  color: #04121F;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 212, 255, 0.30);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(122, 154, 191, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.45);
 }
 
 .btn-ghost {
@@ -371,7 +383,7 @@ body {
   font-family: var(--font-heading);
   text-shadow:
     0 0 7px currentColor,
-    0 0 20px rgba(122, 154, 191, 0.4);
+    0 0 20px rgba(0, 212, 255, 0.45);
 }
 
 .light .neon-text {
@@ -417,6 +429,79 @@ body {
 
 /* Heading-font variant of each size — opt-in via .t-mono. */
 .t-mono { font-family: var(--font-heading); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Premium utilities — data figures, brand glow, hover-lift, gradient
+   borders, focus glow, chips. Reused across the redesigned surfaces.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Mono data figures — callsigns, ICAO/IATA codes, altitudes, counters. */
+.t-data {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Brand glow — text + box variants for cyan (primary) and mint (secondary). */
+.text-glow-primary   { text-shadow: 0 0 18px rgba(0, 212, 255, 0.45); }
+.text-glow-secondary { text-shadow: 0 0 18px rgba(56, 242, 163, 0.40); }
+.glow-primary   { box-shadow: var(--glow-primary); }
+.glow-secondary { box-shadow: var(--glow-secondary); }
+
+/* Generic hover-lift — opt-in for cards/tiles that should rise on hover. */
+.hover-lift {
+  transition: transform var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out),
+              border-color var(--duration-base) var(--ease-out);
+}
+.hover-lift:hover { transform: translateY(-3px); box-shadow: var(--elev-3); }
+.hover-lift:active { transform: translateY(-1px); transition-duration: 80ms; }
+
+/* Animated cyan→mint hairline border on a glass fill (focal/hero cards).
+   padding-box keeps the fill glassy while border-box carries the gradient. */
+.border-gradient {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box,
+    linear-gradient(135deg, var(--primary), var(--secondary)) border-box;
+}
+
+/* Focus glow — the intelligent search shell lights cyan when focused. */
+.focus-glow {
+  transition: box-shadow var(--duration-base) var(--ease-out),
+              border-color var(--duration-base) var(--ease-out);
+}
+.focus-glow:focus-within {
+  border-color: var(--glass-border-strong);
+  box-shadow: var(--glow-primary), var(--elev-2);
+}
+
+/* Pill chip — recent searches, filters, quick-pick tokens. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+.chip:hover {
+  color: var(--text-primary);
+  border-color: var(--glass-border-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--elev-1);
+}
+.chip-mono { font-family: var(--font-data); letter-spacing: 0.02em; }
 
 /* ── Minimum-size guard ──────────────────────────────────────────────
    Legacy code uses `text-[8px]`, `text-[9px]`, `text-[10px]`
@@ -475,12 +560,13 @@ body [class*="text-[10px]"] {
 .stat-card:hover::before { opacity: 1; }
 
 .stat-card-value {
-  font-family: var(--font-heading);
-  font-weight: 700;
+  font-family: var(--font-data);
+  font-weight: 600;
   font-size: 1.875rem;
   line-height: 1.1;
   color: var(--primary-bright);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 .stat-card-label {
@@ -578,9 +664,9 @@ body [class*="text-[10px]"] {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  background: rgba(122, 154, 191, 0.10);
+  background: rgba(0, 212, 255, 0.10);
   color: var(--primary-bright);
-  border: 1px solid rgba(122, 154, 191, 0.20);
+  border: 1px solid rgba(0, 212, 255, 0.22);
 }
 
 .badge-success { background: rgba(74, 222, 128, 0.10); color: var(--success); border-color: rgba(74, 222, 128, 0.25); }
@@ -698,8 +784,8 @@ body [class*="text-[10px]"] {
 /* Soft text-shadow breathing for the signature wordmark. Pairs with
    `.gradient-text` to give the brand a heartbeat. */
 @keyframes brand-pulse {
-  0%, 100% { text-shadow: 0 0 8px rgba(122, 154, 191, 0.25), 0 0 18px rgba(212, 165, 116, 0.10); }
-  50%      { text-shadow: 0 0 14px rgba(122, 154, 191, 0.45), 0 0 28px rgba(212, 165, 116, 0.18); }
+  0%, 100% { text-shadow: 0 0 8px rgba(0, 212, 255, 0.28), 0 0 18px rgba(56, 242, 163, 0.12); }
+  50%      { text-shadow: 0 0 14px rgba(0, 212, 255, 0.50), 0 0 28px rgba(56, 242, 163, 0.20); }
 }
 
 /* Gentle vertical float — ambient decoration (rings, loaders, icons). */
@@ -867,7 +953,7 @@ body [class*="text-[10px]"] {
 .leaflet-tooltip.airport-label::after { display: none !important; }
 
 .leaflet-control-attribution {
-  background: rgba(21, 21, 21, 0.75) !important;
+  background: rgba(8, 24, 44, 0.78) !important;
   color: var(--text-muted) !important;
   font-size: 9px !important;
 }
@@ -925,6 +1011,12 @@ body [class*="text-[10px]"] {
     transition: transform 200ms !important;
   }
 }
+
+/* Selected-flight glow — cyan drop-shadow bloom on the lit route arc and its
+   airport endpoints. Scoped under .leaflet-pane so it only affects the SVG
+   overlay vectors, never the basemap tiles. */
+.leaflet-pane .glow-route { filter: drop-shadow(0 0 6px rgba(0,212,255,0.7)); }
+.leaflet-pane .airport-glow { filter: drop-shadow(0 0 7px rgba(0,212,255,0.8)); }
 
 /* ═══════════════════════════════════════════════════════════════════════
    Page-visibility throttling

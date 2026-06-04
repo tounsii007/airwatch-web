@@ -23,7 +23,7 @@ export function SquawkAlertBanner() {
   if (alerts.length === 0) return null;
 
   return (
-    <div className="absolute top-12 left-0 right-0 z-[999] px-3 pointer-events-none flex justify-center">
+    <div className="absolute top-12 lg:top-0 left-0 right-0 z-[999] px-3 pointer-events-none flex justify-center">
       <div className="glass-panel border border-[#F87171]/40 bg-[#F87171]/8 px-3 py-2 flex items-center gap-2 flex-wrap pointer-events-auto max-w-2xl max-h-20 overflow-y-auto rounded-lg shadow-[0_0_24px_-6px_#F87171]">
         <div className="flex items-center gap-1.5 shrink-0">
           <AlertTriangle size={13} className="text-[#F87171] animate-pulse" aria-hidden />

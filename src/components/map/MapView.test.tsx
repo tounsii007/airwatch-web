@@ -16,7 +16,8 @@ const fakeMap = vi.hoisted(() => ({
 const layerRefs = vi.hoisted(() => ({
   base: { current: null }, container: { current: null },
   map: { current: null as unknown }, zoom: 5,
-  route: { current: { addTo: vi.fn() } }, markers: { current: { addTo: vi.fn() } },
+  route: { current: { addTo: vi.fn(), bringToFront: vi.fn() } },
+  markers: { current: { addTo: vi.fn(), bringToFront: vi.fn() } },
 }));
 
 vi.mock('@/components/map/hooks/useLeafletMap', () => ({
@@ -78,21 +79,33 @@ vi.mock('@/components/map/MapLegend', () => ({
   MapLegend: (p: { mapStyle: string }) => <div data-testid="legend" data-style={p.mapStyle} />,
 }));
 vi.mock('@/components/voice/VoiceButton', () => ({ VoiceButton: () => <div data-testid="voice" /> }));
+// Top cluster: center/locate, radar + cargo toggles, basemap style.
 type ToolbarProps = {
-  mapStyle: string; showRadar: boolean; radarShouldShow: boolean; cargoOnly: boolean; showLegend: boolean;
+  mapStyle: string; showRadar: boolean; radarShouldShow: boolean; cargoOnly: boolean;
   onMapStyle: (s: string) => void; onToggleRadar: () => void; onToggleCargo: () => void;
-  onToggleLegend: () => void; onZoomIn: () => void; onZoomOut: () => void; onCenter: () => void;
+  onCenter: () => void;
 };
 vi.mock('@/components/map/MapToolbar', () => ({
   MapToolbar: (p: ToolbarProps) => (
-    <div data-testid="toolbar" data-radarshould={String(p.radarShouldShow)} data-cargo={String(p.cargoOnly)} data-legend={String(p.showLegend)}>
-      <button data-testid="zoomin" onClick={p.onZoomIn} />
-      <button data-testid="zoomout" onClick={p.onZoomOut} />
+    <div data-testid="toolbar" data-radarshould={String(p.radarShouldShow)} data-cargo={String(p.cargoOnly)}>
       <button data-testid="center" onClick={p.onCenter} />
       <button data-testid="toggleradar" onClick={p.onToggleRadar} />
       <button data-testid="togglecargo" onClick={p.onToggleCargo} />
-      <button data-testid="togglelegend" onClick={p.onToggleLegend} />
       <button data-testid="mapstyle" onClick={() => p.onMapStyle('satellite')} />
+    </div>
+  ),
+}));
+// Bottom-center cluster: zoom +/− and the legend toggle (split out of the toolbar).
+type BottomBarProps = {
+  language: string; zoom: number; showLegend: boolean;
+  onZoomIn: () => void; onZoomOut: () => void; onToggleLegend: () => void;
+};
+vi.mock('@/components/map/MapBottomBar', () => ({
+  MapBottomBar: (p: BottomBarProps) => (
+    <div data-testid="bottombar" data-legend={String(p.showLegend)} data-zoom={String(p.zoom)}>
+      <button data-testid="zoomin" onClick={p.onZoomIn} />
+      <button data-testid="zoomout" onClick={p.onZoomOut} />
+      <button data-testid="togglelegend" onClick={p.onToggleLegend} />
     </div>
   ),
 }));
@@ -202,7 +215,7 @@ describe('<MapView />', () => {
     expect(screen.getByTestId('legend')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('togglelegend'));
     expect(screen.queryByTestId('legend')).toBeNull();
-    expect(screen.getByTestId('toolbar').getAttribute('data-legend')).toBe('false');
+    expect(screen.getByTestId('bottombar').getAttribute('data-legend')).toBe('false');
   });
 
   it('auto-centers on a newly selected aircraft, clamping the zoom', () => {

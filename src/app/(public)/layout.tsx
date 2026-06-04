@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Orbitron, Rajdhani } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import "@/app/globals.css";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { LeftSidebar } from "@/components/layout/LeftSidebar";
+import { TopBar } from "@/components/layout/TopBar";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { GlobalEffects } from "@/components/layout/GlobalEffects";
 import { SkipToContent } from "@/components/layout/SkipToContent";
@@ -15,16 +17,19 @@ import { StatsBeacon } from "@/components/layout/StatsBeacon";
 import { DevTools } from "@/components/debug/DevTools";
 import { ToastContainer } from "@/components/ui/ToastContainer";
 
-const orbitron = Orbitron({
-  variable: "--font-orbitron",
+// Inter — primary UI typeface (Linear/Stripe/Vercel-class SaaS sans).
+// Variable font, so no explicit weights needed.
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });
 
-const rajdhani = Rajdhani({
-  variable: "--font-rajdhani",
+// Geist Mono — reserved for numeric/aviation data (callsigns, altitudes,
+// codes, live counters) so figures read with tabular precision.
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -91,7 +96,7 @@ export const metadata: Metadata = {
 // matches the official Next 16 API.
 // https://nextjs.org/docs/app/api-reference/functions/generate-viewport
 export const viewport: Viewport = {
-  themeColor: "#0A0A0A",
+  themeColor: "#06111F",
   width: "device-width",
   initialScale: 1,
 };
@@ -110,7 +115,7 @@ export default async function RootLayout({
   const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   return (
-    <html lang="en" suppressHydrationWarning className={`${orbitron.variable} ${rajdhani.variable} dark`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${geistMono.variable} dark`}>
       <body className="h-screen bg-[var(--bg)] text-[var(--text-primary)] overflow-hidden" suppressHydrationWarning>
         {/*
           The nonce attribute on <body> is consumed by Next.js's runtime
@@ -125,13 +130,17 @@ export default async function RootLayout({
         <WebVitalsReporter />
         <StatsBeacon />
         <BottomNav />
+        <LeftSidebar />
+        <TopBar />
         <InstallPrompt />
         <CommandPaletteController />
         <ToastContainer />
         {/* Mobile: top-bar offset (pt-11) + bottom-bar offset (pb-20).
-            Desktop: top-bar offset (lg:pt-12), no bottom bar.
+            Desktop: the slim TopBar (h-14) sits to the right of the sidebar,
+            so clear it with a top offset (lg:pt-14) and a left offset
+            (lg:pl-64) for the fixed sidebar; no bottom bar on desktop.
             id="main-content" is the anchor for the SkipToContent link. */}
-        <main id="main-content" className="h-full overflow-auto pt-11 pb-20 lg:pt-12 lg:pb-0">
+        <main id="main-content" className="h-full overflow-auto pt-11 pb-20 lg:pt-14 lg:pb-0 lg:pl-64">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
         <DevTools />

@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import { useFlightStore } from '@/lib/stores/flightStore';
 import { useStatsStore } from '@/lib/stores/statsStore';
 import { LoadingRadar } from '@/components/ui/LoadingRadar';
+import { LiveTrafficOverlay } from '@/components/map/LiveTrafficOverlay';
+import { RadarBottomBar } from '@/components/map/RadarBottomBar';
 
 const MapView = dynamic(
   () => import('@/components/map/MapView').then((m) => m.MapView),
@@ -39,13 +41,16 @@ export default function MapPage() {
 
   return (
     /* Map page uses full viewport — dvh for mobile browser address bar.
-       Top offset accommodates the mobile top-bar (44 px) and desktop
-       header (48 px); bottom offset on mobile leaves room for the
-       bottom navigation. */
-    <div className="w-full fixed top-11 lg:top-12 left-0 right-0 bottom-16 lg:bottom-0">
+       Mobile: top offset clears the 44 px top-bar and bottom offset leaves
+       room for the bottom navigation. Desktop: a top offset (lg:top-14)
+       clears the slim TopBar and a left offset (lg:left-64) clears the
+       fixed LeftSidebar. */
+    <div className="w-full fixed top-11 lg:top-14 left-0 lg:left-64 right-0 bottom-16 lg:bottom-0">
       <MapView />
       <SquawkAlertBanner />
       <FlightDetailsPanel />
+      <LiveTrafficOverlay />
+      <RadarBottomBar />
     </div>
   );
 }

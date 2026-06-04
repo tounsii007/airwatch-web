@@ -84,7 +84,7 @@ export function FlightDetailsPanel() {
   return (
     <>
       <div className="fixed inset-0 z-[1100] bg-black/40 lg:hidden" onClick={clearSelection} />
-      <div className="fixed z-[1200] bottom-0 left-0 right-0 lg:top-12 lg:bottom-0 lg:left-auto lg:right-0 lg:w-[420px] animate-slide-up lg:animate-none">
+      <div className="fixed z-[1200] bottom-0 left-0 right-0 lg:top-14 lg:bottom-0 lg:left-auto lg:right-0 lg:w-[420px] animate-slide-up lg:animate-none">
         <MobileDetailsPanel
           aircraft={selectedAircraft}
           viewModel={viewModel}

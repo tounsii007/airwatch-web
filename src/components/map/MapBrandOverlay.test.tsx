@@ -5,9 +5,12 @@ import { axe } from 'vitest-axe';
 import { MapBrandOverlay } from './MapBrandOverlay';
 
 describe('<MapBrandOverlay />', () => {
-  it('always renders the brand wordmark', () => {
+  it('renders the live-feed status pill without the legacy brand wordmark', () => {
+    // The "AIRWATCH" wordmark was removed here — it now lives in the desktop
+    // LeftSidebar / mobile BottomNav. This overlay is just the LIVE pill.
     render(<MapBrandOverlay transport="polling" />);
-    expect(screen.getByText('AIRWATCH')).toBeInTheDocument();
+    expect(screen.getByText('LIVE')).toBeInTheDocument();
+    expect(screen.queryByText('AIRWATCH')).toBeNull();
   });
 
   it('tags a websocket transport as LIVE · WS with a descriptive title', () => {

@@ -7,6 +7,8 @@ import { isMockAircraft } from '@/lib/flights/mockEmergencies';
 import { resolvePollingIntervalMs } from '@/lib/flights/polling';
 import { startLiveFeed, type FeedTransport } from '@/lib/flights/liveFeed';
 import { useSettingsStore } from '@/lib/stores/settingsStore';
+import { toast } from '@/components/ui/toast';
+import { t } from '@/lib/i18n/translations';
 
 interface FlightStoreState {
   aircraftMap: Map<string, AircraftState>;
@@ -39,6 +41,28 @@ interface FlightStoreActions {
 }
 
 type FlightStore = FlightStoreState & FlightStoreActions;
+
+/**
+ * Throttle for the "reconnecting" toast. A degraded backend can fail the
+ * fallback poll on every tick (every few seconds) while the WS backoff
+ * loop retries; without this guard the user would get a stream of
+ * duplicate toasts. One nudge per cool-down window is enough — the
+ * persistent `LIVE` vs `LIVE · WS` pill already reflects the live state.
+ */
+const TRANSIENT_TOAST_COOLDOWN_MS = 30_000;
+let lastTransientToastAt = 0;
+
+function notifyTransientFeedHiccup(): void {
+  const now = Date.now();
+  if (now - lastTransientToastAt < TRANSIENT_TOAST_COOLDOWN_MS) return;
+  lastTransientToastAt = now;
+  const language = useSettingsStore.getState().language;
+  toast.warning({
+    title: t('feed_reconnecting', language),
+    variant: 'warning',
+    duration: 4000,
+  });
+}
 
 export const useFlightStore = create<FlightStore>((set, get) => ({
   aircraftMap: new Map(),
@@ -130,7 +154,24 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
             error: null,
           });
         },
-        onError: (error) => set({ error, isLoading: false }),
+        onError: (error, severity) => {
+          // A transient failure means a *secondary* fallback poll failed
+          // while live data is already on the map (WS push is the primary
+          // feed and is recovering in the background). Surfacing the
+          // full-bleed red "PROXY UNAVAILABLE" banner here is both
+          // inaccurate — thousands of aircraft are visible — and jarring
+          // for a premium UI. Downgrade to a quiet, auto-dismissing toast
+          // and leave the blocking banner untouched.
+          if (severity === 'transient') {
+            set({ isLoading: false });
+            notifyTransientFeedHiccup();
+            return;
+          }
+          // Fatal: nothing has ever loaded. This is a genuine total
+          // outage — keep the loud banner so the user understands the app
+          // is not just slow but down.
+          set({ error, isLoading: false });
+        },
         onTransportChange: (transport) => set({ transport }),
       },
     );

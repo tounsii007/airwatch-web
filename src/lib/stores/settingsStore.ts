@@ -61,7 +61,7 @@ export const useSettingsStore = create<SettingsStore>()(
       showAirportWeather: true,
       cargoOnly: false,
       updateInterval: 300, // 5 minutes default
-      mapStyle: 'dark' as MapStyle,
+      mapStyle: 'satellite' as MapStyle,
 
       setTheme: (theme: AppTheme) => set({ theme }),
       setLanguage: (language: AppLanguage) => {

@@ -26,27 +26,29 @@ vi.mock('@/components/flight/details/RouteSection', () => ({
 vi.mock('@/components/flight/details/RouteStatsBadge', () => ({
   RouteStatsBadge: () => <div data-testid="d-routestats" />,
 }));
-vi.mock('@/components/flight/details/MetadataSection', () => ({
-  MetadataSection: () => <div data-testid="d-meta" />,
-}));
 vi.mock('@/components/flight/details/FleetInfoCard', () => ({
   FleetInfoCard: () => <div data-testid="d-fleet" />,
-}));
-vi.mock('@/components/flight/details/DesktopStats', () => ({
-  DesktopStats: () => <div data-testid="d-stats" />,
-}));
-vi.mock('@/components/flight/details/Co2Footer', () => ({
-  Co2Footer: ({ copied, onShare }: { copied: boolean; onShare: () => void }) => (
-    <button type="button" data-testid="d-co2" data-copied={String(copied)} onClick={onShare}>co2</button>
-  ),
 }));
 vi.mock('@/components/flight/details/AircraftPhoto', () => ({
   AircraftPhoto: ({ photoUrl, onExpand }: { photoUrl: string; onExpand: () => void }) => (
     <button type="button" data-testid="d-photo" data-photo={String(photoUrl)} onClick={onExpand}>photo</button>
   ),
 }));
-vi.mock('@/components/flight/details/primitives', () => ({
-  TimesRow: () => <div data-testid="d-times" />,
+// Detail cards that replaced the former MetadataSection / DesktopStats /
+// Co2Footer / TimesRow renders — each subsumes that logic internally.
+vi.mock('@/components/flight/details/cards/AircraftFlightDetailsCard', () => ({
+  AircraftFlightDetailsCard: () => <div data-testid="d-aircard" />,
+}));
+vi.mock('@/components/flight/details/cards/DestinationWeatherCard', () => ({
+  DestinationWeatherCard: () => <div data-testid="d-weather" />,
+}));
+vi.mock('@/components/flight/details/cards/StatusCard', () => ({
+  StatusCard: () => <div data-testid="d-status" />,
+}));
+vi.mock('@/components/flight/details/cards/CarbonFootprintCard', () => ({
+  CarbonFootprintCard: ({ copied, onShare }: { copied: boolean; onShare: () => void }) => (
+    <button type="button" data-testid="d-co2" data-copied={String(copied)} onClick={onShare}>co2</button>
+  ),
 }));
 vi.mock('@/components/flight/PhotoGallery', () => ({
   PhotoGallery: ({ onClose }: { onClose: () => void }) => (
@@ -91,14 +93,14 @@ beforeEach(() => { settings.showAircraftPhotos = true; });
 afterEach(() => cleanup());
 
 describe('<DesktopDetailsPanel />', () => {
-  it('renders the core column — header, route, stats, prediction, footer', () => {
+  it('renders the core column — header, route, cards, fleet, prediction, footer', () => {
     renderPanel();
-    for (const id of ['d-header', 'd-route', 'd-routestats', 'd-fleet', 'd-prediction', 'd-stats', 'd-co2']) {
+    for (const id of [
+      'd-header', 'd-route', 'd-routestats', 'd-weather', 'd-aircard',
+      'd-fleet', 'd-prediction', 'd-status', 'd-co2',
+    ]) {
       expect(screen.getByTestId(id)).toBeInTheDocument();
     }
-    // Route-dependent sections are absent for a bare view model.
-    expect(screen.queryByTestId('d-times')).toBeNull();
-    expect(screen.queryByTestId('d-meta')).toBeNull();
   });
 
   it('passes the resolved display callsign to the header', () => {
@@ -111,15 +113,9 @@ describe('<DesktopDetailsPanel />', () => {
     expect(screen.getByTestId('d-header')).toHaveAttribute('data-callsign', 'cafe01');
   });
 
-  it('renders the times row only when a scheduled departure exists', () => {
-    expect(screen.queryByTestId('d-times')).toBeNull();
-    renderPanel({ vm: makeVM({ routeInfo: { scheduledDep: 1700000000 } as unknown as FlightDetailsVM['routeInfo'] }) });
-    expect(screen.getByTestId('d-times')).toBeInTheDocument();
-  });
-
-  it('renders the metadata section only when metadata is present', () => {
-    renderPanel({ vm: makeVM({ metadata: { registration: 'D-AIMA' } as FlightDetailsVM['metadata'] }) });
-    expect(screen.getByTestId('d-meta')).toBeInTheDocument();
+  it('always renders the status card (scheduled-times logic now lives inside it)', () => {
+    renderPanel();
+    expect(screen.getByTestId('d-status')).toBeInTheDocument();
   });
 
   it('shows the aircraft photo when enabled and a URL is present', () => {

@@ -11,6 +11,7 @@ import { MapBrandOverlay } from '@/components/map/MapBrandOverlay';
 import { MapStatusOverlay } from '@/components/map/MapStatusOverlay';
 import { MapLegend } from '@/components/map/MapLegend';
 import { MapToolbar } from '@/components/map/MapToolbar';
+import { MapBottomBar } from '@/components/map/MapBottomBar';
 import { useLeafletMap } from '@/components/map/hooks/useLeafletMap';
 import { useBaseLayer } from '@/components/map/hooks/useBaseLayer';
 import { useRadarOverlay } from '@/components/map/hooks/useRadarOverlay';
@@ -48,6 +49,11 @@ export function MapView() {
   const { baseLayerRef, mapContainerRef, mapRef, zoom } = useLeafletMap(clearSelection);
   const routeLayerRef = useRouteOverlay({ selectedAircraft, showTrails });
   useTurbulenceOverlay({ enabled: showTurbulence, mapRef });
+  // Radar is only painted at low zoom (<=6) when the toggle is on AND a
+  // tile URL has resolved. Aircraft markers read this so their dots keep a
+  // dark halo under the rain overlay; defined before the marker hook so it
+  // can be threaded in without a temporal-dead-zone reference.
+  const radarShouldShow = Boolean(showRadar && radarTileUrl && zoom <= 6);
   const markersLayerRef = useAircraftMarkers({
     aircraftMap,
     mapRef,
@@ -57,6 +63,7 @@ export function MapView() {
     showLabels,
     zoom,
     cargoOnly,
+    radarActive: radarShouldShow,
   });
 
   useBaseLayer({ baseLayerRef, mapRef, mapStyle });
@@ -68,7 +75,6 @@ export function MapView() {
     return () => stopPolling();
   }, [startPolling, stopPolling, updateInterval]);
 
-  const radarShouldShow = Boolean(showRadar && radarTileUrl && zoom <= 6);
   const [showLegend, setShowLegend] = useState(true); // default visible on desktop
   useRadarOverlay({ enabled: radarShouldShow, mapRef, tileUrl: radarTileUrl });
 
@@ -79,7 +85,12 @@ export function MapView() {
     if (!map) return;
     if (markersLayer && !map.hasLayer(markersLayer)) markersLayer.addTo(map);
     if (routeLayer && !map.hasLayer(routeLayer)) routeLayer.addTo(map);
-  }, [mapRef, markersLayerRef, routeLayerRef]);
+    // Re-assert stacking so aircraft + route sit above the radar overlay.
+    // Runs again whenever radarShouldShow flips so toggling the rain on
+    // never buries the markers under the radar pane.
+    markersLayer?.bringToFront();
+    routeLayer?.bringToFront();
+  }, [mapRef, markersLayerRef, routeLayerRef, radarShouldShow]);
 
   // Re-measure on language change. GlobalEffects flips <html dir> when the
   // user switches between LTR and RTL locales (en/de/fr/es/it ↔ ar). The
@@ -161,6 +172,8 @@ export function MapView() {
       {/* API error banner — copy + tone mapping lives in MapApiErrorBanner. */}
       <MapApiErrorBanner error={flightError} language={language} />
 
+      {/* TOP cluster: 3D → /globe, weather/radar toggle, Surface style
+          dropdown, plus the retained center/locate + cargo filters. */}
       <MapToolbar
         language={language}
         mapStyle={mapStyle}
@@ -170,11 +183,18 @@ export function MapView() {
         onToggleRadar={() => setShowRadar(!showRadar)}
         cargoOnly={cargoOnly}
         onToggleCargo={() => setCargoOnly(!cargoOnly)}
-        showLegend={showLegend}
-        onToggleLegend={() => setShowLegend((v) => !v)}
+        onCenter={handleCenter}
+      />
+
+      {/* BOTTOM-CENTER cluster: zoom +/− with a live level readout, plus
+          the layers button that toggles the altitude legend. */}
+      <MapBottomBar
+        language={language}
+        zoom={zoom}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
-        onCenter={handleCenter}
+        showLegend={showLegend}
+        onToggleLegend={() => setShowLegend((v) => !v)}
       />
 
       {/* Legend — always on desktop, toggle on mobile */}
