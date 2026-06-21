@@ -21,7 +21,7 @@ jobs:
     name: Lint, test, build, size-check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v6
         with:
@@ -89,7 +89,7 @@ jobs:
     name: npm audit (deps CVE scan)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v6
         with:
@@ -133,7 +133,7 @@ jobs:
     name: Lighthouse CI (public routes)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v6
         with:
@@ -172,7 +172,7 @@ jobs:
     # as a belt-and-braces guard so a future infra hiccup can't block PRs.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v6
         with:
