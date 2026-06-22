@@ -65,31 +65,6 @@ importers:
       zustand:
         specifier: ^5.0.14
         version: 5.0.14(@types/react@19.2.17)(immer@11.1.8)(react@19.2.7)(use-sync-external-store@1.6.0(react@19.2.7))
-    optionalDependencies:
-      lightningcss-darwin-arm64:
-        specifier: ^1.32.0
-        version: 1.32.0
-      lightningcss-darwin-x64:
-        specifier: ^1.32.0
-        version: 1.32.0
-      lightningcss-linux-arm64-gnu:
-        specifier: ^1.32.0
-        version: 1.32.0
-      lightningcss-linux-arm64-musl:
-        specifier: ^1.32.0
-        version: 1.32.0
-      lightningcss-linux-x64-gnu:
-        specifier: ^1.32.0
-        version: 1.32.0
-      lightningcss-linux-x64-musl:
-        specifier: ^1.32.0
-        version: 1.32.0
-      lightningcss-win32-arm64-msvc:
-        specifier: ^1.32.0
-        version: 1.32.0
-      lightningcss-win32-x64-msvc:
-        specifier: ^1.32.0
-        version: 1.32.0
     devDependencies:
       '@next/bundle-analyzer':
         specifier: ^16.2.9
@@ -134,8 +109,8 @@ importers:
         specifier: ^9.1.7
         version: 9.1.7
       lint-staged:
-        specifier: ^17.0.7
-        version: 17.0.7
+        specifier: ^17.0.8
+        version: 17.0.8
       tailwindcss:
         specifier: ^4.3.1
         version: 4.3.1
@@ -148,6 +123,31 @@ importers:
       vitest-axe:
         specifier: ^0.1.0
         version: 0.1.0(vitest@4.1.9(@types/node@25.9.3)(happy-dom@20.10.6)(vite@8.0.16(@types/node@25.9.3)(jiti@2.7.0)(yaml@2.9.0)))
+    optionalDependencies:
+      lightningcss-darwin-arm64:
+        specifier: ^1.32.0
+        version: 1.32.0
+      lightningcss-darwin-x64:
+        specifier: ^1.32.0
+        version: 1.32.0
+      lightningcss-linux-arm64-gnu:
+        specifier: ^1.32.0
+        version: 1.32.0
+      lightningcss-linux-arm64-musl:
+        specifier: ^1.32.0
+        version: 1.32.0
+      lightningcss-linux-x64-gnu:
+        specifier: ^1.32.0
+        version: 1.32.0
+      lightningcss-linux-x64-musl:
+        specifier: ^1.32.0
+        version: 1.32.0
+      lightningcss-win32-arm64-msvc:
+        specifier: ^1.32.0
+        version: 1.32.0
+      lightningcss-win32-x64-msvc:
+        specifier: ^1.32.0
+        version: 1.32.0
 
 packages:
 
@@ -164,8 +164,8 @@ packages:
   '@arcgis/core@5.0.19':
     resolution: {integrity: sha512-OciZxzB16sTxtyfESqjuTC6rkMpwcmAzx2iQip3r1NE0IW869Eo5beyonILcHGCx9werUUd/5UhgmOI9MlX4lw==}
 
-  '@arcgis/lumina@5.1.0-next.139':
-    resolution: {integrity: sha512-BF+dLGGNgByjIEUm39gj9amXhZfrRL+bNFY6FY3P4li4HxWMCExFbOi6qVvJlOoQS0SaCIoKzKSNpK713/CZkA==}
+  '@arcgis/lumina@5.1.0':
+    resolution: {integrity: sha512-IDEf5I6CNNG4I1WNc1OzpSK7fQzLFUWnHl8thNS8wvbOoC8a6G//B1iELsrjy1HrfCMjEIpIU9FQBzq3NRfI2g==}
     peerDependencies:
       '@lit/context': ^1.1.6
       lit: ^3.3.0
@@ -173,11 +173,8 @@ packages:
       '@lit/context':
         optional: true
 
-  '@arcgis/toolkit@5.0.19':
-    resolution: {integrity: sha512-764RD+gII0r6o5tVXB8W5p+eOpjnfmlFnL/AXw4oPvby1PpwiSlFyhhzpjJIz7SD9ENn+gmK8+E6jMLT8Y1RFA==}
-
-  '@arcgis/toolkit@5.1.0-next.139':
-    resolution: {integrity: sha512-UOrmjTc/dhNxArpWfKyeQxxJXkKx8zMT07+MiYmFGCAYxEQTiovkSeKXo4Xs9WPaaxA/31Pvw21tKZ5LwDdttQ==}
+  '@arcgis/toolkit@5.1.0':
+    resolution: {integrity: sha512-PSvYOWpj0Ey0P5uVh9VEQX0p1ZdUw03VTkT63VbJES6HfIJaeMjl9NPfq801CHvH6rLplSuFyq1J5h0z1kuWIw==}
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -1390,7 +1387,7 @@ packages:
     resolution: {integrity: sha512-UN/H4di+OO7EWx2ovME+8t31YO+KVnK0RRKEHR3kOt21/Ay8BOq3M1OMvWs5vNiqcFCYGYoxK3MXPZzmMUE+yg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
-      typescript: ^6.0.3
+      typescript: '>=4.8.4 <6.1.0'
 
   '@typescript-eslint/type-utils@8.61.1':
     resolution: {integrity: sha512-GYRicKmVK0C4fsKgaACaknOUAq9Oa2kwsjnpFhFcS/5p4Ht5IP9OVLbgIgcK4SRk92nVHFluurg1lumD9dBcLw==}
@@ -2252,6 +2249,9 @@ packages:
   es-toolkit@1.47.1:
     resolution: {integrity: sha512-5RAqEwf4P4E17p+W75KLOWw/nOvKZzSQpxM32IpI2KZLaVonjTrZ0Ai5ghMaVI9eKC2p8eoQgcBdkEDgzFk6+Q==}
 
+  es-toolkit@1.48.1:
+    resolution: {integrity: sha512-wfnXlwd5I75eXRtdD2vuEs50xHHESECDsGD7yiQnfFVNoa5522NwXEbmgo98LfiukSQHs+mBM7/YG3qKJB9/mQ==}
+
   escalade@3.2.0:
     resolution: {integrity: sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==}
     engines: {node: '>=6'}
@@ -2459,8 +2459,8 @@ packages:
   flatted@3.4.2:
     resolution: {integrity: sha512-PjDse7RzhcPkIJwy5t7KPWQSZ9cAbzQXcafsetQoD7sOJRQlGikNbx7yZp2OotDnJyrDcbyRq3Ttb18iYOqkxA==}
 
-  focus-trap@8.2.1:
-    resolution: {integrity: sha512-6CxwrrFRquH7pDXb1mWxudkU9LSfYBMRZutpgddb2o6iwCk7cIRrBhyY3c8SGKcmIKdeMTrGSNg4Bedh2RSF/w==}
+  focus-trap@8.2.2:
+    resolution: {integrity: sha512-qV0g8hRYBqgACcFOH3f9wXc4zPKhr/0z9RI2a6ZijZ72EeBi4g8oBy8zAWuUR1TsMpOzwpUMFvjdasrC41Joug==}
 
   for-each@0.3.5:
     resolution: {integrity: sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg==}
@@ -2966,8 +2966,8 @@ packages:
     resolution: {integrity: sha512-NXYBzinNrblfraPGyrbPoD19C1h9lfI/1mzgWYvXUTe414Gz/X1FD2XBZSZM7rRTrMA8JL3OtAaGifrIKhQ5yQ==}
     engines: {node: '>= 12.0.0'}
 
-  lint-staged@17.0.7:
-    resolution: {integrity: sha512-JrSobt+tW3rH8IOMi8tDZd3foorM5yPEkLD/V2NxobgHrFfHWGee4MOLVuZeScgxftEwbHrPHIFA/ZL+nUJeuA==}
+  lint-staged@17.0.8:
+    resolution: {integrity: sha512-B2P/d+jVW0UXOQ0MVMLrB/9ydA1P+zz6jYfdrbbEd9ur3S2rcbduFWKiUCC02Sm5hbC8nrm7y24WuYMG54HfxA==}
     engines: {node: '>=22.22.1'}
     hasBin: true
 
@@ -3634,8 +3634,8 @@ packages:
     peerDependencies:
       react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  tabbable@6.4.0:
-    resolution: {integrity: sha512-05PUHKSNE8ou2dwIxTngl4EzcnsCDZGJ/iCLtDflR/SHB/ny14rXc+qU5P4mG9JkusiV7EivzY9Mhm55AzAvCg==}
+  tabbable@6.5.0:
+    resolution: {integrity: sha512-wieBHXygIm7OyQOu5hQlkk62/WyCFYGlWg7L6/ZCUZwx0o398Zkn4pVmMyfYhfMG8kGrj/Krt8eIk6UKC6VzwA==}
 
   table-layout@4.1.1:
     resolution: {integrity: sha512-iK5/YhZxq5GO5z8wb0bY1317uDF3Zjpha0QFFLA8/trAoiLbQD0HUbMesEaxyzUgDxi2QlcbM8IvqOlEjgoXBA==}
@@ -4042,7 +4042,7 @@ snapshots:
   '@arcgis/core@5.0.19':
     dependencies:
       '@amcharts/amcharts5': 5.15.6
-      '@arcgis/toolkit': 5.0.19
+      '@arcgis/toolkit': 5.1.0
       '@esri/arcgis-html-sanitizer': 4.1.0
       '@esri/calcite-components': 5.1.1
       '@vaadin/grid': 25.0.13
@@ -4053,18 +4053,14 @@ snapshots:
     transitivePeerDependencies:
       - '@lit/context'
 
-  '@arcgis/lumina@5.1.0-next.139(lit@3.3.3)':
+  '@arcgis/lumina@5.1.0(lit@3.3.3)':
     dependencies:
-      '@arcgis/toolkit': 5.1.0-next.139
+      '@arcgis/toolkit': 5.1.0
       csstype: 3.2.3
       lit: 3.3.3
       tslib: 2.8.1
 
-  '@arcgis/toolkit@5.0.19':
-    dependencies:
-      tslib: 2.8.1
-
-  '@arcgis/toolkit@5.1.0-next.139':
+  '@arcgis/toolkit@5.1.0':
     dependencies:
       tslib: 2.8.1
 
@@ -4233,7 +4229,7 @@ snapshots:
       '@luma.gl/webgl': 9.3.4(@luma.gl/core@9.3.4)
       esri-loader: 3.7.0
 
-  '@deck.gl/carto@9.3.4(iuw2ptsludrs6a5md22k4v2mci)':
+  '@deck.gl/carto@9.3.4(8261765b8d2c5567288c043064c6de7c)':
     dependencies:
       '@carto/api-client': 0.5.29
       '@deck.gl/aggregation-layers': 9.3.4(@deck.gl/core@9.3.4)(@deck.gl/layers@9.3.4(@deck.gl/core@9.3.4)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4))))(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4)))
@@ -4448,16 +4444,16 @@ snapshots:
 
   '@esri/calcite-components@5.1.1':
     dependencies:
-      '@arcgis/lumina': 5.1.0-next.139(lit@3.3.3)
-      '@arcgis/toolkit': 5.1.0-next.139
+      '@arcgis/lumina': 5.1.0(lit@3.3.3)
+      '@arcgis/toolkit': 5.1.0
       '@esri/calcite-ui-icons': 4.5.0
       '@floating-ui/dom': 1.7.6
       '@floating-ui/utils': 0.2.11
       '@types/sortablejs': 1.15.9
       color: 5.0.3
       composed-offset-position: 0.0.6(@floating-ui/utils@0.2.11)
-      es-toolkit: 1.47.1
-      focus-trap: 8.2.1
+      es-toolkit: 1.48.1
+      focus-trap: 8.2.2
       interactjs: 1.10.27
       lit: 3.3.3
       sortablejs: 1.15.7
@@ -6292,7 +6288,7 @@ snapshots:
     dependencies:
       '@deck.gl/aggregation-layers': 9.3.4(@deck.gl/core@9.3.4)(@deck.gl/layers@9.3.4(@deck.gl/core@9.3.4)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4))))(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4)))
       '@deck.gl/arcgis': 9.3.4(@arcgis/core@5.0.19)(@deck.gl/core@9.3.4)(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4)))(@luma.gl/webgl@9.3.4(@luma.gl/core@9.3.4))
-      '@deck.gl/carto': 9.3.4(iuw2ptsludrs6a5md22k4v2mci)
+      '@deck.gl/carto': 9.3.4(8261765b8d2c5567288c043064c6de7c)
       '@deck.gl/core': 9.3.4
       '@deck.gl/extensions': 9.3.4(@deck.gl/core@9.3.4)(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4)))
       '@deck.gl/geo-layers': 9.3.4(@deck.gl/core@9.3.4)(@deck.gl/extensions@9.3.4(@deck.gl/core@9.3.4)(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4))))(@deck.gl/layers@9.3.4(@deck.gl/core@9.3.4)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4))))(@deck.gl/mesh-layers@9.3.4(@deck.gl/core@9.3.4)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4)))(@luma.gl/gltf@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4)))(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4)))(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4)))(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4)))
@@ -6508,6 +6504,8 @@ snapshots:
       is-symbol: 1.1.1
 
   es-toolkit@1.47.1: {}
+
+  es-toolkit@1.48.1: {}
 
   escalade@3.2.0: {}
 
@@ -6788,9 +6786,9 @@ snapshots:
 
   flatted@3.4.2: {}
 
-  focus-trap@8.2.1:
+  focus-trap@8.2.2:
     dependencies:
-      tabbable: 6.4.0
+      tabbable: 6.5.0
 
   for-each@0.3.5:
     dependencies:
@@ -7245,7 +7243,7 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.32.0
       lightningcss-win32-x64-msvc: 1.32.0
 
-  lint-staged@17.0.7:
+  lint-staged@17.0.8:
     dependencies:
       listr2: 10.2.1
       picomatch: 4.0.4
@@ -8002,7 +8000,7 @@ snapshots:
       react: 19.2.7
       use-sync-external-store: 1.6.0(react@19.2.7)
 
-  tabbable@6.4.0: {}
+  tabbable@6.5.0: {}
 
   table-layout@4.1.1:
     dependencies:
